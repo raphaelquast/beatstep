@@ -18,10 +18,6 @@ class ControlComponent(BaseComponent):
         self.npads = 7 # how many pads are there?
         self.use_tracks = [None for i in range(self.npads)]
 
-        # for padid in xrange(1,9):
-        #     setattr(self, '_' + str(padid) + '_listener',
-        #             partial(self._up_listener, padid=padid))
-
         self._parent.song().view.add_selected_track_listener(self.on_selected_track_changed)
         self._parent.song().add_tracks_listener(self.on_selected_track_changed)
 
@@ -252,18 +248,6 @@ class ControlComponent(BaseComponent):
         else:
             self._update_lights()
 
-
-    # def _15_listener(self, value):
-    #     if (self._shift_pressed and not self._shift_fixed):
-    #         self._parent.song().view.highlighted_clip_slot.fire()
-    #     elif self._shift_fixed:
-    #         if value > 0:
-    #             if self._parent.song().session_record == True:
-    #                 self._parent.song().session_record = False
-    #             else:
-    #                 self._parent.song().session_record = True
-
-
     def _16_listener(self, value):
         if value == 0:
             if self._shift_fixed:
@@ -304,8 +288,6 @@ class ControlComponent(BaseComponent):
             pass
 
     def _stop_clip(self):
-        # get the time when stop was last clicked (in seconds)
-
         # in case the button is pressed twice within 250ms, stop all clips
         if abs(time.clock() - self.__stop_clicked) <= 0.25:
             self._parent.song().stop_all_clips()
@@ -313,11 +295,11 @@ class ControlComponent(BaseComponent):
             clip_slot = self._parent.song().view.highlighted_clip_slot
             clip_slot.stop()
 
+        # set the time when stop was last clicked (in seconds)
         self.__stop_clicked = time.clock()
 
 
     def _next_clip(self):
-        track = self._parent.song().view.selected_track
         # get the currently selected scene ID
         scene = self._parent.song().view.selected_scene
         all_scenes = list(self._parent.song().scenes)
@@ -329,6 +311,7 @@ class ControlComponent(BaseComponent):
             self._parent.song().create_scene(-1)
             all_scenes = list(self._parent.song().scenes)
             self._parent.song().view.selected_scene = all_scenes[-1]
+
 
     def _duplicate_clip(self):
 
@@ -398,21 +381,6 @@ class ControlComponent(BaseComponent):
                 clip_slot.fire()
 
 
-    def _up_listener(self, value, padid):
-        # do this on release to ensure that the lights remain turned on
-        if value == 0:
-            if self._shift_fixed:
-                if self._shift_pressed:
-                    self._arm_track(padid - 1)
-                else:
-                    self._mute_track(padid - 1)
-            elif self._shift_pressed:
-                self._select_track(padid - 1)
-
-            self._update_lights()
-
-
-
     def _add_handler(self):
         for i in range(1,17):
             try:
@@ -420,6 +388,7 @@ class ControlComponent(BaseComponent):
                 getattr(self, '_'+str(i)+'_button').add_value_listener(getattr(self, '_'+str(i)+'_listener'))
             except:
                 pass
+
 
     def _remove_handler(self):
         for i in range(1,17):

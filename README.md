@@ -16,8 +16,6 @@ It is intended to provide **full control** over **Ableton Live** e.g.:
 
 Any comments / suggestions etc. are highly welcome!
 
-
-
 # Basic usage (already implemented)
 
 ## Buttons:
