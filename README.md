@@ -1,33 +1,64 @@
 # GENERAL
 
 This is a **MIDI Remote Script** for **Ableton Live 10** and the **Arturia Beatstep** controller.
+It is intended to provide **full control** over **Ableton Live** directly via the **Beatstep** controller e.g.:
 
-It is intended to provide **full control** over **Ableton Live** e.g.:
+- select, add, duplicate and delete tracks and scenes
 
-- select tracks and scenes
+- start, stop, record, delete, duplicate, overdub cips etc. 
 
-- start, stop, record, delete, duplicate, undo etc. 
+- arm / mute /solo tracks
 
-- arm / mute tracks
+- undo / redo steps 
 
-- tap tempo / toggle metronome / toggle automation
+- get indications on the status of Live via button-lights
 
-- ... and of course, at the same time...  play midi instruments!
+- ... and of course, at the same time...  use the controller to play midi instruments!
 
-Any comments / suggestions etc. are highly welcome!
+Feel free to use/adapt this script as you like! 
+Any comments / suggestions for improvements etc. are highly welcome!    
 
-# Basic usage (already implemented)
+> Just drop an Issue and I'll see what I can do!
+
+# Summary of Assignments
 
 ![](https://github.com/raphaelquast/beatstep/blob/master/assignment_01.png)
 
 # Installation
 
-To use this script, simply copy the contents into a folder named "Beatstep_Q" within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track`and `remote` for this device!)
+To use this script, simply copy the contents into a folder named **"Beatstep_custom"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_custom** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track`and `remote` for this device!)
+
+# More detailed explanations on the assignments:
 
 ## Buttons:
 
 The stop-button serves as `shift-button` to activate the control-features.
-`button 8` and `button 16` are used to activate different control-layers.
+`shift` + `button 8` and `shift` + `button 16` is used to activate different control-layers. 
+(they remain activated until the button is pressed again!)
+
+## Encoder:
+
+- `encoder 8` : track-selection (left-right)
+
+- `encoder 16` : scene selection (up-down)
+
+--- 
+
+#### If **shift (e.g. the stop-button)** is pressed:
+
+The lights in the first row indicate the track-arm status: 
+`blue` if the track can be armed and is **not **muted
+
+- `red` if the track is armed and **not** muted 
+
+- `magenta` if the track is armed but muted
+
+- `off` if the track is muted and **not** armed
+
+The lights in the second row are just there to help remembering the assignments.  
+(you can turn the lights on/off ! >> check `"scene control" + button 7`)
+
+The button-assignments are as follows:
 
 - `shift` + `button 1-7`:  select track 1-7 of the currently focussed slots (red box)
   
@@ -39,72 +70,130 @@ The stop-button serves as `shift-button` to activate the control-features.
 
 - `shift` + `button 11`: stop selected clip
   
-  - double-tap to stop all clips!
+  - double-tap to stop all clips (and stop playing)!
 
 - `shift` + `button 12`: duplicate the currently selected loop
 
-- `shift` + `button 13`: move to the next clip (add an empty clip-slot if you are at the final slot)
+- `shift` + `button 13`: move focus to the next clip (add an empty clip-slot if you are at the final slot)
 
 - `shift` + `button 14`: duplicate the currently selected clip, and set the focus to the duplicate
 
-- `shift` + `button 15`: start recording          
+- `shift` + `button 15`: start recording
   
   - if the currently selected slot is empty, start recording a new clip 
   
   - if a clip is already present, overdub
+  
+  
+
+- `shift` + `button 8` : activate **song control** (see below)
+
+- `shift` + `button 16` : activate **track control** (see below)
 
 ---
 
-- `shift` + `button 8` : activate **parameter control** (a different layer of button-controls)
-  
-  - tap `button 8` again (without `shift`) to get back to the normal behaviour
-  
-  - tap `button 16` to switch to **arm / mute control**  (see `shift` + `button 16`)
-  
-  - `button 1` : redo
-  
-  - `button 2` : duplicate track
-  
-  - `button 3` : duplicate scene
-  
-  - `button 9` : undo
-  
-  - `button 10` : delete track
-  
-  - `button 11` : delete scene
-  
-  - `button 12` : tap tempo
-  
-  - `button 13` : toggle metronome
-  
-  - `button 14` : toggle session automation record
+#### If "song control" is active
 
----
+Most lights are simply there to help remembering the button-assignments.
+The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live 
 
-- `shift` + `button 16` : activate **arm / mute control**     (a different layer of button-controls)
+- `red` for ON 
+
+-  `off` for off
+
+The light of `button 7` indicates the visibility of the shift-button lights:
+
+- `off` for no lights if `shift` is pressed
+
+-  `magenta` for only the top-row if `shift` is pressed
+
+-  `red` for all lights if `shift` is pressed
+
+
+
+
+
+
+- `button 8` : get back to the normal behaviour (e.g. deactivate song control)
+
+- `button 16`: switch to **track control**  (see below)
   
-  - tap `button 16` again (without `shift`) to get back to the normal behaviour
   
-  - tap `button 8` to switch to **parameter control** (see `shift` + `button 8`)
+
+- `button 1` : redo last step
+
+- `button 2` : duplicate currently selected track
+
+- `button 3` : duplicate currently selected scene
+
+- `button 7` : change what lights will turn on if shift is pressed
   
-  - the buttons in the upper row (1-7) indicate / set the **mute** status of the first 7 tracks in the red box
+  - see the description of the lights of `button 7` above for details
+
+- `button 9` : undo last step
+
+- `button 10` : delete currently selected track
+
+- `button 11` : delete currently selected scene
+
+- `button 12` : tap tempo
+
+- `button 13` : toggle metronome
+
+- `button 14` : toggle session automation record
   
-  - the buttons in the lower row (9-15) indicate / set the **arm** status of the first 7 tracks in the red box
+  
 
-## Encoder:
+- the top-row of the encoders (`1-7`) control "send A"
 
-- `encoder 6` : currently selected track: **send B**
-
-- `encoder 5` : currently selected track: **send A**
-
-- `encoder 13` :  currently selected track: **pan**
-
-- `encoder 14` : currently selected track: **volume**
+- the bottom-row of the encoders (`9-15`) control "send B"
 
 - `encoder 8` : track-selection (left-right)
 
 - `encoder 16` : scene selection (up-down)
 
-# ...work in progress
+---
 
-While most of the functionality is already working properly, this script is still a "work-in-progress", so be prepared for some unexpected behaviour!
+#### If "track control" is active
+
+The lights in the top-row indicate the mute / solo status of the corresponding track.
+
+- `blue` for a track that is set to solo
+
+- `magenta` for a unmuted track
+
+- `red` if the track is both solo and muted
+
+- `off` if the track is muted and not solo 
+
+The lights in the bottom-row indicate the arm status of the corresponding track.
+
+- `red` if the track is armed
+
+- `off` if the track is unarmed
+
+
+
+- `button 8` : switch to **song control** (see above)
+
+- `button 16` : get back to the normal behaviour (e.g. deactivate track control)
+  
+  
+
+- the buttons in the upper row (1-7) indicate / set the **mute** status of the first 7 tracks in the red box
+  
+  - holding `shift` while pressing the button will **solo** the corresponding track
+
+- the buttons in the lower row (9-15) indicate / set the **arm** status of the first 7 tracks in the red box
+  
+  
+
+- the top-row of the encoders (`1-7`) control the "track volume"
+
+- the bottom-row of the encoders (`9-15`) control the "track pan"
+
+- `encoder 8` : track-selection (left-right)
+
+- `encoder 16` : scene selection (up-down)
+
+---

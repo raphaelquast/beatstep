@@ -25,14 +25,6 @@ PAD_MSG_IDS = (xrange(44, 52),
 PAD_MSG_IDS_LIST = list(xrange(44, 52)) + list(xrange(36, 44))
 
 
-PAD_MSG_IDS_clip = (xrange(44, 48),
-                    xrange(36, 40))
-
-PAD_MSG_IDS_control = (xrange(48, 51),
-                       xrange(40, 43))
-
-
-
 PAD_CHANNEL = 9
 
 
@@ -61,15 +53,12 @@ class BeatStep_custom(ArturiaControlSurface):
         self._skin = Skin(Colors)
         with self.component_guard():
             self._create_controls()
-            self._create_device()
             self._create_mixer()
             self._create_session()
-            self._create_transport()
 
             self._create_control()
 
     def _create_controls(self):
-        self._device_encoders = ButtonMatrixElement(rows=[ [ EncoderElement(MIDI_CC_TYPE, 0, identifier, Live.MidiMap.MapMode.relative_smooth_two_compliment, name=u'Encoder_%d_%d' % (column_index, row_index)) for column_index, identifier in enumerate(row) ] for row_index, row in enumerate((ENCODER_MSG_IDS[:4], ENCODER_MSG_IDS[8:12])) ])
         self._horizontal_scroll_encoder = EncoderElement(MIDI_CC_TYPE, 0, 75, Live.MidiMap.MapMode.relative_smooth_two_compliment, name=u'Horizontal_Scroll_Encoder')
         self._vertical_scroll_encoder = EncoderElement(MIDI_CC_TYPE, 0, 72, Live.MidiMap.MapMode.relative_smooth_two_compliment, name=u'Vertical_Scroll_Encoder')
         self._volume_encoder = EncoderElement(MIDI_CC_TYPE, 0, 91, Live.MidiMap.MapMode.relative_smooth_two_compliment, name=u'Volume_Encoder')
@@ -80,38 +69,20 @@ class BeatStep_custom(ArturiaControlSurface):
         self._return_a_encoder = EncoderElement(MIDI_CC_TYPE, 0, 73, Live.MidiMap.MapMode.relative_smooth_two_compliment, name=u'Return_A_Encoder')
         self._return_b_encoder = EncoderElement(MIDI_CC_TYPE, 0, 79, Live.MidiMap.MapMode.relative_smooth_two_compliment, name=u'Return_B_Encoder')
         self._return_encoders = ButtonMatrixElement(rows=[[self._return_a_encoder, self._return_b_encoder]])
-        # self._pads = ButtonMatrixElement(rows=[
-        #     [ ButtonElement(True,
-        #                     MIDI_NOTE_TYPE,
-        #                     PAD_CHANNEL,
-        #                     identifier,
-        #                     name=u'Pad_%d_%d' % (col_index, row_index),
-        #                     skin=self._skin
-        #                     ) for col_index, identifier in enumerate(row) ]
-        #     for row_index, row in enumerate(PAD_MSG_IDS_control) ])
 
-        #self._stop_button = ButtonElement(True, MIDI_CC_TYPE, 0, 1, name=u'Stop_Button')
         self._play_button = ButtonElement(True, MIDI_CC_TYPE, 0, 2, name=u'Play_Button')
 
         self._shift_button = ButtonElement(True, MIDI_CC_TYPE, 0, 1, name=u'Shift_Button')
-        self._stopall_button = ButtonElement(True, MIDI_CC_TYPE, 0, 123, name=u'Stopall_Button')
 
         for i in xrange(1,17):
             msgid = PAD_MSG_IDS_LIST[i-1]
             setattr(self, '_' + str(i) + '_button',
                      ButtonElement(True, MIDI_NOTE_TYPE, PAD_CHANNEL, msgid))
 
-
-
-
-
-    def _create_device(self):
-        self._device = DeviceComponent(name=u'Device',
-                                       is_enabled=False,
-                                       layer=Layer(parameter_controls=self._device_encoders),
-                                       device_selection_follows_track_selection=True)
-        self._device.set_enabled(True)
-        self.set_device_component(self._device)
+        for i in xrange(1,17):
+            msgid = ENCODER_MSG_IDS[i-1]
+            setattr(self, '_' + str(i) + '_encoder',
+                    EncoderElement(MIDI_CC_TYPE, 0, msgid, Live.MidiMap.MapMode.relative_smooth_two_compliment, name='_' + str(i) + '_encoder'))
 
 
     def _create_session(self):
@@ -121,7 +92,8 @@ class BeatStep_custom(ArturiaControlSurface):
                                          num_scenes=2,
                                          enable_skinning=True,
                                          layer=Layer(#clip_launch_buttons=self._pads,
-                                                     scene_select_control=self._vertical_scroll_encoder))
+                                                     scene_select_control=self._vertical_scroll_encoder
+                                                     ))
 
         # do this to enable the "red-box"
         self.set_highlighting_session_component(self._session)
@@ -133,19 +105,9 @@ class BeatStep_custom(ArturiaControlSurface):
                                      is_enabled=False,
                                      num_returns=2,
                                      layer=Layer(track_select_encoder=self._horizontal_scroll_encoder,
-                                                 selected_track_volume_control=self._volume_encoder,
-                                                 selected_track_pan_control=self._pan_encoder,
-                                                 selected_track_send_controls=self._send_encoders,
-                                                 return_volume_controls=self._return_encoders))
+                                                 ))
         self._mixer.set_enabled(True)
 
-
-    def _create_transport(self):
-        self._transport = TransportComponent(name=u'Transport',
-                                             is_enabled=False,
-                                             layer=Layer(#stop_button=self._stop_button,
-                                                         play_button=self._play_button))
-        self._transport.set_enabled(True)
 
 
     def _collect_setup_messages(self):
@@ -163,7 +125,6 @@ class BeatStep_custom(ArturiaControlSurface):
 
         self._control_component = ControlComponent(self)
         self._control_component.set_shift_button(self._shift_button)
-        self._control_component.set_stopall_button(self._stopall_button)
 
 
         #self._control_component.set_8_button(self._8_button)
@@ -173,6 +134,9 @@ class BeatStep_custom(ArturiaControlSurface):
             getattr(self._control_component, 'set_' + str(i) + '_button'
                     )(getattr(self, '_' + str(i) + '_button'))
 
+        for i in xrange(1,17):
+            getattr(self._control_component, 'set_' + str(i) + '_encoder_button'
+                    )(getattr(self, '_' + str(i) + '_encoder'))
 
 
     # def send_midi(self, midi_event_bytes):
@@ -180,7 +144,10 @@ class BeatStep_custom(ArturiaControlSurface):
     #     Use this function to send MIDI events through Live to the _real_ MIDI devices
     #     that this script is assigned to.
     #     """
-    #     self.__c_instance.send_midi(midi_event_bytes)
+    #     super(BeatStep_custom, self).send_midi(midi_event_bytes)
+
+    #     #self.__c_instance.send_midi(midi_event_bytes)
+    #     self.log_message(str(midi_event_bytes))
 
     # def build_midi_map(self, midi_map_handle):
     #     u"""Live -> Script
@@ -191,14 +158,14 @@ class BeatStep_custom(ArturiaControlSurface):
     #     """
     #     super(BeatStep_custom, self).build_midi_map(midi_map_handle)
 
-    #     script_handle = self.__c_instance.handle()
-    #     Live.MidiMap.forward_midi_note(script_handle, midi_map_handle, 1, 51)
-    #     for channel in range(16):
-    #         for i in range(127):
-    #             Live.MidiMap.forward_midi_note(script_handle, midi_map_handle, channel, i)
-    #     for channel in range(16):
-    #         for cc_no in range(127):
-    #             Live.MidiMap.forward_midi_cc(script_handle, midi_map_handle, channel, cc_no)
+    #     # script_handle = self.__c_instance.handle()
+    #     # Live.MidiMap.forward_midi_note(script_handle, midi_map_handle, 1, 51)
+    #     # for channel in range(16):
+    #     #     for i in range(127):
+    #     #         Live.MidiMap.forward_midi_note(script_handle, midi_map_handle, channel, i)
+    #     # for channel in range(16):
+    #     #     for cc_no in range(127):
+    #     #         Live.MidiMap.forward_midi_cc(script_handle, midi_map_handle, channel, cc_no)
 
 
 
@@ -207,15 +174,14 @@ class BeatStep_custom(ArturiaControlSurface):
     #     MIDI messages are only received through this function, when explicitly
     #     forwarded in 'build_midi_map'.
     #     """
-    #     #self.send_midi(midi_bytes)
-    #     self.log_message(str(midi_bytes))
+    #     super(BeatStep_custom, self).receive_midi(midi_bytes)
 
-    #     # this part is from _Framework.ControlSurface
-    #     with self.component_guard():
-    #         self._do_receive_midi(midi_bytes)
-    #     # ----------
+    #     # # this part is from _Framework.ControlSurface
+    #     # with self.component_guard():
+    #     #     self._do_receive_midi(midi_bytes)
+    #     # # ----------
 
 
-    #     # (_, note, val) = midi_bytes
-    #     # if note == 51 and val > 0:
-    #     #     self._control_component._arm_track(7)
+    # #     # (_, note, val) = midi_bytes
+    # #     # if note == 51 and val > 0:
+    # #     #     self._control_component._arm_track(7)

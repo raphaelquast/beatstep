@@ -7,8 +7,10 @@ import time
 
 class ControlComponent(BaseComponent):
     def __init__(self, parent):
+        self.__selected_track = -99
+        self.__stop_clicked = 0
 
-        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_shift', '_stopall']
+        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift']
 
         super(ControlComponent, self).__init__(parent, buttonnames)
 
@@ -16,6 +18,7 @@ class ControlComponent(BaseComponent):
         self._shift_fixed = False
         self._control_layer = False
 
+        self._shift_color_mode = 2   # 0 = none, 1 = top row, 2 = all
 
         self.npads = 7 # how many pads are there?
         self.use_tracks = [None for i in range(self.npads)]
@@ -25,87 +28,133 @@ class ControlComponent(BaseComponent):
 
         # call this once to initialize "self.use_tracks"
         self.use_tracks = self._parent.song().tracks[:self.npads]
-        #self.on_selected_track_changed()
+        self._select_track(0)
+        self.on_selected_track_changed()
 
-        self.__selected_track = -99
-        self.__stop_clicked = 0
 
-    def _stopall_listener(self, value):
-        self._parent.show_message('lets stop all !')
+    def _set_color(self, buttonid, color):
+        colordict = dict(black=0, red=1, blue=16, magenta=17)
+        # the hex-code of the buttons
+        hexbutton = 111 + buttonid
+        hexcolor = colordict[color]
+        msg = (240, 0, 32, 107, 127, 66, 2, 0, 16, hexbutton, hexcolor, 247)
+
+        self._parent._send_midi(msg)
 
 
     def _update_lights(self):
+        self._parent.show_message(str(self._shift_pressed) + '|'+ str(self._shift_fixed) + '|'+ str(self._control_layer) + '|')
 
         if self._shift_fixed:
-            getattr(self, '_' + str(8) + '_button').send_value(0)
-            getattr(self, '_' + str(16) + '_button').send_value(127)
+            self._set_color(16, 'magenta')
+            self._set_color(8, 'black')
 
             for i, track in enumerate(self.use_tracks):
-                button_up = getattr(self, '_' + str(i + 1) + '_button')
-                button_down = getattr(self, '_' + str(i + 9) + '_button')
+                button_up = i + 1
+                button_down = i + 9
 
-                if button_up is not None and button_down is not None:
-                    # if there is no track, turn the lights off
-                    if track is None:
-                        button_up.send_value(0)
-                        button_down.send_value(0)
-                        continue
+                # if there is no track, turn the lights off
+                if track is None:
+                    self._set_color(button_up, 'black')
+                    self._set_color(button_down, 'black')
+                    continue
 
-                    if not track.mute:
-                        button_up.send_value(127)
-                    else:
-                        button_up.send_value(0)
+                if track.solo and not track.mute:
+                    self._set_color(button_up, 'blue')
+                elif track.mute and track.solo:
+                    self._set_color(button_up, 'red')
+                elif track.mute:
+                    self._set_color(button_up, 'black')
+                else:
+                    self._set_color(button_up, 'magenta')
 
-                    if track.arm:
-                        button_down.send_value(127)
-                    else:
-                        button_down.send_value(0)
+                if track.arm:
+                    self._set_color(button_down, 'red')
+                else:
+                    self._set_color(button_down, 'black')
 
         elif self._control_layer:
-            getattr(self, '_' + str(8) + '_button').send_value(127)
-            getattr(self, '_' + str(16) + '_button').send_value(0)
+            self._set_color(16, 'black')
+            self._set_color(8, 'blue')
 
-            used_buttons = [8, 13, 14]
+            used_buttons = [1, 2, 3, 7, 8, 9, 10, 11, 13, 14]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
                     continue
-                button = getattr(self, '_' + str(i) + '_button')
-                button.send_value(0)
+                self._set_color(i, 'black')
+
+            self._set_color(1, 'magenta')
+            self._set_color(9, 'magenta')
+
+            self._set_color(2, 'blue')
+            self._set_color(10, 'magenta')
+
+            self._set_color(3, 'blue')
+            self._set_color(11, 'magenta')
+
+
+            if self._shift_color_mode == 0:
+                self._set_color(7, 'black')
+            elif self._shift_color_mode == 1:
+                self._set_color(7, 'magenta')
+            elif self._shift_color_mode == 2:
+                self._set_color(7, 'red')
+
 
             if self._parent.song().metronome:
-                self._13_button.send_value(127)
+                self._set_color(13, 'red')
             else:
-                self._13_button.send_value(0)
+                self._set_color(13, 'black')
 
             if self._parent.song().session_automation_record:
-                self._14_button.send_value(127)
+                self._set_color(14, 'red')
             else:
-                self._14_button.send_value(0)
+                self._set_color(14, 'black')
 
 
         elif self._shift_pressed:
-            for i, track in enumerate(self.use_tracks):
-                button_up = getattr(self, '_' + str(i + 1) + '_button')
-                button_down = getattr(self, '_' + str(i + 9) + '_button')
-
-                if button_up is not None and button_down is not None:
+            if self._shift_color_mode == 0:
+                # turn off all lights
+                for i in range(1, 17):
+                    self._set_color(i, 'black')
+            else:
+                # highlite track mute and arm status
+                for i, track in enumerate(self.use_tracks):
+                    button_up = i + 1
                     # if there is no track, turn the lights off
                     if track is None:
-                        button_up.send_value(0)
-                        button_down.send_value(0)
+                        self._set_color(button_up, 'black')
                         continue
 
                     if track.arm:
-                        button_up.send_value(127)
+                        if (track.mute or track.muted_via_solo):
+                            self._set_color(button_up, 'magenta')
+                        else:
+                            self._set_color(button_up, 'red')
+                    elif not (track.mute or track.muted_via_solo):
+                        self._set_color(button_up, 'blue')
                     else:
-                        button_up.send_value(0)
+                        self._set_color(button_up, 'black')
+
+
+                # indicate control-buttons
+                if self._shift_color_mode == 2:
+                    self._set_color(8, 'magenta')
+                    self._set_color(9, 'magenta')
+                    self._set_color(10, 'red')
+                    self._set_color(11, 'magenta')
+                    self._set_color(12, 'blue')
+                    self._set_color(13, 'magenta')
+                    self._set_color(14, 'blue')
+                    self._set_color(15, 'red')
+                    self._set_color(16, 'magenta')
+
         else:
             # turn off all lights on shift-release
             for i in range(1, 17):
-                button = getattr(self, '_' + str(i) + '_button')
-                if button is not None:
-                    button.send_value(0)
+                self._set_color(i, 'black')
+
 
     def on_selected_track_changed(self):
         '''
@@ -160,7 +209,7 @@ class ControlComponent(BaseComponent):
     def _1_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_track(0)
+                self._mute_solo_track(0)
             elif self._control_layer:
                 self._redo()
             elif self._shift_pressed:
@@ -171,7 +220,7 @@ class ControlComponent(BaseComponent):
     def _2_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_track(1)
+                self._mute_solo_track(1)
             elif self._control_layer:
                 self._duplicate_track()
             elif self._shift_pressed:
@@ -182,7 +231,7 @@ class ControlComponent(BaseComponent):
     def _3_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_track(2)
+                self._mute_solo_track(2)
             elif self._control_layer:
                 self._duplicate_scene()
             elif self._shift_pressed:
@@ -193,7 +242,7 @@ class ControlComponent(BaseComponent):
     def _4_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_track(3)
+                self._mute_solo_track(3)
             elif self._shift_pressed:
                 self._select_track(3)
         else:
@@ -202,7 +251,7 @@ class ControlComponent(BaseComponent):
     def _5_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_track(4)
+                self._mute_solo_track(4)
             elif self._shift_pressed:
                 self._select_track(4)
         else:
@@ -211,7 +260,7 @@ class ControlComponent(BaseComponent):
     def _6_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_track(5)
+                self._mute_solo_track(5)
             elif self._shift_pressed:
                 self._select_track(5)
         else:
@@ -220,7 +269,9 @@ class ControlComponent(BaseComponent):
     def _7_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_track(6)
+                self._mute_solo_track(6)
+            elif self._control_layer:
+                self._toggle_shift_lights()
             elif self._shift_pressed:
                 self._select_track(6)
         else:
@@ -465,10 +516,27 @@ class ControlComponent(BaseComponent):
     def _mute_track(self, trackid):
         track = self.use_tracks[trackid]
         if track is not None:
-            if track.mute == True:
+            if track.mute:
                 track.mute = False
             else:
                 track.mute = True
+
+    def _solo_track(self, trackid):
+        track = self.use_tracks[trackid]
+        if track is not None:
+            if track.solo:
+                track.solo = False
+            else:
+                track.solo = True
+
+    def _mute_solo_track(self, trackid):
+        track = self.use_tracks[trackid]
+
+        if self._shift_pressed:
+            self._solo_track(trackid)
+        else:
+            self._mute_track(trackid)
+
 
 
     def _fire_clip(self, padid, offset=0):
@@ -552,5 +620,166 @@ class ControlComponent(BaseComponent):
                 self._remove_handler()
         self._update_lights()
 
+    #########################################################
+
+    def _1_encoder_listener(self, value):
+        trackid = 0
+        if self._shift_fixed:
+            self._track_volume(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 0)
+
+    def _2_encoder_listener(self, value):
+        trackid = 1
+        if self._shift_fixed:
+            self._track_volume(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 0)
+
+    def _3_encoder_listener(self, value):
+        trackid = 2
+        if self._shift_fixed:
+            self._track_volume(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 0)
+
+    def _4_encoder_listener(self, value):
+        trackid = 3
+        if self._shift_fixed:
+            self._track_volume(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 0)
+
+    def _5_encoder_listener(self, value):
+        trackid = 4
+        if self._shift_fixed:
+            self._track_volume(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 0)
+
+    def _6_encoder_listener(self, value):
+        trackid = 5
+        if self._shift_fixed:
+            self._track_volume(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 0)
+
+    def _7_encoder_listener(self, value):
+        trackid = 6
+        if self._shift_fixed:
+            self._track_volume(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 0)
+
+    # def _8_encoder_listener(self, value):
+    #     pass
+
+    #########################################################
+
+    def _9_encoder_listener(self, value):
+        trackid = 0
+        if self._shift_fixed:
+            self._track_volume(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 1)
+
+    def _10_encoder_listener(self, value):
+        trackid = 1
+        if self._shift_fixed:
+            self._track_pan(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 1)
+
+    def _11_encoder_listener(self, value):
+        trackid = 2
+        if self._shift_fixed:
+            self._track_pan(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 1)
+
+    def _12_encoder_listener(self, value):
+        trackid = 3
+        if self._shift_fixed:
+            self._track_pan(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 1)
+
+    def _13_encoder_listener(self, value):
+        trackid = 4
+        if self._shift_fixed:
+            self._track_pan(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 1)
+
+    def _14_encoder_listener(self, value):
+        trackid = 5
+        if self._shift_fixed:
+            self._track_pan(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 1)
+
+    def _15_encoder_listener(self, value):
+        trackid = 6
+        if self._shift_fixed:
+            self._track_pan(value, trackid)
+        elif self._control_layer:
+            self._track_send_x(value, trackid, 1)
+
+    # def _16_encoder_listener(self, value):
+    #     pass
+    #########################################################
 
 
+
+
+
+
+    def _track_send_x(self, value, track_id=0, send_id=0):
+        accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
+        last_access = abs(time.clock() - getattr(self, accessname, 0))
+
+
+        track = self.use_tracks[track_id]
+        if track is not None:
+            sends = track.mixer_device.sends
+
+            if send_id < len(sends):
+                prev_value = sends[send_id].value
+                if value < 65:
+                    if last_access > 0.01 and prev_value < 1:
+                        sends[send_id].value = round(prev_value + .01, 2)
+                    else:
+                        sends[send_id].value = round(prev_value + .05, 1)
+                elif value > 65 and prev_value > 0:
+                    if last_access > 0.01:
+                        sends[send_id].value = round(prev_value - .01, 2)
+                    else:
+                        sends[send_id].value = round(prev_value - .05, 1)
+
+            setattr(self, accessname, time.clock())
+
+
+    def _track_volume(self, value, track_id=0):
+        track = self.use_tracks[track_id]
+        if track is not None:
+            prev_value = track.mixer_device.volume.value
+            if value < 65:
+                track.mixer_device.volume.value = round(prev_value + .01, 2)
+            elif value > 65 :
+                track.mixer_device.volume.value = round(prev_value - .01, 2)
+
+
+    def _track_pan(self, value, track_id=0):
+        track = self.use_tracks[track_id]
+        if track is not None:
+            prev_value = track.mixer_device.panning.value
+            self._parent.show_message(str(prev_value))
+            if value < 65:
+                track.mixer_device.panning.value = round(prev_value + .01, 2)
+            elif value > 65 :
+                track.mixer_device.panning.value = round(prev_value - .01, 2)
+
+
+    def _toggle_shift_lights(self):
+        self._shift_color_mode = (self._shift_color_mode + 1)%3
+        self._update_lights()
