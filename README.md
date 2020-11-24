@@ -14,20 +14,20 @@ It is intended to provide **full control** over **Ableton Live** e.g.:
 
 - ... and of course, at the same time...  play midi instruments!
 
-
-
 Any comments / suggestions etc. are highly welcome!
 
 # Basic usage (already implemented)
 
 ![](https://github.com/raphaelquast/beatstep/blob/master/assignment_01.png)
 
+# Installation
+
+To use this script, simply copy the contents into a folder named "Beatstep_Q" within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track`and `remote` for this device!)
+
 ## Buttons:
 
 The stop-button serves as `shift-button` to activate the control-features.
 `button 8` and `button 16` are used to activate different control-layers.
-
-
 
 - `shift` + `button 1-7`:  select track 1-7 of the currently focussed slots (red box)
   
@@ -105,12 +105,6 @@ The stop-button serves as `shift-button` to activate the control-features.
 
 - `encoder 16` : scene selection (up-down)
 
-# Installation
-
-To use this script, simply copy the contents into a folder named "Beatstep_Q" within the MIDI Remote  scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track`and `remote` for this device!)
-
 # ...work in progress
 
 While most of the functionality is already working properly, this script is still a "work-in-progress", so be prepared for some unexpected behaviour!
-
-
