@@ -35,7 +35,8 @@ To use this script, simply copy the contents into a folder named **"Beatstep_cus
 
 The stop-button serves as `shift-button` to activate the control-features.  
 `shift` + `button 8` and `shift` + `button 16` is used to activate different control-layers.   
-(the control-layers remain activated until the button is pressed again!)
+(the control-layers remain activated until the button is pressed again!)  
+The `transpose-slider` transposes the note-assignments of the buttons.
 
 ## Encoder:
 
