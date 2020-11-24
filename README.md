@@ -59,6 +59,8 @@ The stop-button serves as `shift-button` to activate the control-features.
   
   - tap `button 16` to switch to **arm / mute control**  (see `shift` + `button 16`)
   
+  - `button 1` : redo
+  
   - `button 4` : delete track
   
   - `button 6` : delete scene 

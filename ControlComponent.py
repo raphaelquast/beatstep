@@ -161,6 +161,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_track(0)
+            elif self._control_layer:
+                self._redo()
             elif self._shift_pressed:
                 self._select_track(0)
         else:
@@ -393,8 +395,6 @@ class ControlComponent(BaseComponent):
         except:
             pass
 
-
-
     def _stop_clip(self):
         # in case the button is pressed twice within 250ms, stop all clips
         if abs(time.clock() - self.__stop_clicked) <= 0.25:
@@ -508,6 +508,9 @@ class ControlComponent(BaseComponent):
 
     def _undo(self):
         self._parent.song().undo()
+
+    def _redo(self):
+        self._parent.song().redo()
 
 
     def _add_handler(self):
