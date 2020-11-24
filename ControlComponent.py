@@ -9,7 +9,6 @@ class ControlComponent(BaseComponent):
         self.__transpose_val = 36
         self.__transpose_start = 36
 
-
         buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_play_note', '_transpose_encoder']
 
         super(ControlComponent, self).__init__(parent, buttonnames)
@@ -113,14 +112,17 @@ class ControlComponent(BaseComponent):
 
 
         elif self._shift_pressed:
+
             if self._shift_color_mode == 0:
                 # turn off all lights
                 for i in range(1, 17):
                     self._set_color(i, 'black')
             else:
+
                 # highlite track mute and arm status
                 for i, track in enumerate(self.use_tracks):
                     button_up = i + 1
+                    button_down = i + 9
                     # if there is no track, turn the lights off
                     if track is None:
                         self._set_color(button_up, 'black')
@@ -136,7 +138,6 @@ class ControlComponent(BaseComponent):
                     else:
                         self._set_color(button_up, 'black')
 
-
                 # indicate control-buttons
                 if self._shift_color_mode == 2:
                     self._set_color(8, 'magenta')
@@ -148,6 +149,11 @@ class ControlComponent(BaseComponent):
                     self._set_color(14, 'blue')
                     self._set_color(15, 'red')
                     self._set_color(16, 'magenta')
+                else:
+                    for i in range(9, 17):
+                        # turn off all lower buttons
+                        self._set_color(i, 'black')
+
 
         elif not self._shift_fixed and not self._control_layer:
             # turn off all lights on shift-release
@@ -601,25 +607,30 @@ class ControlComponent(BaseComponent):
 
 
         if value == 127:
+            # transpose notes to start-values
+            self._set_notes(self.__transpose_start)
+
+
+            self._shift_pressed = True
+
             # in case the currently selected clip is recording, turn off overdub
             # (to be able to stop overdubbing with the stop-button)
             clip_slot = self._parent.song().view.highlighted_clip_slot
             if clip_slot.is_recording:
                 if self._parent.song().session_record == True:
                     self._parent.song().session_record = False
-                    # blink red to indicate a record-stop, don't do anything else
-                    self._set_color(15, 'red')
-                    time.wait(0.01)
-                    self._set_color(15, 'black')
+                # blink red to indicate a record-stop, don't do anything else
+                self._set_color(15, 'red')
+                time.sleep(0.1)
 
-            self._shift_pressed = True
-            # transpose notes to start-values
-            self._set_notes(self.__transpose_start)
+            self._update_lights()
             # add value listeners to buttons in case shift is pressed
             self._add_handler()
         else:
 
             self._shift_pressed = False
+            self._update_lights()
+
             # remove value listeners from buttons in case shift is released
             # (so that we can play instruments if shift is not pressed)
             if not self._shift_fixed and not self._control_layer:
@@ -627,7 +638,6 @@ class ControlComponent(BaseComponent):
                 # transpose notes back to last set transpose-val
                 self._set_notes(self.__transpose_val)
 
-        self._update_lights()
 
 
 
