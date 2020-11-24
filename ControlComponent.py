@@ -10,7 +10,6 @@ class ControlComponent(BaseComponent):
         self.__transpose_start = 36
 
 
-
         buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_play_note', '_transpose_encoder']
 
         super(ControlComponent, self).__init__(parent, buttonnames)
@@ -612,13 +611,14 @@ class ControlComponent(BaseComponent):
                     self._set_color(15, 'red')
                     time.wait(0.01)
                     self._set_color(15, 'black')
-            else:
-                self._shift_pressed = True
-                # transpose notes to start-values
-                self._set_notes(self.__transpose_start)
-                # add value listeners to buttons in case shift is pressed
-                self._add_handler()
+
+            self._shift_pressed = True
+            # transpose notes to start-values
+            self._set_notes(self.__transpose_start)
+            # add value listeners to buttons in case shift is pressed
+            self._add_handler()
         else:
+
             self._shift_pressed = False
             # remove value listeners from buttons in case shift is released
             # (so that we can play instruments if shift is not pressed)
@@ -628,6 +628,8 @@ class ControlComponent(BaseComponent):
                 self._set_notes(self.__transpose_val)
 
         self._update_lights()
+
+
 
     #########################################################
 
