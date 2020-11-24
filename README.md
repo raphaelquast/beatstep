@@ -21,6 +21,9 @@ Any comments / suggestions etc. are highly welcome!
 ## Buttons:
 
 The stop-button serves as `shift-button` to activate the control-features.
+`button 8` and `button 16` are used to activate different control-layers.
+
+
 
 - `shift` + `button 1-7`:  select track 1-7 of the currently focussed slots (red box)
   
