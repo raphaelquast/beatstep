@@ -65,7 +65,7 @@ class ControlComponent(BaseComponent):
             getattr(self, '_' + str(8) + '_button').send_value(127)
             getattr(self, '_' + str(16) + '_button').send_value(0)
 
-            used_buttons = [8, 13, 14]
+            used_buttons = [8, 11, 13]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -79,9 +79,9 @@ class ControlComponent(BaseComponent):
                 self._13_button.send_value(0)
 
             if self._parent.song().session_automation_record:
-                self._14_button.send_value(127)
+                self._11_button.send_value(127)
             else:
-                self._14_button.send_value(0)
+                self._11_button.send_value(0)
 
 
         elif self._shift_pressed:
@@ -188,6 +188,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_track(3)
+            elif self._control_layer:
+                self._delete_track()
             elif self._shift_pressed:
                 self._select_track(3)
         else:
@@ -206,6 +208,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_track(5)
+            elif self._control_layer:
+                self._delete_scene()
             elif self._shift_pressed:
                 self._select_track(5)
         else:
@@ -240,6 +244,10 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(0)
+            elif self._control_layer:
+                self._undo()
+            elif self._shift_pressed:
+                self._undo()
         else:
             self._update_lights()
 
@@ -247,6 +255,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(1)
+            elif self._control_layer:
+                self._tap_tempo()
             elif self._shift_pressed:
                 self._delete_clip()
         else:
@@ -256,7 +266,9 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(2)
-            if self._shift_pressed:
+            elif self._control_layer:
+                self._toggle_automation()
+            elif self._shift_pressed:
                 self._stop_clip()
         else:
             self._update_lights()
@@ -266,7 +278,7 @@ class ControlComponent(BaseComponent):
             if self._shift_fixed:
                 self._arm_track(3)
             elif self._control_layer:
-                self._tap_tempo()
+                self._duplicate_track()
             elif self._shift_pressed:
                 self._duplicate_loop()
         else:
@@ -288,7 +300,7 @@ class ControlComponent(BaseComponent):
             if self._shift_fixed:
                 self._arm_track(5)
             if self._control_layer:
-                self._toggle_automation()
+                self._duplicate_scene()
             elif self._shift_pressed:
                 self._duplicate_clip()
         else:
@@ -298,6 +310,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(6)
+            if self._control_layer:
+                self._duplicate_track()
             elif self._shift_pressed:
 
                 self._fire_record()
@@ -339,12 +353,47 @@ class ControlComponent(BaseComponent):
         except:
             pass
 
+    def _duplicate_track(self):
+
+        selected_track = self._parent.song().view.selected_track
+        all_tracks = self._parent.song().tracks
+        current_index = list(all_tracks).index(selected_track)
+
+        self._parent.song().duplicate_track(current_index)
+
+    def _delete_track(self):
+
+        selected_track = self._parent.song().view.selected_track
+        all_tracks = self._parent.song().tracks
+        current_index = list(all_tracks).index(selected_track)
+
+        self._parent.song().delete_track(current_index)
+
+    def _duplicate_scene(self):
+
+        selected_scene = self._parent.song().view.selected_scene
+        all_scenes = self._parent.song().scenes
+        current_index = list(all_scenes).index(selected_scene)
+
+        self._parent.song().duplicate_scene(current_index)
+
+    def _delete_scene(self):
+
+        selected_track = self._parent.song().view.selected_track
+        all_tracks = self._parent.song().tracks
+        current_index = list(all_tracks).index(selected_track)
+
+        self._parent.song().delete_scene(current_index)
+
+
     def _delete_clip(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
         try:
             clip_slot.delete_clip()
         except:
             pass
+
+
 
     def _stop_clip(self):
         # in case the button is pressed twice within 250ms, stop all clips
@@ -454,6 +503,10 @@ class ControlComponent(BaseComponent):
 
     def _tap_tempo(self):
         self._parent.song().tap_tempo()
+
+
+    def _undo(self):
+        self._parent.song().undo()
 
 
     def _add_handler(self):
