@@ -26,15 +26,16 @@ Any comments / suggestions for improvements etc. are highly welcome!
 
 # Installation
 
-To use this script, simply copy the contents into a folder named **"Beatstep_custom"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_custom** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track`and `remote` for this device!)
+To use this script, simply copy the contents into a folder named **"Beatstep_custom"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_custom** device as control-surface in the MIDI-tab of the preferences. 
+(make sure to activate both `track`and `remote` for this device!)
 
 # More detailed explanations on the assignments:
 
 ## Buttons:
 
-The stop-button serves as `shift-button` to activate the control-features.
-`shift` + `button 8` and `shift` + `button 16` is used to activate different control-layers. 
-(they remain activated until the button is pressed again!)
+The stop-button serves as `shift-button` to activate the control-features.  
+`shift` + `button 8` and `shift` + `button 16` is used to activate different control-layers.   
+(the control-layers remain activated until the button is pressed again!)
 
 ## Encoder:
 
@@ -83,8 +84,6 @@ The button-assignments are as follows:
   - if the currently selected slot is empty, start recording a new clip 
   
   - if a clip is already present, overdub
-  
-  
 
 - `shift` + `button 8` : activate **song control** (see below)
 
@@ -99,26 +98,19 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 
 - `red` for ON 
 
--  `off` for off
+- `off` for off
 
 The light of `button 7` indicates the visibility of the shift-button lights:
 
 - `off` for no lights if `shift` is pressed
 
--  `magenta` for only the top-row if `shift` is pressed
+- `magenta` for only the top-row if `shift` is pressed
 
--  `red` for all lights if `shift` is pressed
-
-
-
-
-
+- `red` for all lights if `shift` is pressed
 
 - `button 8` : get back to the normal behaviour (e.g. deactivate song control)
 
 - `button 16`: switch to **track control**  (see below)
-  
-  
 
 - `button 1` : redo last step
 
@@ -141,8 +133,6 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 - `button 13` : toggle metronome
 
 - `button 14` : toggle session automation record
-  
-  
 
 - the top-row of the encoders (`1-7`) control "send A"
 
@@ -172,21 +162,15 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 - `off` if the track is unarmed
 
-
-
 - `button 8` : switch to **song control** (see above)
 
 - `button 16` : get back to the normal behaviour (e.g. deactivate track control)
-  
-  
 
 - the buttons in the upper row (1-7) indicate / set the **mute** status of the first 7 tracks in the red box
   
   - holding `shift` while pressing the button will **solo** the corresponding track
 
 - the buttons in the lower row (9-15) indicate / set the **arm** status of the first 7 tracks in the red box
-  
-  
 
 - the top-row of the encoders (`1-7`) control the "track volume"
 
