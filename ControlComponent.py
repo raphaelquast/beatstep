@@ -65,7 +65,7 @@ class ControlComponent(BaseComponent):
             getattr(self, '_' + str(8) + '_button').send_value(127)
             getattr(self, '_' + str(16) + '_button').send_value(0)
 
-            used_buttons = [8, 11, 13]
+            used_buttons = [8, 13, 14]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -79,9 +79,9 @@ class ControlComponent(BaseComponent):
                 self._13_button.send_value(0)
 
             if self._parent.song().session_automation_record:
-                self._11_button.send_value(127)
+                self._14_button.send_value(127)
             else:
-                self._11_button.send_value(0)
+                self._14_button.send_value(0)
 
 
         elif self._shift_pressed:
@@ -172,6 +172,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_track(1)
+            elif self._control_layer:
+                self._duplicate_track()
             elif self._shift_pressed:
                 self._select_track(1)
         else:
@@ -181,6 +183,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_track(2)
+            elif self._control_layer:
+                self._duplicate_scene()
             elif self._shift_pressed:
                 self._select_track(2)
         else:
@@ -190,8 +194,6 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_track(3)
-            elif self._control_layer:
-                self._delete_track()
             elif self._shift_pressed:
                 self._select_track(3)
         else:
@@ -210,8 +212,6 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_track(5)
-            elif self._control_layer:
-                self._delete_scene()
             elif self._shift_pressed:
                 self._select_track(5)
         else:
@@ -258,7 +258,7 @@ class ControlComponent(BaseComponent):
             if self._shift_fixed:
                 self._arm_track(1)
             elif self._control_layer:
-                self._tap_tempo()
+                self._delete_track()
             elif self._shift_pressed:
                 self._delete_clip()
         else:
@@ -269,7 +269,7 @@ class ControlComponent(BaseComponent):
             if self._shift_fixed:
                 self._arm_track(2)
             elif self._control_layer:
-                self._toggle_automation()
+                self._delete_scene()
             elif self._shift_pressed:
                 self._stop_clip()
         else:
@@ -280,7 +280,7 @@ class ControlComponent(BaseComponent):
             if self._shift_fixed:
                 self._arm_track(3)
             elif self._control_layer:
-                self._duplicate_track()
+                self._tap_tempo()
             elif self._shift_pressed:
                 self._duplicate_loop()
         else:
@@ -302,7 +302,7 @@ class ControlComponent(BaseComponent):
             if self._shift_fixed:
                 self._arm_track(5)
             if self._control_layer:
-                self._duplicate_scene()
+                self._toggle_automation()
             elif self._shift_pressed:
                 self._duplicate_clip()
         else:
@@ -312,8 +312,6 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(6)
-            if self._control_layer:
-                self._duplicate_track()
             elif self._shift_pressed:
 
                 self._fire_record()

@@ -61,21 +61,21 @@ The stop-button serves as `shift-button` to activate the control-features.
   
   - `button 1` : redo
   
-  - `button 4` : delete track
+  - `button 2` : duplicate track
   
-  - `button 6` : delete scene 
+  - `button 3` : duplicate scene
   
   - `button 9` : undo
   
-  - `button 10` : tap tempo
+  - `button 10` : delete track
   
-  - `button 11` : toggle session automation record
+  - `button 11` : delete scene
   
-  - `button 12` : duplicate track
+  - `button 12` : tap tempo
   
   - `button 13` : toggle metronome
   
-  - `button 14` : duplicate scene
+  - `button 14` : toggle session automation record
 
 ---
 
