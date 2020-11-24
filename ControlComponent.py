@@ -1,7 +1,4 @@
 from BaseComponent import BaseComponent
-from functools import partial
-from _Framework.ButtonElement import Color
-import Live
 import time
 
 
@@ -9,8 +6,12 @@ class ControlComponent(BaseComponent):
     def __init__(self, parent):
         self.__selected_track = -99
         self.__stop_clicked = 0
+        self.__transpose_val = 36
+        self.__transpose_start = 36
 
-        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift']
+
+
+        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_play_note', '_transpose_encoder']
 
         super(ControlComponent, self).__init__(parent, buttonnames)
 
@@ -37,14 +38,13 @@ class ControlComponent(BaseComponent):
         # the hex-code of the buttons
         hexbutton = 111 + buttonid
         hexcolor = colordict[color]
+
         msg = (240, 0, 32, 107, 127, 66, 2, 0, 16, hexbutton, hexcolor, 247)
 
         self._parent._send_midi(msg)
 
 
     def _update_lights(self):
-        self._parent.show_message(str(self._shift_pressed) + '|'+ str(self._shift_fixed) + '|'+ str(self._control_layer) + '|')
-
         if self._shift_fixed:
             self._set_color(16, 'magenta')
             self._set_color(8, 'black')
@@ -150,7 +150,7 @@ class ControlComponent(BaseComponent):
                     self._set_color(15, 'red')
                     self._set_color(16, 'magenta')
 
-        else:
+        elif not self._shift_fixed and not self._control_layer:
             # turn off all lights on shift-release
             for i in range(1, 17):
                 self._set_color(i, 'black')
@@ -283,9 +283,12 @@ class ControlComponent(BaseComponent):
                 self._control_layer = False
                 self._shift_fixed = False
                 self._shift_pressed = False
+                # transpose notes back to last set transpose-val
+                self._set_notes(self.__transpose_val)
                 self._update_lights()
                 self._remove_control_listeners()
                 self._remove_handler()
+
             else:
                 self._shift_fixed = False
                 self._control_layer = True
@@ -366,7 +369,6 @@ class ControlComponent(BaseComponent):
             elif self._shift_pressed:
 
                 self._fire_record()
-
         else:
             self._update_lights()
 
@@ -376,9 +378,10 @@ class ControlComponent(BaseComponent):
                 self._shift_fixed = False
                 self._control_layer = False
                 self._shift_pressed = False
+                # transpose notes back to last set transpose-val
+                self._set_notes(self.__transpose_val)
                 self._update_lights()
                 self._remove_handler()
-
             else:
                 self._control_layer = False
                 self._shift_fixed = True
@@ -430,9 +433,9 @@ class ControlComponent(BaseComponent):
 
     def _delete_scene(self):
 
-        selected_track = self._parent.song().view.selected_track
-        all_tracks = self._parent.song().tracks
-        current_index = list(all_tracks).index(selected_track)
+        selected_scene = self._parent.song().view.selected_scene
+        all_scenes = self._parent.song().scenes
+        current_index = list(all_scenes).index(selected_scene)
 
         self._parent.song().delete_scene(current_index)
 
@@ -530,8 +533,6 @@ class ControlComponent(BaseComponent):
                 track.solo = True
 
     def _mute_solo_track(self, trackid):
-        track = self.use_tracks[trackid]
-
         if self._shift_pressed:
             self._solo_track(trackid)
         else:
@@ -599,6 +600,7 @@ class ControlComponent(BaseComponent):
     def _shift_listener(self, value):
         self.__selected_track = -99
 
+
         if value == 127:
             # in case the currently selected clip is recording, turn off overdub
             # (to be able to stop overdubbing with the stop-button)
@@ -606,18 +608,25 @@ class ControlComponent(BaseComponent):
             if clip_slot.is_recording:
                 if self._parent.song().session_record == True:
                     self._parent.song().session_record = False
-
-
-            self._shift_pressed = True
-
-            # add value listeners to buttons in case shift is pressed
-            self._add_handler()
+                    # blink red to indicate a record-stop, don't do anything else
+                    self._set_color(15, 'red')
+                    time.wait(0.01)
+                    self._set_color(15, 'black')
+            else:
+                self._shift_pressed = True
+                # transpose notes to start-values
+                self._set_notes(self.__transpose_start)
+                # add value listeners to buttons in case shift is pressed
+                self._add_handler()
         else:
             self._shift_pressed = False
             # remove value listeners from buttons in case shift is released
             # (so that we can play instruments if shift is not pressed)
             if not self._shift_fixed and not self._control_layer:
                 self._remove_handler()
+                # transpose notes back to last set transpose-val
+                self._set_notes(self.__transpose_val)
+
         self._update_lights()
 
     #########################################################
@@ -783,3 +792,41 @@ class ControlComponent(BaseComponent):
     def _toggle_shift_lights(self):
         self._shift_color_mode = (self._shift_color_mode + 1)%3
         self._update_lights()
+
+
+    def _play_note_listener(self, value):
+        self._update_lights()
+
+
+    def _transpose_encoder_listener(self, value):
+        self._transpose(value)
+
+
+    def _transpose(self, value):
+        if value < 64:
+            self.__transpose_val = (self.__transpose_val + 1)%(127 - 16)
+        else:
+            self.__transpose_val = (self.__transpose_val - 1)%(127 - 16)
+
+
+        self._set_notes(self.__transpose_val)
+
+
+    def _set_notes(self, start):
+        self._parent.show_message('transposing from  ' + str(start))
+
+        # set midi-notes of buttons to start + (0-15)
+        for i in xrange(16):
+
+            decval = int(str((start + i)%127), base=16)
+            decval = (start + i)%127
+
+            if i > 7:
+                button = 112 + i%8
+            else:
+                button = 120 + i%8
+
+
+            msg = (240, 0, 32, 107, 127, 66, 2, 0) + (3, button, decval, 247)
+            self._parent._send_midi(msg)
+
