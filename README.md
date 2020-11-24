@@ -6,11 +6,13 @@ It is intended to provide **full control** over **Ableton Live** e.g.:
 
 - select tracks and scenes
 
-- start, stop, record, delete, undo clips etc. 
+- start, stop, record, delete, duplicate, undo etc. 
 
 - arm / mute tracks
 
-- play instruments
+- tap tempo / toggle metronome / toggle automation
+
+- ... and of course, at the same time...  play midi instruments!
 
 
 
@@ -95,6 +97,6 @@ To use this script, simply copy the contents into a folder named "Beatstep_Q" wi
 
 # ...work in progress
 
-While the principal stuff is already working properly, this script is still a work-in-progress, so be prepared for some unexpected behaviour!
+While most of the functionality is already working properly, this script is still a "work-in-progress", so be prepared for some unexpected behaviour!
 
 

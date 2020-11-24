@@ -202,20 +202,20 @@ class BeatStep_custom(ArturiaControlSurface):
 
 
 
-    def receive_midi(self, midi_bytes):
-        u"""Live -> Script
-        MIDI messages are only received through this function, when explicitly
-        forwarded in 'build_midi_map'.
-        """
-        #self.send_midi(midi_bytes)
-        self.log_message(str(midi_bytes))
+    # def receive_midi(self, midi_bytes):
+    #     u"""Live -> Script
+    #     MIDI messages are only received through this function, when explicitly
+    #     forwarded in 'build_midi_map'.
+    #     """
+    #     #self.send_midi(midi_bytes)
+    #     self.log_message(str(midi_bytes))
 
-        # this part is from _Framework.ControlSurface
-        with self.component_guard():
-            self._do_receive_midi(midi_bytes)
-        # ----------
+    #     # this part is from _Framework.ControlSurface
+    #     with self.component_guard():
+    #         self._do_receive_midi(midi_bytes)
+    #     # ----------
 
 
-        # (_, note, val) = midi_bytes
-        # if note == 51 and val > 0:
-        #     self._control_component._arm_track(7)
+    #     # (_, note, val) = midi_bytes
+    #     # if note == 51 and val > 0:
+    #     #     self._control_component._arm_track(7)
