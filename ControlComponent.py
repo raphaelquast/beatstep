@@ -265,6 +265,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(3)
+            elif self._control_layer:
+                self._tap_tempo()
             elif self._shift_pressed:
                 self._duplicate_loop()
         else:
@@ -449,6 +451,9 @@ class ControlComponent(BaseComponent):
             self._parent.song().session_automation_record = False
         else:
             self._parent.song().session_automation_record = True
+
+    def _tap_tempo(self):
+        self._parent.song().tap_tempo()
 
 
     def _add_handler(self):

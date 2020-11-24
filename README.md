@@ -57,6 +57,8 @@ The stop-button serves as `shift-button` to activate the control-features.
   
   - tap `button 16` to switch to **arm / mute control**  (see `shift` + `button 16`)
   
+  - `button 12` : tap tempo
+  
   - `button 13` : toggle metronome
   
   - `button 14` : toggle session automation record
