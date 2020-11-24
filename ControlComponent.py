@@ -399,6 +399,7 @@ class ControlComponent(BaseComponent):
         # in case the button is pressed twice within 250ms, stop all clips
         if abs(time.clock() - self.__stop_clicked) <= 0.25:
             self._parent.song().stop_all_clips()
+            self._parent.song().stop_playing()
         else:
             clip_slot = self._parent.song().view.highlighted_clip_slot
             clip_slot.stop()
