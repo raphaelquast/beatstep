@@ -46,9 +46,25 @@ The stop-button serves as `shift-button` to activate the control-features.
   
   - if a clip is already present, overdub
 
-- `shift` + `button 16`: activate arm / mute control   
+---
+
+- `shift` + `button 8` : activate **parameter control** (a different layer of button-controls)
+  
+  - tap `button 8` again (without `shift`) to get back to the normal behaviour
+  
+  - tap `button 16` to switch to **arm / mute control**  (see `shift` + `button 16`)
+  
+  - `button 13` : toggle metronome
+  
+  - `button 14` : toggle session automation record
+
+---
+
+- `shift` + `button 16` : activate **arm / mute control**     (a different layer of button-controls)
   
   - tap `button 16` again (without `shift`) to get back to the normal behaviour
+  
+  - tap `button 8` to switch to **parameter control** (see `shift` + `button 8`)
   
   - the buttons in the upper row (1-7) indicate / set the **mute** status of the first 7 tracks in the red box
   

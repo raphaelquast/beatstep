@@ -14,6 +14,8 @@ class ControlComponent(BaseComponent):
 
         self._shift_pressed = False
         self._shift_fixed = False
+        self._control_layer = False
+
 
         self.npads = 7 # how many pads are there?
         self.use_tracks = [None for i in range(self.npads)]
@@ -35,6 +37,7 @@ class ControlComponent(BaseComponent):
     def _update_lights(self):
 
         if self._shift_fixed:
+            getattr(self, '_' + str(8) + '_button').send_value(0)
             getattr(self, '_' + str(16) + '_button').send_value(127)
 
             for i, track in enumerate(self.use_tracks):
@@ -58,6 +61,28 @@ class ControlComponent(BaseComponent):
                     else:
                         button_down.send_value(0)
 
+        elif self._control_layer:
+            getattr(self, '_' + str(8) + '_button').send_value(127)
+            getattr(self, '_' + str(16) + '_button').send_value(0)
+
+            used_buttons = [8, 13, 14]
+            # turn off all other lights
+            for i in range(1,17):
+                if i in used_buttons:
+                    continue
+                button = getattr(self, '_' + str(i) + '_button')
+                button.send_value(0)
+
+            if self._parent.song().metronome:
+                self._13_button.send_value(127)
+            else:
+                self._13_button.send_value(0)
+
+            if self._parent.song().session_automation_record:
+                self._14_button.send_value(127)
+            else:
+                self._14_button.send_value(0)
+
 
         elif self._shift_pressed:
             for i, track in enumerate(self.use_tracks):
@@ -75,8 +100,6 @@ class ControlComponent(BaseComponent):
                         button_up.send_value(127)
                     else:
                         button_up.send_value(0)
-
-
         else:
             # turn off all lights on shift-release
             for i in range(1, 17):
@@ -114,6 +137,23 @@ class ControlComponent(BaseComponent):
                     track.add_mute_listener(self._update_lights)
 
         self._update_lights()
+
+
+    def _add_control_listeners(self):
+        song = self._parent.song()
+
+        if not song.metronome_has_listener(self._update_lights):
+            song.add_metronome_listener(self._update_lights)
+        if not song.session_automation_record_has_listener(self._update_lights):
+            song.add_session_automation_record_listener(self._update_lights)
+
+    def _remove_control_listeners(self):
+        song = self._parent.song()
+
+        if song.metronome_has_listener(self._update_lights):
+            song.remove_metronome_listener(self._update_lights)
+        if song.session_automation_record_has_listener(self._update_lights):
+            song.remove_session_automation_record_listener(self._update_lights)
 
     ###################################################
 
@@ -181,8 +221,19 @@ class ControlComponent(BaseComponent):
             self._update_lights()
 
     def _8_listener(self, value):
-        pass
-
+        if value == 0:
+            if self._control_layer:
+                self._control_layer = False
+                self._shift_fixed = False
+                self._shift_pressed = False
+                self._update_lights()
+                self._remove_control_listeners()
+                self._remove_handler()
+            else:
+                self._shift_fixed = False
+                self._control_layer = True
+                self._add_control_listeners()
+                self._update_lights()
     ###################################################
 
     def _9_listener(self, value):
@@ -223,6 +274,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(4)
+            elif self._control_layer:
+                self._toggle_metronome()
             elif self._shift_pressed:
                 self._next_clip()
         else:
@@ -232,7 +285,9 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(5)
-            if self._shift_pressed:
+            if self._control_layer:
+                self._toggle_automation()
+            elif self._shift_pressed:
                 self._duplicate_clip()
         else:
             self._update_lights()
@@ -252,11 +307,13 @@ class ControlComponent(BaseComponent):
         if value == 0:
             if self._shift_fixed:
                 self._shift_fixed = False
+                self._control_layer = False
                 self._shift_pressed = False
                 self._update_lights()
                 self._remove_handler()
 
             else:
+                self._control_layer = False
                 self._shift_fixed = True
                 self._update_lights()
 
@@ -381,6 +438,19 @@ class ControlComponent(BaseComponent):
                 clip_slot.fire()
 
 
+    def _toggle_metronome(self):
+        if self._parent.song().metronome == True:
+            self._parent.song().metronome = False
+        else:
+            self._parent.song().metronome = True
+
+    def _toggle_automation(self):
+        if self._parent.song().session_automation_record == True:
+            self._parent.song().session_automation_record = False
+        else:
+            self._parent.song().session_automation_record = True
+
+
     def _add_handler(self):
         for i in range(1,17):
             try:
@@ -418,7 +488,7 @@ class ControlComponent(BaseComponent):
             self._shift_pressed = False
             # remove value listeners from buttons in case shift is released
             # (so that we can play instruments if shift is not pressed)
-            if not self._shift_fixed:
+            if not self._shift_fixed and not self._control_layer:
                 self._remove_handler()
         self._update_lights()
 
