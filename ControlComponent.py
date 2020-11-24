@@ -18,7 +18,7 @@ class ControlComponent(BaseComponent):
         self._shift_fixed = False
         self._control_layer = False
 
-        self._shift_color_mode = 2   # 0 = none, 1 = top row, 2 = all
+        self._shift_color_mode = 1   # 0 = none, 1 = top row, 2 = all
 
         self.npads = 7 # how many pads are there?
         self.use_tracks = [None for i in range(self.npads)]

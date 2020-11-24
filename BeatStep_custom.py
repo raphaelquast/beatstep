@@ -126,10 +126,6 @@ class BeatStep_custom(ArturiaControlSurface):
         self._control_component = ControlComponent(self)
         self._control_component.set_shift_button(self._shift_button)
 
-
-        #self._control_component.set_8_button(self._8_button)
-        #self._control_component.set_16_button(self._16_button)
-
         for i in xrange(1,17):
             getattr(self._control_component, 'set_' + str(i) + '_button'
                     )(getattr(self, '_' + str(i) + '_button'))
