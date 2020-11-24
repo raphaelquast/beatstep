@@ -20,6 +20,8 @@ Any comments / suggestions etc. are highly welcome!
 
 # Basic usage (already implemented)
 
+![](https://github.com/raphaelquast/beatstep/blob/master/assignment_01.png)
+
 ## Buttons:
 
 The stop-button serves as `shift-button` to activate the control-features.
