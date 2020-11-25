@@ -20,10 +20,14 @@ Any comments / suggestions for improvements etc. are highly welcome!
 
 ![](https://github.com/raphaelquast/beatstep/blob/master/assignment_01.png)
 
+# 
+
 # Installation
 
 To use this script, simply copy the contents into a folder named **"Beatstep_custom"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_custom** device as control-surface in the MIDI-tab of the preferences. 
 (make sure to activate both `track`and `remote` for this device!)
+
+# 
 
 # More detailed explanations on the assignments:
 
