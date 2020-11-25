@@ -1,4 +1,4 @@
-# GENERAL
+# Arturia BeatStep  +  Ableton Live 10
 
 This is a **MIDI Remote Script** for **Ableton Live 10** and the **Arturia Beatstep** controller.
 It is intended to provide **full control** over **Ableton Live** directly via the **Beatstep** controller e.g.:
