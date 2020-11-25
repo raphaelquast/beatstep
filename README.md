@@ -1,21 +1,17 @@
 # Arturia BeatStep  +  Ableton Live 10
 
-This is a **MIDI Remote Script** for **Ableton Live 10** and the **Arturia Beatstep** controller.
-It is intended to provide **full control** over **Ableton Live** directly via the **Beatstep** controller e.g.:
+This is a **MIDI Remote Script** for **Ableton Live 10** and the **Arturia BeatStep** controller.  
+It is intended to provide **full control** over **Ableton Live** directly via the **BeatStep** controller e.g.:
 
-- select, add, duplicate and delete tracks and scenes
+- arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ... 
 
-- start, stop, record, delete, duplicate, overdub cips etc. 
+- get indications on the status of tracks and scenes via button-lights
 
-- arm / mute /solo tracks
+- ... and of course, at the same time ...  
+  use the controller to play midi instruments with access to the **full range** of midi-notes!
 
-- undo / redo steps 
 
-- get indications on the status of Live via button-lights
 
-- ... and of course, at the same time...  use the controller to play midi instruments!
-
-Feel free to use/adapt this script as you like! 
 Any comments / suggestions for improvements etc. are highly welcome!    
 
 > Just drop an Issue and I'll see what I can do!
@@ -44,9 +40,15 @@ The `transpose-slider` transposes the note-assignments of the buttons.
 
 - `encoder 16` : scene selection (up-down)
 
+- `encoder 5, 6, 13, 14` : send A, B, C, D of selected track
+
+- `encoder 7` : volume of selected track
+
+- `encoder 15` : pan of selected track
+
 --- 
 
-#### If **shift (e.g. the stop-button)** is pressed:
+### If **shift (e.g. the stop-button)** is pressed:
 
 The lights in the first row indicate the track-arm status: 
 `blue` if the track can be armed and is **not **muted
@@ -60,7 +62,9 @@ The lights in the first row indicate the track-arm status:
 The lights in the second row are just there to help remembering the assignments.  
 (you can turn the lights on/off ! >> check `"scene control" + button 7`)
 
-The button-assignments are as follows:
+
+
+The assignments are as follows:
 
 - `shift` + `button 1-7`:  select track 1-7 of the currently focussed slots (red box)
   
@@ -90,9 +94,19 @@ The button-assignments are as follows:
 
 - `shift` + `button 16` : activate **track control** (see below)
 
+- 
+
+- `encoder 8` : track-selection (left-right)
+
+- `encoder 16` : scene selection (up-down)
+
+- `encoder 7` : volume of master-track
+
+- `encoder 15` : pan of master-track
+
 ---
 
-#### If "song control" is active
+### If "song control" is active
 
 Most lights are simply there to help remembering the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live 
@@ -108,6 +122,10 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 - `magenta` for only the top-row if `shift` is pressed
 
 - `red` for all lights if `shift` is pressed
+
+
+
+The assignments are as follows:
 
 - `button 8` : get back to the normal behaviour (e.g. deactivate song control)
 
@@ -134,18 +152,20 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 - `button 13` : toggle metronome
 
 - `button 14` : toggle session automation record
-
-- the top-row of the encoders (`1-7`) control "send A"
-
-- the bottom-row of the encoders (`9-15`) control "send B"
+  
+  
 
 - `encoder 8` : track-selection (left-right)
 
 - `encoder 16` : scene selection (up-down)
 
+- the top-row of the encoders (`1-7`) control "send A"
+
+- the bottom-row of the encoders (`9-15`) control "send B"
+
 ---
 
-#### If "track control" is active
+### If "track control" is active
 
 The lights in the top-row indicate the mute / solo status of the corresponding track.
 
@@ -162,6 +182,10 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 - `red` if the track is armed
 
 - `off` if the track is unarmed
+  
+  
+
+The assignments are as follows:
 
 - `button 8` : switch to **song control** (see above)
 
@@ -173,12 +197,14 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 - the buttons in the lower row (9-15) indicate / set the **arm** status of the first 7 tracks in the red box
 
-- the top-row of the encoders (`1-7`) control the "track volume"
 
-- the bottom-row of the encoders (`9-15`) control the "track pan"
 
 - `encoder 8` : track-selection (left-right)
 
 - `encoder 16` : scene selection (up-down)
+
+- the top-row of the encoders (`1-7`) control the "track volume"
+
+- the bottom-row of the encoders (`9-15`) control the "track pan"
 
 ---
