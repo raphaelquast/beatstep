@@ -677,6 +677,8 @@ class ControlComponent(BaseComponent):
             self._track_volume(value, trackid)
         elif self._control_layer:
             self._track_send_x(value, trackid, 0)
+        else:
+            self._track_send_x(value, -1, 0)
 
     def _6_encoder_listener(self, value):
         trackid = 5
@@ -684,13 +686,19 @@ class ControlComponent(BaseComponent):
             self._track_volume(value, trackid)
         elif self._control_layer:
             self._track_send_x(value, trackid, 0)
+        else:
+            self._track_send_x(value, -1, 1)
 
     def _7_encoder_listener(self, value):
         trackid = 6
         if self._shift_fixed:
             self._track_volume(value, trackid)
         elif self._control_layer:
-            self._track_send_x(value, trackid, 0)
+            self._track_send_x(value, trackid, 1)
+        elif self._shift_pressed:
+            self._track_volume(value, -2)
+        else:
+            self._track_volume(value, -1)
 
     # def _8_encoder_listener(self, value):
     #     pass
@@ -730,7 +738,9 @@ class ControlComponent(BaseComponent):
         if self._shift_fixed:
             self._track_pan(value, trackid)
         elif self._control_layer:
-            self._track_send_x(value, trackid, 1)
+            self._track_send_x(value, trackid, 2)
+        else:
+            self._track_send_x(value, -1, 2)
 
     def _14_encoder_listener(self, value):
         trackid = 5
@@ -738,6 +748,8 @@ class ControlComponent(BaseComponent):
             self._track_pan(value, trackid)
         elif self._control_layer:
             self._track_send_x(value, trackid, 1)
+        else:
+            self._track_send_x(value, -1, 3)
 
     def _15_encoder_listener(self, value):
         trackid = 6
@@ -745,13 +757,13 @@ class ControlComponent(BaseComponent):
             self._track_pan(value, trackid)
         elif self._control_layer:
             self._track_send_x(value, trackid, 1)
-
+        elif self._shift_pressed:
+            self._track_pan(value, -2)
+        else:
+            self._track_pan(value, -1)
     # def _16_encoder_listener(self, value):
     #     pass
     #########################################################
-
-
-
 
 
 
@@ -759,8 +771,11 @@ class ControlComponent(BaseComponent):
         accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
         last_access = abs(time.clock() - getattr(self, accessname, 0))
 
+        if track_id == -1:
+            track = self._parent.song().view.selected_track
+        else:
+            track = self.use_tracks[track_id]
 
-        track = self.use_tracks[track_id]
         if track is not None:
             sends = track.mixer_device.sends
 
@@ -781,7 +796,13 @@ class ControlComponent(BaseComponent):
 
 
     def _track_volume(self, value, track_id=0):
-        track = self.use_tracks[track_id]
+        if track_id == -1:
+            track = self._parent.song().view.selected_track
+        elif track_id == -2:
+            track = self._parent.song().master_track
+        else:
+            track = self.use_tracks[track_id]
+
         if track is not None:
             prev_value = track.mixer_device.volume.value
             if value < 65:
@@ -791,7 +812,13 @@ class ControlComponent(BaseComponent):
 
 
     def _track_pan(self, value, track_id=0):
-        track = self.use_tracks[track_id]
+        if track_id == -1:
+            track = self._parent.song().view.selected_track
+        elif track_id == -2:
+            track = self._parent.song().master_track
+        else:
+            track = self.use_tracks[track_id]
+
         if track is not None:
             prev_value = track.mixer_device.panning.value
             self._parent.show_message(str(prev_value))
