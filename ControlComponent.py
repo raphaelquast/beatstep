@@ -814,14 +814,19 @@ class ControlComponent(BaseComponent):
         self._transpose(value)
 
 
-    def _transpose(self, value):
+    def _transpose(self, value, interval=4):
+        tval = self.__transpose_val
         if value < 64:
-            self.__transpose_val = (self.__transpose_val + 1)%(127 - 16)
+            if tval <= 126-15:
+                tval = (tval + 1)
         else:
-            self.__transpose_val = (self.__transpose_val - 1)%(127 - 16)
+            if tval > 0:
+                tval = (tval - 1)
 
+        self.__transpose_val = tval
 
-        self._set_notes(self.__transpose_val)
+        if tval%interval == 0:
+            self._set_notes(tval)
 
 
     def _set_notes(self, start):
@@ -829,15 +834,12 @@ class ControlComponent(BaseComponent):
 
         # set midi-notes of buttons to start + (0-15)
         for i in xrange(16):
-
-            decval = int(str((start + i)%127), base=16)
             decval = (start + i)%127
 
             if i > 7:
                 button = 112 + i%8
             else:
                 button = 120 + i%8
-
 
             msg = (240, 0, 32, 107, 127, 66, 2, 0) + (3, button, decval, 247)
             self._parent._send_midi(msg)
