@@ -18,7 +18,7 @@ Any comments / suggestions for improvements etc. are highly welcome!
 
 # Summary of Assignments
 
-![](assignment_01.png)
+![](/assignment_01.png)
 
 # Installation
 
