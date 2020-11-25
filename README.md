@@ -18,9 +18,7 @@ Any comments / suggestions for improvements etc. are highly welcome!
 
 # Summary of Assignments
 
-![](https://github.com/raphaelquast/beatstep/blob/master/assignment_01.png)
-
-# 
+![](assignment_01.png)
 
 # Installation
 
