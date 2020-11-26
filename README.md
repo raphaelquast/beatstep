@@ -25,7 +25,7 @@ To use this script, simply copy the contents into a folder named **"Beatstep_cus
 # More detailed explanations on the assignments:
 
 The script will set all encoders and buttons to send messages on the Midi-channel 10.  
-To indicate a successful setup, the top-row will light up red and blue.
+To indicate a successful setup, the top-row will light up red and blue (about 2 seconds after plugin).
 
 ## Buttons:
 
