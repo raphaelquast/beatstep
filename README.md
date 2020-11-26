@@ -20,7 +20,21 @@ Any comments / suggestions for improvements etc. are highly welcome!
 To use this script, simply copy the contents into a folder named **"Beatstep_custom"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_custom** device as control-surface in the MIDI-tab of the preferences. 
 (make sure to activate both `track`and `remote` for this device!)
 
-# 
+# Thanks to
+
+
+
+- [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
+
+- Julien Bayle for the awesome [PythonLiveAPI_documentation](https://julienbayle.studio/PythonLiveAPI_documentation/) and some more info's ( [here](https://julienbayle.studio/ableton-live-midi-remote-scripts/) )
+
+- Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
+
+
+
+
+
+---
 
 # More detailed explanations on the assignments:
 
@@ -199,11 +213,3 @@ The assignments are as follows:
 - the bottom-row of the encoders (`9-15`) control "send B"
 
 ---
-
-# Thanks to
-
-- [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
-
-- Julien Bayle for the awesome [PythonLiveAPI_documentation](https://julienbayle.studio/PythonLiveAPI_documentation/) and some more info's ( [here](https://julienbayle.studio/ableton-live-midi-remote-scripts/) )
-
-- Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
