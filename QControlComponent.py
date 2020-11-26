@@ -6,9 +6,9 @@ from itertools import cycle
 class QControlComponent(BaseComponent):
     def __init__(self, parent):
         self.__selected_track = -99
-        self.__stop_clicked = 0
-        self.__shift_fixed_clicked = 0
-        self.__control_layer_clicked = 0
+        self.__stop_clicked = -99
+        self.__shift_fixed_clicked = -99
+        self.__control_layer_clicked = -99
         self.__transpose_val = 36
         self.__transpose_start = 36
 
@@ -137,7 +137,6 @@ class QControlComponent(BaseComponent):
 
 
         elif self._shift_pressed:
-
             if self._shift_color_mode == 0:
                 # turn off all lights
                 for i in range(1, 17):
@@ -163,16 +162,20 @@ class QControlComponent(BaseComponent):
                         self._set_color(button_up, 'black')
 
                 if self._shift_color_mode == 1:
-                    for i in range(9, 17):
-                        if i - self.npads == self.selected_track_index%self.npads + 2:
-                            # indicate selected track
-                            if self.selected_track.has_audio_input:
-                                self._set_color(i, 'magenta')
-                            else:
-                                self._set_color(i, 'blue')
-                        else:
-                            # turn off all otherlower buttons
+                    if self.selected_track_index == None:
+                        for i in range(9, 17):
                             self._set_color(i, 'black')
+                    else:
+                        for i in range(9, 17):
+                            if i - self.npads == self.selected_track_index%self.npads + 2:
+                                # indicate selected track
+                                if self.selected_track.has_audio_input:
+                                    self._set_color(i, 'magenta')
+                                else:
+                                    self._set_color(i, 'blue')
+                            else:
+                                # turn off all otherlower buttons
+                                self._set_color(i, 'black')
 
 
                 # indicate control-buttons
@@ -203,15 +206,21 @@ class QControlComponent(BaseComponent):
 
     def on_selected_track_changed(self):
         '''
-        update the tracks to focus on the 8 relevant tracks
+        update the tracks to focus on the 7 relevant tracks
         '''
         try:
             all_tracks = self._parent.song().tracks
             selected_track = self._parent.song().view.selected_track
             current_index = list(all_tracks).index(selected_track)
             slotid = int(current_index / self.npads) * (self.npads)
+
+            self.selected_track = selected_track
+            self.selected_track_index = current_index
         except:
             # there will be an error in case a return or master-track is selected
+            self.selected_track = None
+            self.selected_track_index = None
+            self._update_lights()
             return
 
 
@@ -230,8 +239,6 @@ class QControlComponent(BaseComponent):
                 if not track.mute_has_listener(self._update_lights):
                     track.add_mute_listener(self._update_lights)
 
-        self.selected_track = selected_track
-        self.selected_track_index = current_index
 
         self._update_lights()
 
@@ -437,7 +444,6 @@ class QControlComponent(BaseComponent):
         if value == 0:
 
             if abs(time.clock() - self.__shift_fixed_clicked) <= 0.25:
-                self._parent.show_message('doubleclicked')
                 self.__control_layer_permanent = True
                 self._shift_fixed = True
                 self._control_layer = False
@@ -499,17 +505,20 @@ class QControlComponent(BaseComponent):
             pass
 
     def _duplicate_track(self):
-        self._parent.song().duplicate_track(self.selected_track_index)
+        if self.selected_track_index is not None:
+            self._parent.song().duplicate_track(self.selected_track_index)
 
     def _delete_track(self):
-        self._parent.song().delete_track(self.selected_track_index)
+        if self.selected_track_index is not None:
+            self._parent.song().delete_track(self.selected_track_index)
 
     def _duplicate_scene(self):
-        self._parent.song().duplicate_scene(self.selected_scene_index)
+        if self.selected_scene_index is not None:
+            self._parent.song().duplicate_scene(self.selected_scene_index)
 
     def _delete_scene(self):
-        self._parent.song().delete_scene(self.selected_scene_index)
-
+        if self.selected_scene_index is not None:
+            self._parent.song().delete_scene(self.selected_scene_index)
 
     def _delete_clip(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
@@ -869,11 +878,10 @@ class QControlComponent(BaseComponent):
 
         if track is not None:
             prev_value = track.mixer_device.panning.value
-            self._parent.show_message(str(prev_value))
             if value < 65:
-                track.mixer_device.panning.value = round(prev_value + .01, 2)
+                track.mixer_device.panning.value = round(prev_value + .05, 2)
             elif value > 65 :
-                track.mixer_device.panning.value = round(prev_value - .01, 2)
+                track.mixer_device.panning.value = round(prev_value - .05, 2)
 
 
     def _toggle_shift_lights(self):
