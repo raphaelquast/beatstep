@@ -157,10 +157,22 @@ class QControlComponent(BaseComponent):
                             self._set_color(button_up, 'magenta')
                         else:
                             self._set_color(button_up, 'red')
-                    elif not (track.mute or track.muted_via_solo):
+                    elif track.solo:
                         self._set_color(button_up, 'blue')
                     else:
                         self._set_color(button_up, 'black')
+
+                if self._shift_color_mode == 1:
+                    for i in range(9, 17):
+                        if i - self.npads == self.selected_track_index%self.npads + 2:
+                            # indicate selected track
+                            if self.selected_track.has_audio_input:
+                                self._set_color(i, 'magenta')
+                            else:
+                                self._set_color(i, 'blue')
+                        else:
+                            # turn off all otherlower buttons
+                            self._set_color(i, 'black')
 
 
                 # indicate control-buttons
@@ -174,14 +186,6 @@ class QControlComponent(BaseComponent):
                     self._set_color(14, 'blue')
                     self._set_color(15, 'red')
                     self._set_color(16, 'magenta')
-                else:
-                    for i in range(9, 17):
-                        if i - self.npads == self.selected_track_index%self.npads + 2:
-                            # indicate selected track
-                            self._set_color(i, 'magenta')
-                        else:
-                            # turn off all otherlower buttons
-                            self._set_color(i, 'black')
 
 
         elif not self._shift_fixed and not self._control_layer:

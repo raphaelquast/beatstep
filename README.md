@@ -51,15 +51,16 @@ The `transpose-slider` transposes the note-assignments of the buttons.
 ### If **shift** is pressed:
 
 The lights in the first row indicate the track-arm status: 
-`blue` if the track can be armed and is **not **muted
 
-- `red` if the track is armed and **not** muted 
+- `red` if the track is **armed** and **not muted**
+  
+  - `magenta` if the track is armed but muted
 
-- `magenta` if the track is armed but muted
+- `blue` if the track is set to **solo**
 
 - `off` if the track is muted and **not** armed
 
-The lights in the second indicate the currently activated clip.  
+The lights in the second indicate the currently activated clip.  (magenta for midi, blue for audio)  
 (you can change this behaviour or turn the lights off! >> check `"scene control" + button 7`)
 
 The assignments are as follows:
