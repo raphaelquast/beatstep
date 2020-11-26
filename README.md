@@ -59,8 +59,8 @@ The lights in the first row indicate the track-arm status:
 
 - `off` if the track is muted and **not** armed
 
-The lights in the second row are just there to help remembering the assignments.  
-(you can turn the lights on/off ! >> check `"scene control" + button 7`)
+The lights in the second indicate the currently activated clip.  
+(you can change this behaviour or turn the lights off! >> check `"scene control" + button 7`)
 
 The assignments are as follows:
 
