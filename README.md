@@ -7,8 +7,6 @@ This is a **MIDI Remote Script** for **Ableton Live 10** and the **Arturia BeatS
 - ... and of course, at the same time ...  
   use the controller to play midi instruments with access to the **full range** of midi-notes!
 
-
-
 Any comments / suggestions for improvements etc. are highly welcome!    
 
 > Just drop an Issue and I'll see what I can do!
@@ -28,9 +26,9 @@ To use this script, simply copy the contents into a folder named **"Beatstep_cus
 
 ## Buttons:
 
-The stop-button serves as `shift-button` to activate the control-features.  
+The `shift-button` is used to activate the control-features.  
 `shift` + `button 8` and `shift` + `button 16` is used to activate different control-layers.   
-(the control-layers remain activated until the button is pressed again!)  
+(**double-tap**  to make the control-layers remain activated until the activation button is pressed again!)  
 The `transpose-slider` transposes the note-assignments of the buttons.
 
 ## Encoder:
@@ -47,7 +45,7 @@ The `transpose-slider` transposes the note-assignments of the buttons.
 
 --- 
 
-### If **shift (e.g. the stop-button)** is pressed:
+### If **shift** is pressed:
 
 The lights in the first row indicate the track-arm status: 
 `blue` if the track can be armed and is **not **muted
@@ -60,8 +58,6 @@ The lights in the first row indicate the track-arm status:
 
 The lights in the second row are just there to help remembering the assignments.  
 (you can turn the lights on/off ! >> check `"scene control" + button 7`)
-
-
 
 The assignments are as follows:
 
@@ -105,6 +101,46 @@ The assignments are as follows:
 
 ---
 
+### If "track control" is active
+
+The lights in the top-row indicate the mute / solo status of the corresponding track.
+
+- `blue` for a track that is set to solo
+
+- `magenta` for a unmuted track
+
+- `red` if the track is both solo and muted
+
+- `off` if the track is muted and not solo
+
+The lights in the bottom-row indicate the arm status of the corresponding track.
+
+- `red` if the track is armed
+
+- `off` if the track is unarmed
+
+The assignments are as follows:
+
+- `button 8` : switch to **song control** (see above)
+
+- `button 16` : get back to the normal behaviour (e.g. deactivate track control)
+
+- the buttons in the upper row (1-7) indicate / set the **mute** status of the first 7 tracks in the red box
+  
+  - holding `shift` while pressing the button will **solo** the corresponding track if **track control** is activated permanently (e.g. if the activation-button has been double-tapped)
+
+- the buttons in the lower row (9-15) indicate / set the **arm** status of the first 7 tracks in the red box
+
+- `encoder 8` : track-selection (left-right)
+
+- `encoder 16` : scene selection (up-down)
+
+- the top-row of the encoders (`1-7`) control the "track volume"
+
+- the bottom-row of the encoders (`9-15`) control the "track pan"
+
+---
+
 ### If "song control" is active
 
 Most lights are simply there to help remembering the button-assignments.
@@ -121,8 +157,6 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 - `magenta` for only the top-row if `shift` is pressed
 
 - `red` for all lights if `shift` is pressed
-
-
 
 The assignments are as follows:
 
@@ -151,8 +185,6 @@ The assignments are as follows:
 - `button 13` : toggle metronome
 
 - `button 14` : toggle session automation record
-  
-  
 
 - `encoder 8` : track-selection (left-right)
 
@@ -164,46 +196,10 @@ The assignments are as follows:
 
 ---
 
-### If "track control" is active
+# Thanks to
 
-The lights in the top-row indicate the mute / solo status of the corresponding track.
+- [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
 
-- `blue` for a track that is set to solo
+- Julien Bayle for the awesome [PythonLiveAPI_documentation](https://julienbayle.studio/PythonLiveAPI_documentation/) and some more info's ( [here](https://julienbayle.studio/ableton-live-midi-remote-scripts/) )
 
-- `magenta` for a unmuted track
-
-- `red` if the track is both solo and muted
-
-- `off` if the track is muted and not solo 
-
-The lights in the bottom-row indicate the arm status of the corresponding track.
-
-- `red` if the track is armed
-
-- `off` if the track is unarmed
-  
-  
-
-The assignments are as follows:
-
-- `button 8` : switch to **song control** (see above)
-
-- `button 16` : get back to the normal behaviour (e.g. deactivate track control)
-
-- the buttons in the upper row (1-7) indicate / set the **mute** status of the first 7 tracks in the red box
-  
-  - holding `shift` while pressing the button will **solo** the corresponding track
-
-- the buttons in the lower row (9-15) indicate / set the **arm** status of the first 7 tracks in the red box
-
-
-
-- `encoder 8` : track-selection (left-right)
-
-- `encoder 16` : scene selection (up-down)
-
-- the top-row of the encoders (`1-7`) control the "track volume"
-
-- the bottom-row of the encoders (`9-15`) control the "track pan"
-
----
+- Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)

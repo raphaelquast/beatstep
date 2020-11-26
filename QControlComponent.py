@@ -1,21 +1,31 @@
 from BaseComponent import BaseComponent
 import time
+from itertools import cycle
 
 
-class ControlComponent(BaseComponent):
+class QControlComponent(BaseComponent):
     def __init__(self, parent):
         self.__selected_track = -99
         self.__stop_clicked = 0
+        self.__shift_fixed_clicked = 0
+        self.__control_layer_clicked = 0
         self.__transpose_val = 36
         self.__transpose_start = 36
-
-        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_play_note', '_transpose_encoder']
-
-        super(ControlComponent, self).__init__(parent, buttonnames)
 
         self._shift_pressed = False
         self._shift_fixed = False
         self._control_layer = False
+        self.__control_layer_permanent = False
+
+        self.selected_track = None
+        self.selected_track_index = 0
+        self.selected_scene = None
+        self.selected_scene_index = 0
+
+
+        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_stop', '_transpose_encoder']
+
+        super(QControlComponent, self).__init__(parent, buttonnames)
 
         self._shift_color_mode = 1   # 0 = none, 1 = top row, 2 = all
 
@@ -23,6 +33,8 @@ class ControlComponent(BaseComponent):
         self.use_tracks = [None for i in range(self.npads)]
 
         self._parent.song().view.add_selected_track_listener(self.on_selected_track_changed)
+        self._parent.song().view.add_selected_scene_listener(self.on_selected_scene_changed)
+
         self._parent.song().add_tracks_listener(self.on_selected_track_changed)
 
         # call this once to initialize "self.use_tracks"
@@ -40,6 +52,19 @@ class ControlComponent(BaseComponent):
         msg = (240, 0, 32, 107, 127, 66, 2, 0, 16, hexbutton, hexcolor, 247)
 
         self._parent._send_midi(msg)
+
+
+    def _blink(self, condition=lambda: False, buttonid=1, timeout=5,
+               colors=['red', 'black']):
+        c = cycle(colors)
+        def callback():
+            if condition():
+                self._set_color(buttonid, next(c))
+                self._parent.schedule_message(timeout, callback)
+            else:
+                self._set_color(buttonid, 'black')
+        # give the condition some time (1 tick) to fulfil itself
+        self._parent.schedule_message(1, callback)
 
 
     def _update_lights(self):
@@ -118,7 +143,6 @@ class ControlComponent(BaseComponent):
                 for i in range(1, 17):
                     self._set_color(i, 'black')
             else:
-
                 # highlite track mute and arm status
                 for i, track in enumerate(self.use_tracks):
                     button_up = i + 1
@@ -138,6 +162,7 @@ class ControlComponent(BaseComponent):
                     else:
                         self._set_color(button_up, 'black')
 
+
                 # indicate control-buttons
                 if self._shift_color_mode == 2:
                     self._set_color(8, 'magenta')
@@ -151,8 +176,12 @@ class ControlComponent(BaseComponent):
                     self._set_color(16, 'magenta')
                 else:
                     for i in range(9, 17):
-                        # turn off all lower buttons
-                        self._set_color(i, 'black')
+                        if i - self.npads == self.selected_track_index%self.npads + 2:
+                            # indicate selected track
+                            self._set_color(i, 'magenta')
+                        else:
+                            # turn off all otherlower buttons
+                            self._set_color(i, 'black')
 
 
         elif not self._shift_fixed and not self._control_layer:
@@ -160,6 +189,13 @@ class ControlComponent(BaseComponent):
             for i in range(1, 17):
                 self._set_color(i, 'black')
 
+    def on_selected_scene_changed(self):
+        selected_scene = self._parent.song().view.selected_scene
+        all_scenes = self._parent.song().scenes
+        current_index = list(all_scenes).index(selected_scene)
+
+        self.selected_scene = selected_scene
+        self.selected_scene_index = current_index
 
     def on_selected_track_changed(self):
         '''
@@ -189,6 +225,9 @@ class ControlComponent(BaseComponent):
                     track.add_arm_listener(self._update_lights)
                 if not track.mute_has_listener(self._update_lights):
                     track.add_mute_listener(self._update_lights)
+
+        self.selected_track = selected_track
+        self.selected_track_index = current_index
 
         self._update_lights()
 
@@ -266,6 +305,8 @@ class ControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_solo_track(5)
+            elif self._control_layer:
+                self._toggle_detail_clip_view()
             elif self._shift_pressed:
                 self._select_track(5)
         else:
@@ -284,21 +325,32 @@ class ControlComponent(BaseComponent):
 
     def _8_listener(self, value):
         if value == 0:
-            if self._control_layer:
-                self._control_layer = False
-                self._shift_fixed = False
-                self._shift_pressed = False
-                # transpose notes back to last set transpose-val
-                self._set_notes(self.__transpose_val)
-                self._update_lights()
-                self._remove_control_listeners()
-                self._remove_handler()
-
-            else:
+            if abs(time.clock() - self.__control_layer_clicked) <= 0.25:
+                self.__control_layer_permanent = True
                 self._shift_fixed = False
                 self._control_layer = True
-                self._add_control_listeners()
                 self._update_lights()
+                return
+            else:
+                self.__control_layer_permanent = False
+
+                if self._control_layer:
+                    self._control_layer = False
+                    self._shift_fixed = False
+                    self._shift_pressed = False
+                    # transpose notes back to last set transpose-val
+                    self._set_notes(self.__transpose_val)
+                    self._update_lights()
+                    self._remove_control_listeners()
+                    self._remove_handler()
+
+                else:
+                    self._shift_fixed = False
+                    self._control_layer = True
+                    self._add_control_listeners()
+                    self._update_lights()
+
+            self.__control_layer_clicked = time.clock()
     ###################################################
 
     def _9_listener(self, value):
@@ -379,18 +431,31 @@ class ControlComponent(BaseComponent):
 
     def _16_listener(self, value):
         if value == 0:
-            if self._shift_fixed:
-                self._shift_fixed = False
-                self._control_layer = False
-                self._shift_pressed = False
-                # transpose notes back to last set transpose-val
-                self._set_notes(self.__transpose_val)
-                self._update_lights()
-                self._remove_handler()
-            else:
-                self._control_layer = False
+
+            if abs(time.clock() - self.__shift_fixed_clicked) <= 0.25:
+                self._parent.show_message('doubleclicked')
+                self.__control_layer_permanent = True
                 self._shift_fixed = True
+                self._control_layer = False
                 self._update_lights()
+                return
+            else:
+                self.__control_layer_permanent = False
+
+                if self._shift_fixed:
+                    self._shift_fixed = False
+                    self._control_layer = False
+                    self._shift_pressed = False
+                    # transpose notes back to last set transpose-val
+                    self._set_notes(self.__transpose_val)
+                    self._update_lights()
+                    self._remove_handler()
+                else:
+                    self._control_layer = False
+                    self._shift_fixed = True
+                    self._update_lights()
+
+            self.__shift_fixed_clicked = time.clock()
 
     ###################################################
 
@@ -403,6 +468,23 @@ class ControlComponent(BaseComponent):
                 self._parent.song().session_record = True
         else:
             clip_slot.fire()
+            self._blink_fire_record(clip_slot, 15)
+
+    def _blink_fire_record(self, clip_slot, buttonid=1):
+        c = cycle(['red', 'black'])
+        def callback():
+            if clip_slot.is_triggered:
+                self._set_color(buttonid, next(c))
+                self._parent.schedule_message(1, callback)
+            elif clip_slot.is_recording:
+                self._set_color(buttonid, 'red')
+                self._parent.schedule_message(20, lambda: self._set_color(buttonid, 'black'))
+            else:
+                self._set_color(buttonid, 'black')
+
+        # give the condition some time (1 tick) to fulfil itself
+        self._parent.schedule_message(1, callback)
+
 
     def _duplicate_loop(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
@@ -413,36 +495,16 @@ class ControlComponent(BaseComponent):
             pass
 
     def _duplicate_track(self):
-
-        selected_track = self._parent.song().view.selected_track
-        all_tracks = self._parent.song().tracks
-        current_index = list(all_tracks).index(selected_track)
-
-        self._parent.song().duplicate_track(current_index)
+        self._parent.song().duplicate_track(self.selected_track_index)
 
     def _delete_track(self):
-
-        selected_track = self._parent.song().view.selected_track
-        all_tracks = self._parent.song().tracks
-        current_index = list(all_tracks).index(selected_track)
-
-        self._parent.song().delete_track(current_index)
+        self._parent.song().delete_track(self.selected_track_index)
 
     def _duplicate_scene(self):
-
-        selected_scene = self._parent.song().view.selected_scene
-        all_scenes = self._parent.song().scenes
-        current_index = list(all_scenes).index(selected_scene)
-
-        self._parent.song().duplicate_scene(current_index)
+        self._parent.song().duplicate_scene(self.selected_scene_index)
 
     def _delete_scene(self):
-
-        selected_scene = self._parent.song().view.selected_scene
-        all_scenes = self._parent.song().scenes
-        current_index = list(all_scenes).index(selected_scene)
-
-        self._parent.song().delete_scene(current_index)
+        self._parent.song().delete_scene(self.selected_scene_index)
 
 
     def _delete_clip(self):
@@ -538,28 +600,10 @@ class ControlComponent(BaseComponent):
                 track.solo = True
 
     def _mute_solo_track(self, trackid):
-        if self._shift_pressed:
+        if self._shift_pressed and self.__control_layer_permanent:
             self._solo_track(trackid)
         else:
             self._mute_track(trackid)
-
-
-
-    def _fire_clip(self, padid, offset=0):
-        selected_track = self._parent.song().view.selected_track
-        all_tracks = self._parent.song().tracks
-        current_index = list(all_tracks).index(selected_track)
-        slotid = int(current_index / self.npads) * (self.npads - 1)
-
-        selectd_scene = self._parent.song().view.selected_scene
-        all_scenes = list(self._parent.song().scenes)
-        scene_index = all_scenes.index(selectd_scene)
-
-        if len(all_scenes) > scene_index + offset:
-            if len(all_tracks) > slotid + padid:
-                clip_slot = all_scenes[scene_index + offset].clip_slots[slotid + padid]
-
-                clip_slot.fire()
 
 
     def _toggle_metronome(self):
@@ -602,34 +646,34 @@ class ControlComponent(BaseComponent):
                 pass
 
 
-    def _shift_listener(self, value):
-        self.__selected_track = -99
-
-
-        if value == 127:
-            # transpose notes to start-values
-            self._set_notes(self.__transpose_start)
-
-
-            self._shift_pressed = True
-
+    def _stop_listener(self, value):
+        if value > 0:
             # in case the currently selected clip is recording, turn off overdub
             # (to be able to stop overdubbing with the stop-button)
             clip_slot = self._parent.song().view.highlighted_clip_slot
             if clip_slot.is_recording:
                 if self._parent.song().session_record == True:
                     self._parent.song().session_record = False
-                # blink red to indicate a record-stop, don't do anything else
-                self._set_color(15, 'red')
-                time.sleep(0.1)
+            elif clip_slot.is_playing:
+                clip_slot.stop()
 
-            self._update_lights()
+        self._update_lights()
+
+
+    def _shift_listener(self, value):
+        self.__selected_track = -99
+
+        if value == 127:
+            # transpose notes to start-values
+            self._set_notes(self.__transpose_start)
+            self._shift_pressed = True
             # add value listeners to buttons in case shift is pressed
             self._add_handler()
         else:
-
             self._shift_pressed = False
-            self._update_lights()
+            if not self.__control_layer_permanent:
+                self._shift_fixed = False
+                self._control_layer = False
 
             # remove value listeners from buttons in case shift is released
             # (so that we can play instruments if shift is not pressed)
@@ -637,8 +681,8 @@ class ControlComponent(BaseComponent):
                 self._remove_handler()
                 # transpose notes back to last set transpose-val
                 self._set_notes(self.__transpose_val)
-
-
+                # always update lights on shift release
+        self._update_lights()
 
 
     #########################################################
@@ -833,10 +877,6 @@ class ControlComponent(BaseComponent):
         self._update_lights()
 
 
-    def _play_note_listener(self, value):
-        self._update_lights()
-
-
     def _transpose_encoder_listener(self, value):
         self._transpose(value)
 
@@ -857,8 +897,7 @@ class ControlComponent(BaseComponent):
 
 
     def _set_notes(self, start):
-        self._parent.show_message('transposing from  ' + str(start))
-
+        #self._parent.show_message('transposing from  ' + str(start))
         # set midi-notes of buttons to start + (0-15)
         for i in xrange(16):
             decval = (start + i)%127
