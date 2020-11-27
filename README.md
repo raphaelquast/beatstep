@@ -22,17 +22,11 @@ To use this script, simply copy the contents into a folder named **"Beatstep_cus
 
 # Thanks to
 
-
-
 - [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
 
 - Julien Bayle for the awesome [PythonLiveAPI_documentation](https://julienbayle.studio/PythonLiveAPI_documentation/) and some more info's ( [here](https://julienbayle.studio/ableton-live-midi-remote-scripts/) )
 
 - Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
-
-
-
-
 
 ---
 
@@ -46,9 +40,11 @@ To indicate a successful setup, the top-row will light up red and blue (about 2 
 The `shift-button` is used to activate the control-features.  
 `shift` + `button 8` and `shift` + `button 16` is used to activate different control-layers.   
 (**double-tap**  to make the control-layers remain activated until the activation button is pressed again!)  
-The `transpose-slider` transposes the note-assignments of the buttons.
 
 ## Encoder:
+
+The `transpose-slider` transposes the note-assignments of the buttons.
+(a red button-colour indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc. )
 
 - `encoder 8` : track-selection (left-right)
 

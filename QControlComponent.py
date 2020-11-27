@@ -890,7 +890,8 @@ class QControlComponent(BaseComponent):
 
 
     def _transpose_encoder_listener(self, value):
-        self._transpose(value)
+        if not self._shift_fixed and not self._control_layer and not self._shift_pressed:
+            self._transpose(value)
 
 
     def _transpose(self, value, interval=4):
@@ -905,8 +906,25 @@ class QControlComponent(BaseComponent):
         self.__transpose_val = tval
 
         if tval%interval == 0:
+            self._parent.show_message(str(tval))
             self._set_notes(tval)
 
+            # ---------------
+            # indicate the transposed note via button lights
+            buttonid = tval/interval
+            usebuttons = [1,2,3,4,5,6,9,10,11,12,13,14]
+            b = usebuttons[int(buttonid%len(usebuttons))]
+            if buttonid%3 == 0:
+                # blink red if lower left button is C0, C1, C2 etc.
+                self._set_color(b, 'red')
+            else:
+                self._set_color(b, 'blue')
+            def turnofflight_callback(b, color):
+                def callback():
+                        self._set_color(b, color)
+                return callback
+            self._parent.schedule_message(2, turnofflight_callback(b, 'black'))
+            # -------------
 
     def _set_notes(self, start):
         #self._parent.show_message('transposing from  ' + str(start))
