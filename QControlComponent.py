@@ -201,29 +201,36 @@ class QControlComponent(BaseComponent):
         self._button_light_status = bdict
 
     def on_selected_scene_changed(self):
-        selected_scene = self._parent.song().view.selected_scene
-        all_scenes = self._parent.song().scenes
+        song = self._parent.song()
+
+        selected_scene = song.view.selected_scene
+        all_scenes = song.scenes
         current_index = list(all_scenes).index(selected_scene)
 
         self.selected_scene = selected_scene
         self.selected_scene_index = current_index
+        self.selected_clip_slot = song.view.highlighted_clip_slot
+
 
     def on_selected_track_changed(self):
         '''
         update the tracks to focus on the 7 relevant tracks
         '''
         try:
-            all_tracks = self._parent.song().tracks
-            selected_track = self._parent.song().view.selected_track
+            song = self._parent.song()
+            all_tracks = song.tracks
+            selected_track = song.view.selected_track
             current_index = list(all_tracks).index(selected_track)
             slotid = int(current_index / self.npads) * (self.npads)
 
+            self.selected_clip_slot = song.view.highlighted_clip_slot
             self.selected_track = selected_track
             self.selected_track_index = current_index
         except:
             # there will be an error in case a return or master-track is selected
             self.selected_track = None
             self.selected_track_index = None
+            self.selected_clip_slot = None
             self._update_lights()
             return
 
@@ -242,6 +249,7 @@ class QControlComponent(BaseComponent):
                 if not track.mute_has_listener(self._update_lights):
                     track.add_mute_listener(self._update_lights)
         self._update_lights()
+
 
     def _add_control_listeners(self):
         song = self._parent.song()
@@ -539,37 +547,25 @@ class QControlComponent(BaseComponent):
         self.__stop_clicked = time.clock()
 
     def _next_clip(self):
-        # get the currently selected scene ID
-        scene = self._parent.song().view.selected_scene
-        all_scenes = list(self._parent.song().scenes)
-        scene_id = list(self._parent.song().scenes).index(scene)
-
-        if len(all_scenes) > scene_id + 1:
-            self._parent.song().view.selected_scene = all_scenes[scene_id + 1]
-        else:
+        all_scenes = self._parent.song().scenes
+        # create a scene in case we are at the end
+        if len(all_scenes) <= self.selected_scene_index + 1:
             self._parent.song().create_scene(-1)
-            all_scenes = list(self._parent.song().scenes)
-            self._parent.song().view.selected_scene = all_scenes[-1]
+
+        self._parent.song().view.selected_scene = all_scenes[self.selected_scene_index + 1]
 
     def _duplicate_clip(self):
-        track = self._parent.song().view.selected_track
-        # get the currently selected scene ID
-        scene = self._parent.song().view.selected_scene
-        all_scenes = list(self._parent.song().scenes)
-        scene_id = list(self._parent.song().scenes).index(scene)
+        all_scenes = self._parent.song().scenes
         # duplicate the clip slot
-        duplicated_id = track.duplicate_clip_slot(scene_id)
-
+        duplicated_id = self.selected_track.duplicate_clip_slot(self.selected_scene_index)
         duplicated_slot = all_scenes[duplicated_id]
         # move to the duplicated clip_slot
         self._parent.song().view.selected_scene = duplicated_slot
 
-        clip_slot = self._parent.song().view.highlighted_clip_slot
-
-        if not clip_slot.is_playing:
+        if not duplicated_slot.is_playing:
             # force legato ensures that the playing-position of the duplicated
             # loop is continued from the previous clip
-            clip_slot.fire(force_legato=True)
+            duplicated_slot.fire(force_legato=True)
 
     def _select_track(self, trackid):
         track = self.use_tracks[trackid]
