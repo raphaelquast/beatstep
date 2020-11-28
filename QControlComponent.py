@@ -91,18 +91,18 @@ class QControlComponent(BaseComponent):
                     continue
 
                 if track.solo and not track.mute:
-                    bdict[button_up] = 'blue'
+                    bdict[button_down] = 'blue'
                 elif track.mute and track.solo:
-                    bdict[button_up] = 'red'
+                    bdict[button_down] = 'red'
                 elif track.mute:
-                    bdict[button_up] = 'black'
+                    bdict[button_down] = 'black'
                 else:
-                    bdict[button_up] = 'magenta'
+                    bdict[button_down] = 'magenta'
 
                 if track.arm:
-                    bdict[button_down] = 'red'
+                    bdict[button_up] = 'red'
                 else:
-                    bdict[button_down] = 'black'
+                    bdict[button_up] = 'black'
 
         elif self._control_layer:
             bdict[16] = 'black'
@@ -175,7 +175,7 @@ class QControlComponent(BaseComponent):
                             if i - self.npads == self.selected_track_index%self.npads + 2:
                                 # indicate selected track
                                 if self.selected_track.has_audio_input:
-                                    bdict[i] = 'magenta'
+                                    bdict[i] = 'red'
                                 else:
                                     bdict[i] = 'blue'
                             else:
@@ -273,7 +273,7 @@ class QControlComponent(BaseComponent):
     def _1_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_solo_track(0)
+                self._arm_track(0)
             elif self._control_layer:
                 self._redo()
             elif self._shift_pressed:
@@ -284,7 +284,7 @@ class QControlComponent(BaseComponent):
     def _2_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_solo_track(1)
+                self._arm_track(1)
             elif self._control_layer:
                 self._duplicate_track()
             elif self._shift_pressed:
@@ -295,7 +295,7 @@ class QControlComponent(BaseComponent):
     def _3_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_solo_track(2)
+                self._arm_track(2)
             elif self._control_layer:
                 self._duplicate_scene()
             elif self._shift_pressed:
@@ -306,7 +306,7 @@ class QControlComponent(BaseComponent):
     def _4_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_solo_track(3)
+                self._arm_track(3)
             elif self._shift_pressed:
                 self._select_track(3)
         else:
@@ -315,7 +315,7 @@ class QControlComponent(BaseComponent):
     def _5_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_solo_track(4)
+                self._arm_track(4)
             elif self._shift_pressed:
                 self._select_track(4)
         else:
@@ -324,7 +324,7 @@ class QControlComponent(BaseComponent):
     def _6_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_solo_track(5)
+                self._arm_track(5)
             elif self._control_layer:
                 self._toggle_detail_clip_view()
             elif self._shift_pressed:
@@ -335,7 +335,7 @@ class QControlComponent(BaseComponent):
     def _7_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._mute_solo_track(6)
+                self._arm_track(6)
             elif self._control_layer:
                 self._toggle_shift_lights()
             elif self._shift_pressed:
@@ -377,7 +377,7 @@ class QControlComponent(BaseComponent):
     def _9_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._arm_track(0)
+                self._mute_solo_track(0)
             elif self._control_layer:
                 self._undo()
             elif self._shift_pressed:
@@ -388,7 +388,7 @@ class QControlComponent(BaseComponent):
     def _10_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._arm_track(1)
+                self._mute_solo_track(1)
             elif self._control_layer:
                 self._delete_track()
             elif self._shift_pressed:
@@ -399,7 +399,7 @@ class QControlComponent(BaseComponent):
     def _11_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._arm_track(2)
+                self._mute_solo_track(2)
             elif self._control_layer:
                 self._delete_scene()
         else:
@@ -408,7 +408,7 @@ class QControlComponent(BaseComponent):
     def _12_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._arm_track(3)
+                self._mute_solo_track(3)
             elif self._control_layer:
                 self._tap_tempo()
             elif self._shift_pressed:
@@ -419,7 +419,7 @@ class QControlComponent(BaseComponent):
     def _13_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._arm_track(4)
+                self._mute_solo_track(4)
             elif self._control_layer:
                 self._toggle_metronome()
             elif self._shift_pressed:
@@ -430,7 +430,7 @@ class QControlComponent(BaseComponent):
     def _14_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._arm_track(5)
+                self._mute_solo_track(5)
             if self._control_layer:
                 self._toggle_automation()
             elif self._shift_pressed:
@@ -441,7 +441,7 @@ class QControlComponent(BaseComponent):
     def _15_listener(self, value):
         if value > 0:
             if self._shift_fixed:
-                self._arm_track(6)
+                self._mute_solo_track(6)
             elif self._shift_pressed:
 
                 self._fire_record()
