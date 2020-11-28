@@ -26,13 +26,14 @@ class QControlComponent(BaseComponent):
 
         self._double_tap_time = 0.5
 
-        self._button_light_status = {i:'black' for i in xrange(16)}
-        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_stop', '_play', '_play_S', '_transpose_encoder']
-
-        super(QControlComponent, self).__init__(parent, buttonnames)
-
         self._shift_color_mode = 1   # 0 = none, 1 = top row, 2 = all
         self.npads = 7               # number of pads used to play notes
+
+        self._button_light_status = {i:'black' for i in xrange(16)}
+
+        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_stop', '_play', '_play_S', '_transpose_encoder']
+        super(QControlComponent, self).__init__(parent, buttonnames)
+
         self.use_tracks = [None for i in range(self.npads)]
 
         self._parent.song().view.add_selected_track_listener(self.on_selected_track_changed)
@@ -401,8 +402,6 @@ class QControlComponent(BaseComponent):
                 self._arm_track(2)
             elif self._control_layer:
                 self._delete_scene()
-            elif self._shift_pressed:
-                self._stop_clip()
         else:
             self._update_lights()
 
@@ -535,16 +534,20 @@ class QControlComponent(BaseComponent):
             pass
 
     def _stop_clip(self):
-        # in case the button is pressed twice within 250ms, stop all clips
-        if abs(time.clock() - self.__stop_clicked) <= self._double_tap_time:
+        # if shift is pressed, stop all clips and stop playing
+        if self._shift_pressed:
             self._parent.song().stop_all_clips()
             self._parent.song().stop_playing()
         else:
-            clip_slot = self._parent.song().view.highlighted_clip_slot
-            clip_slot.stop()
-
-        # set the time when stop was last clicked (in seconds)
-        self.__stop_clicked = time.clock()
+            # in case the currently selected clip is recording, turn off overdub
+            # (to be able to stop overdubbing with the stop-button)
+            if self.selected_clip_slot.is_recording:
+                if self._parent.song().session_record == True:
+                    self._parent.song().session_record = False
+            elif self.selected_clip_slot.is_playing:
+                self.selected_clip_slot.stop()
+            # set the time when stop was last clicked (in seconds)
+            self.__stop_clicked = time.clock()
 
     def _next_clip(self):
         all_scenes = self._parent.song().scenes
@@ -562,10 +565,10 @@ class QControlComponent(BaseComponent):
         # move to the duplicated clip_slot
         self._parent.song().view.selected_scene = duplicated_slot
 
-        if not duplicated_slot.is_playing:
+        if not self._parent.song().view.highlighted_clip_slot.is_playing:
             # force legato ensures that the playing-position of the duplicated
             # loop is continued from the previous clip
-            duplicated_slot.fire(force_legato=True)
+            self._parent.song().view.highlighted_clip_slot.fire(force_legato=True)
 
     def _select_track(self, trackid):
         track = self.use_tracks[trackid]
@@ -646,14 +649,7 @@ class QControlComponent(BaseComponent):
 
     def _stop_listener(self, value):
         if value > 0:
-            # in case the currently selected clip is recording, turn off overdub
-            # (to be able to stop overdubbing with the stop-button)
-            clip_slot = self._parent.song().view.highlighted_clip_slot
-            if clip_slot.is_recording:
-                if self._parent.song().session_record == True:
-                    self._parent.song().session_record = False
-            elif clip_slot.is_playing:
-                clip_slot.stop()
+            self._stop_clip()
 
         self._update_lights()
 
