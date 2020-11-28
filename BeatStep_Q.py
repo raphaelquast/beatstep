@@ -19,6 +19,7 @@ from .QSetup import QSetup
 ENCODER_MSG_IDS = (10, 74, 71, 76, 77, 93, 73, 75, 114, 18, 19, 16, 17, 91, 79, 72)
 PAD_MSG_IDS = list(xrange(44, 52)) + list(xrange(36, 44))
 
+CHANNEL_SEQUENCER = 8
 CHANNEL = 9
 
 
@@ -98,9 +99,14 @@ class BeatStep_Q(ControlSurface):
             self._send_midi(self.QS.set_E_channel(i, CHANNEL))
 
 
+        self._send_midi(self.QS.set_S_channel(CHANNEL_SEQUENCER))
+
+
+
 
     def _create_controls(self):
         self._play_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 2, name=u'Play_Button')
+        self._play_S_button = ButtonElement(True, MIDI_NOTE_TYPE, 0, 60, name=u'Play_Button')
 
         self._stop_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 1, name=u'Stop_Button')
         self._shift_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 7, name=u'Shift_Button')
@@ -152,6 +158,8 @@ class BeatStep_Q(ControlSurface):
         self._control_component = QControlComponent(self)
         self._control_component.set_shift_button(self._shift_button)
         self._control_component.set_stop_button(self._stop_button)
+        self._control_component.set_play_button(self._play_button)
+        self._control_component.set_play_S_button(self._play_S_button)
 
         self._control_component.set_transpose_encoder_button(self._transpose_encoder)
 
