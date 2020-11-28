@@ -729,7 +729,7 @@ class QControlComponent(BaseComponent):
         elif self._control_layer:
             self._track_send_x(value, trackid, 0)
         else:
-            self._track_send_x(value, -1, 1)
+            self._track_send_x(value, -1, 2)
 
     def _7_encoder_listener(self, value):
         trackid = 6
@@ -779,7 +779,7 @@ class QControlComponent(BaseComponent):
         elif self._control_layer:
             self._track_send_x(value, trackid, 2)
         else:
-            self._track_send_x(value, -1, 2)
+            self._track_send_x(value, -1, 1)
 
     def _14_encoder_listener(self, value):
         trackid = 5
