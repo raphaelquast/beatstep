@@ -55,15 +55,7 @@ class QControlComponent(BaseComponent):
 
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
-        #hexcolor = colordict[color]
-
-        # the hex-code of the buttons
-        #hexbutton = 111 + buttonid
-        #msg = (240, 0, 32, 107, 127, 66, 2, 0, 16, hexbutton, hexcolor, 247)
-        #self._parent._send_midi(msg)
-
         self._parent._send_midi(self._parent.QS.set_B_color(buttonid - 1, colordict[color]))
-
 
 
     def _blink(self, condition=lambda: False, buttonid=1, timeout=5,
@@ -80,16 +72,12 @@ class QControlComponent(BaseComponent):
 
     def _update_lights(self):
         self._update_button_light_status()
-
         for key, val in self._button_light_status.items():
-
             if self._sequencer_running:
                 if val in ['magenta']:
                     val = 'black'
                 if val in ['blue']:
                     val = 'red'
-
-
             self._set_color(key, val)
 
     def _update_button_light_status(self):
@@ -223,6 +211,7 @@ class QControlComponent(BaseComponent):
                 bdict[i] = 'black'
 
         self._button_light_status = bdict
+
 
     def on_selected_scene_changed(self):
         song = self._parent.song()
