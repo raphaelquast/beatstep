@@ -184,7 +184,6 @@ class QControlComponent(BaseComponent):
                         for i in range(9):
                             button_down = i + 8
                             if i == self.selected_track_index%self.npads:
-                                self._parent.show_message(str(button_down) + '  ' + str(i))
                                 # indicate selected track
                                 if self.selected_track.has_audio_input:
                                     bdict[button_down] = 'red'
@@ -666,9 +665,7 @@ class QControlComponent(BaseComponent):
                 self._sequencer_running = False
             else:
                 self._sequencer_running = True
-
         self._update_lights()
-        self._parent.show_message(str(value) + '  |  ' + str(self._sequencer_running))
 
     def _stop_listener(self, value):
         if value > 0:
@@ -896,9 +893,7 @@ class QControlComponent(BaseComponent):
         self.__transpose_val = tval
 
         if tval%interval == 0:
-            self._parent.show_message(str(tval))
             self._set_notes(tval)
-
             # ---------------
             # indicate the transposed note via button lights
             buttonid = tval/interval
@@ -917,7 +912,6 @@ class QControlComponent(BaseComponent):
             # -------------
 
     def _set_notes(self, start):
-        #self._parent.show_message('transposing from  ' + str(start))
         # set midi-notes of buttons to start + (0-15)
         for i in xrange(16):
             decval = (start + i)%127
