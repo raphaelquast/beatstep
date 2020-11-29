@@ -19,6 +19,8 @@ class QControlComponent(BaseComponent):
         self._control_layer = False
         self.__control_layer_permanent = False
 
+        self._sequencer_running = False
+
         self.selected_track = None
         self.selected_track_index = 0
         self.selected_scene = None
@@ -31,7 +33,7 @@ class QControlComponent(BaseComponent):
 
         self._button_light_status = {i:'black' for i in xrange(16)}
 
-        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_stop', '_play', '_play_S', '_transpose_encoder']
+        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + ['_shift', '_stop', '_play', '_play_S', '_cntrl','_transpose_encoder']
         super(QControlComponent, self).__init__(parent, buttonnames)
 
         self.use_tracks = [None for i in range(self.npads)]
@@ -44,6 +46,7 @@ class QControlComponent(BaseComponent):
         self.use_tracks = self._parent.song().tracks[:self.npads]
         self._select_track(0)
         self.on_selected_track_changed()
+
 
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
@@ -69,7 +72,16 @@ class QControlComponent(BaseComponent):
 
     def _update_lights(self):
         self._update_button_light_status()
+
         for key, val in self._button_light_status.items():
+
+            if self._sequencer_running:
+                if val in ['magenta']:
+                    val = 'black'
+                if val in ['blue']:
+                    val = 'red'
+
+
             self._set_color(key, val)
 
     def _update_button_light_status(self):
@@ -77,7 +89,7 @@ class QControlComponent(BaseComponent):
         bdict = dict()
 
         if self._shift_fixed:
-            bdict[16] = 'magenta'
+            bdict[16] = 'red'
             bdict[8] = 'black'
 
             for i, track in enumerate(self.use_tracks):
@@ -106,7 +118,7 @@ class QControlComponent(BaseComponent):
 
         elif self._control_layer:
             bdict[16] = 'black'
-            bdict[8] = 'blue'
+            bdict[8] = 'red'
 
             used_buttons = [1, 2, 3, 7, 8, 9, 10, 11, 13, 14]
             # turn off all other lights
@@ -119,10 +131,10 @@ class QControlComponent(BaseComponent):
             bdict[9] = 'magenta'
 
             bdict[2] = 'blue'
-            bdict[10] = 'magenta'
+            bdict[10] = 'red'
 
             bdict[3] = 'blue'
-            bdict[11] = 'magenta'
+            bdict[11] = 'red'
 
             if self._shift_color_mode == 0:
                 bdict[7] = 'black'
@@ -647,10 +659,22 @@ class QControlComponent(BaseComponent):
             except:
                 pass
 
+    def _play_listener(self, value):
+        # TODO
+        if value > 0:
+            if self._sequencer_running:
+                self._sequencer_running = False
+            else:
+                self._sequencer_running = True
+
+        self._update_lights()
+        self._parent.show_message(str(value) + '  |  ' + str(self._sequencer_running))
+
     def _stop_listener(self, value):
         if value > 0:
             self._stop_clip()
 
+        self._sequencer_running = False
         self._update_lights()
 
     def _shift_listener(self, value):

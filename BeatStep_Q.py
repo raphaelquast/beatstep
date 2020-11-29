@@ -44,7 +44,13 @@ class BeatStep_Q(ControlSurface):
             self._create_mixer()
             self._create_session()
 
+    def receive_midi(self, midi_bytes):
+        #self.show_message(str(midi_bytes))
+        super(BeatStep_Q, self).receive_midi(midi_bytes)
 
+    def handle_sysex(self, midi_bytes):
+        #self.show_message(str(midi_bytes))
+        super(BeatStep_Q, self).handle_sysex(midi_bytes)
 
     def port_settings_changed(self):
         super(BeatStep_Q, self).port_settings_changed()
@@ -85,6 +91,13 @@ class BeatStep_Q(ControlSurface):
         self._send_midi(self.QS.set_B_mode('play', 9))
         self._send_midi(self.QS.set_B_channel('play', CHANNEL))
 
+        # set cntrl/seq button to note-mode
+        self._send_midi(self.QS.set_B_mode('cntrl', 9))
+        self._send_midi(self.QS.set_B_channel('cntrl', CHANNEL))
+        # set button behaviour to toggle
+        self._send_midi(self.QS.set_B_behaviour('cntrl', 0))
+
+
         # set transpose encoder channel
         self._send_midi(self.QS.set_E_channel('transpose', CHANNEL))
 
@@ -110,6 +123,7 @@ class BeatStep_Q(ControlSurface):
 
         self._stop_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 1, name=u'Stop_Button')
         self._shift_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 7, name=u'Shift_Button')
+        self._cntrl_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 3, name=u'cntrl_Button')
 
         for i in xrange(1,17):
             msgid = PAD_MSG_IDS[i-1]
@@ -136,6 +150,7 @@ class BeatStep_Q(ControlSurface):
         self._control_component.set_stop_button(self._stop_button)
         self._control_component.set_play_button(self._play_button)
         self._control_component.set_play_S_button(self._play_S_button)
+        self._control_component.set_cntrl_button(self._cntrl_button)
 
         self._control_component.set_transpose_encoder_button(self._transpose_encoder)
 
