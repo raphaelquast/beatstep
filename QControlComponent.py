@@ -2,8 +2,7 @@ from BaseComponent import BaseComponent
 import time
 from itertools import cycle
 
-#VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detail/DeviceChain')
-VIEWS = (u'Detail/Clip', u'Detail/DeviceChain')
+VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detail/DeviceChain')
 
 
 class QControlComponent(BaseComponent):
@@ -24,7 +23,8 @@ class QControlComponent(BaseComponent):
 
         self._sequencer_running = False
 
-        self.viewcycle = cycle(VIEWS)
+        self._detail_cycle = cycle((u'Detail/Clip', u'Detail/DeviceChain'))
+        self._view_cycle = cycle((u'Arranger', u'Session'))
 
         self.selected_track = None
         self.selected_track_index = 0
@@ -327,6 +327,8 @@ class QControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(3)
+            elif self._control_layer:
+                self._change_detail_view(next(self._view_cycle))
             elif self._shift_pressed:
                 self._select_track(3)
         else:
@@ -337,15 +339,14 @@ class QControlComponent(BaseComponent):
             if self._shift_fixed:
                 self._arm_track(4)
             elif self._control_layer:
-                self.focus_view(next(self.viewcycle))
+                self._change_detail_view(next(self._detail_cycle))
             elif self._shift_pressed:
                 self._select_track(4)
         else:
             self._update_lights()
 
 
-    def focus_view(self, view):
-
+    def _change_detail_view(self, view):
         assert view in VIEWS
         app_view = self._parent.application().view
         if view == u'Detail/DeviceChain' or u'Detail/Clip':
