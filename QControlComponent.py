@@ -3,7 +3,7 @@ import time
 from itertools import cycle
 
 #VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detail/DeviceChain')
-VIEWS = (u'Arranger', u'Session', u'Detail/Clip', u'Detail/DeviceChain')
+VIEWS = (u'Detail/Clip', u'Detail/DeviceChain')
 
 
 class QControlComponent(BaseComponent):
