@@ -20,14 +20,6 @@ Any comments / suggestions for improvements etc. are highly welcome!
 To use this script, simply copy the contents into a folder named **"Beatstep_custom"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_custom** device as control-surface in the MIDI-tab of the preferences. 
 (make sure to activate both `track`and `remote` for this device!)
 
-# Thanks to
-
-- [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
-
-- Julien Bayle for the awesome [PythonLiveAPI_documentation](https://julienbayle.studio/PythonLiveAPI_documentation/) and some more info's ( [here](https://julienbayle.studio/ableton-live-midi-remote-scripts/) )
-
-- Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
-
 ---
 
 # More detailed explanations on the assignments:
@@ -70,40 +62,38 @@ The lights in the first row indicate the track-arm status:
 
 - `off` if the track is muted and **not** armed
 
-The lights in the second indicate the currently activated clip.  (magenta for midi, blue for audio)  
+The lights in the second indicate the currently activated clip.  (red for midi, blue for audio)  
 (you can change this behaviour or turn the lights off! >> check `"scene control" + button 7`)
 
 The assignments are as follows:
 
-- `shift` + `button 1-7`:  select track 1-7 of the currently focussed slots (red box)
+- `button 1-6`:  select track 1-6 of the currently focussed slots (red box)
   
   - double tap an already activated track to arm/unarm it !
 
-- `shift` + `button 9`: undo
+- `button 7`: select previous scene (e.g. go 1 scene up) 
 
-- `shift` + `button 10`: delete selected clip
+- `button 8`: activate **song control** (see below)
 
-- `shift` + `button 11`: stop selected clip
-  
-  - double-tap to stop all clips (and stop playing)!
+- `button 9`: undo
 
-- `shift` + `button 12`: duplicate the currently selected loop
+- `button 10`: delete selected clip
 
-- `shift` + `button 13`: move focus to the next clip (add an empty clip-slot if you are at the final slot)
+- `button 12`: duplicate the currently selected loop
 
-- `shift` + `button 14`: duplicate the currently selected clip, and set the focus to the duplicate
+- `button 13`: duplicate the currently selected clip, and set the focus to the duplicate
 
-- `shift` + `button 15`: start recording
+- `button 14`: start recording
   
   - if the currently selected slot is empty, start recording a new clip 
   
   - if a clip is already present, overdub
 
-- `shift` + `button 8` : activate **song control** (see below)
+- `button 15` : select next scene (if at the end, add a new scene)
 
-- `shift` + `button 16` : activate **track control** (see below)
-
-- 
+- `button 16` : activate **track control** (see below)
+  
+  
 
 - `encoder 8` : track-selection (left-right)
 
@@ -112,6 +102,71 @@ The assignments are as follows:
 - `encoder 7` : volume of master-track
 
 - `encoder 15` : pan of master-track
+
+---
+
+### If "song control" is active
+
+Most lights are simply there to help remembering the button-assignments.
+The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live 
+
+- `red` for ON 
+
+- `off` for off
+
+The light of `button 7` indicates the visibility of the shift-button lights:
+
+- `off` for no lights if `shift` is pressed
+
+- `magenta` for only the top-row if `shift` is pressed
+
+- `red` for all lights if `shift` is pressed
+
+
+
+The assignments are as follows:
+
+- `button 1` : redo last step
+
+- `button 2` : duplicate currently selected track
+
+- `button 3` : duplicate currently selected scene
+
+- `button 4` : toggle between Ableton's session-view and arrangement-view
+
+- `button 5` : toggle between showing the selected clip-details or the device-chain of the selected track
+
+- `button 6` : change what lights will turn on if shift is pressed
+  
+  - see the description of the lights above for details
+
+- `button 7` : select previous scene (e.g. go 1 scene up)
+
+- `button 8` : get back to the normal behaviour (e.g. deactivate song control)
+
+- `button 9` : undo last step
+
+- `button 10` : delete currently selected track
+
+- `button 11` : delete currently selected scene
+
+- `button 12` : tap tempo
+
+- `button 13` : toggle metronome
+
+- `button 14` : toggle session automation record
+
+- `button 16`: switch to **track control** (see below)
+
+
+
+- the top-row of the encoders (`1-6`) control "send A"
+
+- the bottom-row of the encoders (`9-14`) control "send B"
+
+- `encoder 8` : track-selection (left-right)
+
+- `encoder 16` : scene selection (up-down)
 
 ---
 
@@ -133,79 +188,38 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 - `off` if the track is unarmed
 
+
+
 The assignments are as follows:
 
-- `button 8` : switch to **song control** (see above)
+- the buttons in the upper row (1-6) indicate / set the **mute** status of the first 6 tracks in the red box
+
+- - holding `shift` while pressing the button will **solo** the corresponding track if **track control** is activated permanently (e.g. if the activation-button has been double-tapped)
+
+- the buttons in the lower row (9-14) indicate / set the **arm** status of the first 6 tracks in the red box
+
+- `button 8` : switch to **song control** (see above)  
 
 - `button 16` : get back to the normal behaviour (e.g. deactivate track control)
 
-- the buttons in the upper row (1-7) indicate / set the **mute** status of the first 7 tracks in the red box
-  
-  - holding `shift` while pressing the button will **solo** the corresponding track if **track control** is activated permanently (e.g. if the activation-button has been double-tapped)
 
-- the buttons in the lower row (9-15) indicate / set the **arm** status of the first 7 tracks in the red box
-
-- `encoder 8` : track-selection (left-right)
-
-- `encoder 16` : scene selection (up-down)
 
 - the top-row of the encoders (`1-7`) control the "track volume"
 
 - the bottom-row of the encoders (`9-15`) control the "track pan"
 
----
-
-### If "song control" is active
-
-Most lights are simply there to help remembering the button-assignments.
-The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live 
-
-- `red` for ON 
-
-- `off` for off
-
-The light of `button 7` indicates the visibility of the shift-button lights:
-
-- `off` for no lights if `shift` is pressed
-
-- `magenta` for only the top-row if `shift` is pressed
-
-- `red` for all lights if `shift` is pressed
-
-The assignments are as follows:
-
-- `button 8` : get back to the normal behaviour (e.g. deactivate song control)
-
-- `button 16`: switch to **track control**  (see below)
-
-- `button 1` : redo last step
-
-- `button 2` : duplicate currently selected track
-
-- `button 3` : duplicate currently selected scene
-
-- `button 7` : change what lights will turn on if shift is pressed
-  
-  - see the description of the lights of `button 7` above for details
-
-- `button 9` : undo last step
-
-- `button 10` : delete currently selected track
-
-- `button 11` : delete currently selected scene
-
-- `button 12` : tap tempo
-
-- `button 13` : toggle metronome
-
-- `button 14` : toggle session automation record
-
 - `encoder 8` : track-selection (left-right)
 
 - `encoder 16` : scene selection (up-down)
 
-- the top-row of the encoders (`1-7`) control "send A"
+---
 
-- the bottom-row of the encoders (`9-15`) control "send B"
+# Thanks to
+
+- [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
+
+- Julien Bayle for the awesome [PythonLiveAPI_documentation](https://julienbayle.studio/PythonLiveAPI_documentation/) and some more info's ( [here](https://julienbayle.studio/ableton-live-midi-remote-scripts/) )
+
+- Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
 
 ---

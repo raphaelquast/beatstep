@@ -755,14 +755,9 @@ class QControlComponent(BaseComponent):
             self._track_send_x(value, -1, 2)
 
     def _7_encoder_listener(self, value):
-        trackid = 6
-        if self._shift_fixed:
-            self._track_volume(value, trackid)
-        elif self._control_layer:
-            self._track_send_x(value, trackid, 1)
-        elif self._shift_pressed:
+        if self._shift_pressed:
             self._track_volume(value, -2)
-        else:
+        elif not self._shift_fixed and not self._control_layer:
             self._track_volume(value, -1)
 
     #########################################################
@@ -770,7 +765,7 @@ class QControlComponent(BaseComponent):
     def _9_encoder_listener(self, value):
         trackid = 0
         if self._shift_fixed:
-            self._track_volume(value, trackid)
+            self._track_pan(value, trackid)
         elif self._control_layer:
             self._track_send_x(value, trackid, 1)
 
@@ -800,7 +795,7 @@ class QControlComponent(BaseComponent):
         if self._shift_fixed:
             self._track_pan(value, trackid)
         elif self._control_layer:
-            self._track_send_x(value, trackid, 2)
+            self._track_send_x(value, trackid, 1)
         else:
             self._track_send_x(value, -1, 1)
 
@@ -814,14 +809,9 @@ class QControlComponent(BaseComponent):
             self._track_send_x(value, -1, 3)
 
     def _15_encoder_listener(self, value):
-        trackid = 6
-        if self._shift_fixed:
-            self._track_pan(value, trackid)
-        elif self._control_layer:
-            self._track_send_x(value, trackid, 1)
-        elif self._shift_pressed:
+        if self._shift_pressed:
             self._track_pan(value, -2)
-        else:
+        elif not self._shift_fixed and not self._control_layer:
             self._track_pan(value, -1)
     #########################################################
 
