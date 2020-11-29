@@ -175,6 +175,7 @@ class BeatStep_Q(ControlSurface):
         self._session.set_scene_select_control(self._16_encoder)
         # do this to enable the "red-box"
         self.set_highlighting_session_component(self._session)
+
         self._session.set_enabled(True)
 
 

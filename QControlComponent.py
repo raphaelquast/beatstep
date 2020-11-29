@@ -29,7 +29,7 @@ class QControlComponent(BaseComponent):
         self._double_tap_time = 0.5
 
         self._shift_color_mode = 1   # 0 = none, 1 = top row, 2 = all
-        self.npads = 7               # number of pads used to play notes
+        self.npads = 6               # number of pads used to play notes
 
         self._button_light_status = {i:'black' for i in xrange(16)}
 
@@ -120,7 +120,7 @@ class QControlComponent(BaseComponent):
             bdict[16] = 'black'
             bdict[8] = 'red'
 
-            used_buttons = [1, 2, 3, 7, 8, 9, 10, 11, 13, 14]
+            used_buttons = [1, 2, 3, 6, 8, 9, 10, 11, 13, 14]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -137,11 +137,11 @@ class QControlComponent(BaseComponent):
             bdict[11] = 'red'
 
             if self._shift_color_mode == 0:
-                bdict[7] = 'black'
+                bdict[6] = 'black'
             elif self._shift_color_mode == 1:
-                bdict[7] = 'magenta'
+                bdict[6] = 'magenta'
             elif self._shift_color_mode == 2:
-                bdict[7] = 'red'
+                bdict[6] = 'red'
 
             if self._parent.song().metronome:
                 bdict[13] = 'red'
@@ -179,32 +179,35 @@ class QControlComponent(BaseComponent):
                         bdict[button_up] = 'black'
 
                 if self._shift_color_mode == 1:
+
                     if self.selected_track_index == None:
                         for i in range(9, 17):
                             bdict[i] = 'black'
                     else:
-                        for i in range(9, 17):
-                            if i - self.npads == self.selected_track_index%self.npads + 2:
+                        #for i in range(9, 17):
+                        for i in range(9):
+                            button_down = i + 9
+                            if i == self.selected_track_index%self.npads:
+                                self._parent.show_message(str(button_down) + '  ' + str(i))
                                 # indicate selected track
                                 if self.selected_track.has_audio_input:
-                                    bdict[i] = 'red'
+                                    bdict[button_down] = 'red'
                                 else:
-                                    bdict[i] = 'blue'
+                                    bdict[button_down] = 'blue'
                             else:
-                                # turn off all otherlower buttons
-                                bdict[i] = 'black'
+                                bdict[button_down] = 'black'
 
                 # indicate control-buttons
                 if self._shift_color_mode == 2:
-                    bdict[8] = 'magenta'
+                    bdict[8] = 'red'
                     bdict[9] = 'magenta'
                     bdict[10] = 'red'
-                    bdict[11] = 'magenta'
+                    bdict[11] = 'black'
                     bdict[12] = 'blue'
-                    bdict[13] = 'magenta'
-                    bdict[14] = 'blue'
-                    bdict[15] = 'red'
-                    bdict[16] = 'magenta'
+                    bdict[13] = 'blue'
+                    bdict[14] = 'red'
+                    bdict[15] = 'black'
+                    bdict[16] = 'black'
 
         elif not self._shift_fixed and not self._control_layer:
             # turn off all lights on shift-release
@@ -227,7 +230,7 @@ class QControlComponent(BaseComponent):
 
     def on_selected_track_changed(self):
         '''
-        update the tracks to focus on the 7 relevant tracks
+        update the tracks to focus on the "self.npads" relevant tracks
         '''
         try:
             song = self._parent.song()
@@ -338,7 +341,7 @@ class QControlComponent(BaseComponent):
             if self._shift_fixed:
                 self._arm_track(5)
             elif self._control_layer:
-                self._toggle_detail_clip_view()
+                self._toggle_shift_lights()
             elif self._shift_pressed:
                 self._select_track(5)
         else:
@@ -346,12 +349,8 @@ class QControlComponent(BaseComponent):
 
     def _7_listener(self, value):
         if value > 0:
-            if self._shift_fixed:
-                self._arm_track(6)
-            elif self._control_layer:
-                self._toggle_shift_lights()
-            elif self._shift_pressed:
-                self._select_track(6)
+            if self._shift_pressed:
+                self._select_prev_scene()
         else:
             self._update_lights()
 
@@ -424,7 +423,7 @@ class QControlComponent(BaseComponent):
             elif self._control_layer:
                 self._tap_tempo()
             elif self._shift_pressed:
-                self._duplicate_loop()
+                self._duplicate_clip()
         else:
             self._update_lights()
 
@@ -435,7 +434,7 @@ class QControlComponent(BaseComponent):
             elif self._control_layer:
                 self._toggle_metronome()
             elif self._shift_pressed:
-                self._next_clip()
+                self._duplicate_loop()
         else:
             self._update_lights()
 
@@ -443,20 +442,17 @@ class QControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._mute_solo_track(5)
-            if self._control_layer:
+            elif self._control_layer:
                 self._toggle_automation()
             elif self._shift_pressed:
-                self._duplicate_clip()
+                self._fire_record()
         else:
             self._update_lights()
 
     def _15_listener(self, value):
         if value > 0:
-            if self._shift_fixed:
-                self._mute_solo_track(6)
-            elif self._shift_pressed:
-
-                self._fire_record()
+            if self._shift_pressed:
+                self._select_next_scene()
         else:
             self._update_lights()
 
@@ -560,14 +556,6 @@ class QControlComponent(BaseComponent):
                 self.selected_clip_slot.stop()
             # set the time when stop was last clicked (in seconds)
             self.__stop_clicked = time.clock()
-
-    def _next_clip(self):
-        all_scenes = self._parent.song().scenes
-        # create a scene in case we are at the end
-        if len(all_scenes) <= self.selected_scene_index + 1:
-            self._parent.song().create_scene(-1)
-
-        self._parent.song().view.selected_scene = all_scenes[self.selected_scene_index + 1]
 
     def _duplicate_clip(self):
         all_scenes = self._parent.song().scenes
@@ -930,3 +918,21 @@ class QControlComponent(BaseComponent):
             msg = (240, 0, 32, 107, 127, 66, 2, 0) + (3, button, decval, 247)
             self._parent._send_midi(msg)
 
+    def _select_next_scene(self):
+        song = self._parent.song()
+        selected_scene = song.view.selected_scene
+        all_scenes = song.scenes
+        if selected_scene != all_scenes[-1]:
+            song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
+        else:
+            # create new scenes in case we are at the end
+            song.create_scene(-1)
+            song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
+
+    def _select_prev_scene(self):
+        song = self._parent.song()
+        selected_scene = song.view.selected_scene
+        all_scenes = song.scenes
+        if selected_scene != all_scenes[0]:
+            index = list(all_scenes).index(selected_scene)
+            song.view.selected_scene = all_scenes[index - 1]
