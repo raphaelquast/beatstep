@@ -2,6 +2,9 @@ from BaseComponent import BaseComponent
 import time
 from itertools import cycle
 
+#VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detail/DeviceChain')
+VIEWS = (u'Arranger', u'Session', u'Detail/Clip', u'Detail/DeviceChain')
+
 
 class QControlComponent(BaseComponent):
     def __init__(self, parent):
@@ -20,6 +23,8 @@ class QControlComponent(BaseComponent):
         self.__control_layer_permanent = False
 
         self._sequencer_running = False
+
+        self.viewcycle = cycle(VIEWS)
 
         self.selected_track = None
         self.selected_track_index = 0
@@ -331,10 +336,24 @@ class QControlComponent(BaseComponent):
         if value > 0:
             if self._shift_fixed:
                 self._arm_track(4)
+            elif self._control_layer:
+                self.focus_view(next(self.viewcycle))
             elif self._shift_pressed:
                 self._select_track(4)
         else:
             self._update_lights()
+
+
+    def focus_view(self, view):
+
+        assert view in VIEWS
+        app_view = self._parent.application().view
+        if view == u'Detail/DeviceChain' or u'Detail/Clip':
+            if not app_view.is_view_visible(u'Detail'):
+                app_view.show_view(u'Detail')
+        if not app_view.is_view_visible(view):
+            app_view.focus_view(view)
+
 
     def _6_listener(self, value):
         if value > 0:
@@ -648,7 +667,6 @@ class QControlComponent(BaseComponent):
                 pass
 
     def _play_listener(self, value):
-        # TODO
         if value > 0:
             if self._sequencer_running:
                 self._sequencer_running = False
