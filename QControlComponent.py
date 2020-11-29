@@ -181,8 +181,8 @@ class QControlComponent(BaseComponent):
                             bdict[i] = 'black'
                     else:
                         #for i in range(9, 17):
-                        for i in range(9):
-                            button_down = i + 8
+                        for i in range(8):
+                            button_down = i + 9
                             if i == self.selected_track_index%self.npads:
                                 # indicate selected track
                                 if self.selected_track.has_audio_input:
