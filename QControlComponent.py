@@ -55,13 +55,16 @@ class QControlComponent(BaseComponent):
 
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
+        #hexcolor = colordict[color]
+
         # the hex-code of the buttons
-        hexbutton = 111 + buttonid
-        hexcolor = colordict[color]
+        #hexbutton = 111 + buttonid
+        #msg = (240, 0, 32, 107, 127, 66, 2, 0, 16, hexbutton, hexcolor, 247)
+        #self._parent._send_midi(msg)
 
-        msg = (240, 0, 32, 107, 127, 66, 2, 0, 16, hexbutton, hexcolor, 247)
+        self._parent._send_midi(self._parent.QS.set_B_color(buttonid - 1, colordict[color]))
 
-        self._parent._send_midi(msg)
+
 
     def _blink(self, condition=lambda: False, buttonid=1, timeout=5,
                colors=['red', 'black']):
@@ -386,6 +389,7 @@ class QControlComponent(BaseComponent):
                 self.__control_layer_permanent = False
 
                 if self._control_layer:
+                    self._parent._device.set_enabled(True)
                     self._control_layer = False
                     self._shift_fixed = False
                     self._shift_pressed = False
@@ -394,7 +398,6 @@ class QControlComponent(BaseComponent):
                     self._update_lights()
                     self._remove_control_listeners()
                     self._remove_handler()
-
                 else:
                     self._shift_fixed = False
                     self._control_layer = True
@@ -489,6 +492,7 @@ class QControlComponent(BaseComponent):
                 self.__control_layer_permanent = False
 
                 if self._shift_fixed:
+                    self._parent._device.set_enabled(True)
                     self._shift_fixed = False
                     self._control_layer = False
                     self._shift_pressed = False
@@ -686,6 +690,7 @@ class QControlComponent(BaseComponent):
 
     def _shift_listener(self, value):
         if value == 127:
+            self._parent._device.set_enabled(False)
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
             self._shift_pressed = True
@@ -700,6 +705,7 @@ class QControlComponent(BaseComponent):
             # remove value listeners from buttons in case shift is released
             # (so that we can play instruments if shift is not pressed)
             if not self._shift_fixed and not self._control_layer:
+                self._parent._device.set_enabled(True)
                 self._remove_handler()
                 # transpose notes back to last set transpose-val
                 self._set_notes(self.__transpose_val)
@@ -831,15 +837,19 @@ class QControlComponent(BaseComponent):
             if send_id < len(sends):
                 prev_value = sends[send_id].value
                 if value < 65:
-                    if last_access > 0.01 and prev_value < 1:
-                        sends[send_id].value = round(prev_value + .01, 2)
+                    if last_access > 0.01:
+                        if round(prev_value + .01, 2) <= 1:
+                            sends[send_id].value = round(prev_value + .01, 2)
                     else:
-                        sends[send_id].value = round(prev_value + .05, 1)
+                        if round(prev_value + .05, 1) <= 1:
+                            sends[send_id].value = round(prev_value + .05, 1)
                 elif value > 65 and prev_value > 0:
                     if last_access > 0.01:
-                        sends[send_id].value = round(prev_value - .01, 2)
+                        if round(prev_value - .01, 2) >= 0:
+                            sends[send_id].value = round(prev_value - .01, 2)
                     else:
-                        sends[send_id].value = round(prev_value - .05, 1)
+                        if round(prev_value - .05, 1) >= 0:
+                            sends[send_id].value = round(prev_value - .05, 1)
 
             setattr(self, accessname, time.clock())
 
@@ -854,9 +864,11 @@ class QControlComponent(BaseComponent):
         if track is not None:
             prev_value = track.mixer_device.volume.value
             if value < 65:
-                track.mixer_device.volume.value = round(prev_value + .01, 2)
+                if round(prev_value + .01, 2) <= 1:
+                    track.mixer_device.volume.value = round(prev_value + .01, 2)
             elif value > 65 :
-                track.mixer_device.volume.value = round(prev_value - .01, 2)
+                if round(prev_value - .01, 2) >= 0:
+                    track.mixer_device.volume.value = round(prev_value - .01, 2)
 
     def _track_pan(self, value, track_id=0):
         if track_id == -1:
@@ -869,9 +881,11 @@ class QControlComponent(BaseComponent):
         if track is not None:
             prev_value = track.mixer_device.panning.value
             if value < 65:
-                track.mixer_device.panning.value = round(prev_value + .05, 2)
+                if round(prev_value + .05, 2) <= 1:
+                    track.mixer_device.panning.value = round(prev_value + .05, 2)
             elif value > 65 :
-                track.mixer_device.panning.value = round(prev_value - .05, 2)
+                if round(prev_value - .05, 2) >= -1:
+                    track.mixer_device.panning.value = round(prev_value - .05, 2)
 
     def _toggle_shift_lights(self):
         self._shift_color_mode = (self._shift_color_mode + 1)%3

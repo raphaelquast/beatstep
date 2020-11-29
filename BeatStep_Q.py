@@ -10,6 +10,8 @@ from _Framework.InputControlElement import MIDI_CC_TYPE, MIDI_NOTE_TYPE
 from _Framework.ButtonElement import ButtonElement
 from _Framework.EncoderElement import EncoderElement
 from _Framework import Task
+from _Framework.ButtonMatrixElement import ButtonMatrixElement
+from _Framework.DeviceComponent import DeviceComponent
 
 
 from .QControlComponent import QControlComponent
@@ -43,6 +45,8 @@ class BeatStep_Q(ControlSurface):
 
             self._create_mixer()
             self._create_session()
+
+            self._create_device()
 
     def receive_midi(self, midi_bytes):
         #self.show_message(str(midi_bytes))
@@ -142,6 +146,8 @@ class BeatStep_Q(ControlSurface):
                                    Live.MidiMap.MapMode.relative_smooth_two_compliment,
                                    name='_' + str(i) + '_encoder'))
 
+        self._device_encoders = ButtonMatrixElement(rows=[ [ EncoderElement(MIDI_CC_TYPE, CHANNEL, identifier, Live.MidiMap.MapMode.relative_smooth_two_compliment, name=u'Encoder_%d_%d' % (column_index, row_index)) for column_index, identifier in enumerate(row) ] for row_index, row in enumerate((ENCODER_MSG_IDS[:4], ENCODER_MSG_IDS[8:12])) ])
+
 
     def _create_Q_control(self):
 
@@ -188,3 +194,9 @@ class BeatStep_Q(ControlSurface):
         self._mixer.set_track_select_encoder(self._8_encoder)
         self._mixer.set_enabled(True)
 
+    def _create_device(self):
+        self._device = DeviceComponent(name=u'Device', is_enabled=False,
+                                       layer=Layer(parameter_controls=self._device_encoders),
+                                       device_selection_follows_track_selection=True)
+        self._device.set_enabled(True)
+        self.set_device_component(self._device)
