@@ -107,7 +107,7 @@ class QControlComponent(BaseComponent):
                 else:
                     bdict[button_down] = 'magenta'
 
-                if track.arm:
+                if track.can_be_armed and track.arm:
                     bdict[button_up] = 'red'
                 else:
                     bdict[button_up] = 'black'
@@ -164,7 +164,7 @@ class QControlComponent(BaseComponent):
                         bdict[button_up] = 'black'
                         continue
 
-                    if track.arm:
+                    if track.can_be_armed and track.arm:
                         if (track.mute or track.muted_via_solo):
                             bdict[button_up] = 'magenta'
                         else:
@@ -595,7 +595,7 @@ class QControlComponent(BaseComponent):
 
     def _arm_track(self, trackid):
         track = self.use_tracks[trackid]
-        if track is not None:
+        if track is not None and track.can_be_armed:
             if track.arm == True:
                 track.arm = False
             else:
