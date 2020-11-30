@@ -1,5 +1,7 @@
 This is a **MIDI Remote Script** for **Ableton Live 10** and the **Arturia BeatStep** controller.  
 
+It turns the BeatStep controller into a fully-fledged control-surface for Ableton Live, e.g.:
+
 - arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ... 
 
 - get indications on the status of tracks and scenes via button-lights
@@ -92,8 +94,6 @@ The assignments are as follows:
 - `button 15` : select next scene (if at the end, add a new scene)
 
 - `button 16` : activate **track control** (see below)
-  
-  
 
 - `encoder 8` : track-selection (left-right)
 
@@ -121,8 +121,6 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 - `magenta` for only the top-row if `shift` is pressed
 
 - `red` for all lights if `shift` is pressed
-
-
 
 The assignments are as follows:
 
@@ -158,8 +156,6 @@ The assignments are as follows:
 
 - `button 16`: switch to **track control** (see below)
 
-
-
 - the top-row of the encoders (`1-6`) control "send A"
 
 - the bottom-row of the encoders (`9-14`) control "send B"
@@ -188,8 +184,6 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 - `off` if the track is unarmed
 
-
-
 The assignments are as follows:
 
 - the buttons in the upper row (1-6) indicate / set the **mute** status of the first 6 tracks in the red box
@@ -201,8 +195,6 @@ The assignments are as follows:
 - `button 8` : switch to **song control** (see above)  
 
 - `button 16` : get back to the normal behaviour (e.g. deactivate track control)
-
-
 
 - the top-row of the encoders (`1-7`) control the "track volume"
 
