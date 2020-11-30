@@ -172,7 +172,7 @@ class QControlComponent(BaseComponent):
                             bdict[button_up] = 'magenta'
                         else:
                             bdict[button_up] = 'red'
-                    elif track.solo:
+                    elif track.is_foldable:
                         bdict[button_up] = 'blue'
                     else:
                         bdict[button_up] = 'black'
@@ -989,7 +989,6 @@ class QControlComponent(BaseComponent):
             song.view.selected_scene = all_scenes[index - 1]
 
     def _select_prev_next_scene(self, value):
-        self._parent.show_message(str(value))
         if value > 65:
             self._select_next_scene(create_new_scenes=False)
         elif value < 65:
