@@ -286,14 +286,10 @@ class QControlComponent(BaseComponent):
         width = len(self.use_tracks)
         height = 1
         include_returns = False
-        self._parent.log_message(str((
-            track_offset, scene_offset, width, height,
-            include_returns)))
-        self._parent._c_instance.set_session_highlight(
-            track_offset, scene_offset, width, height,
-            include_returns)
-
-
+        self._parent._c_instance.set_session_highlight(track_offset,
+                                                       scene_offset,
+                                                       width, height,
+                                                       include_returns)
 
     def _add_control_listeners(self):
         song = self._parent.song()
