@@ -98,6 +98,14 @@ class QControlComponent(BaseComponent):
                     bdict[button_down] = 'black'
                     continue
 
+                if track.can_be_armed and track.arm:
+                    bdict[button_up] = 'red'
+                elif track.is_foldable:
+                    bdict[button_up] = 'blue'
+                else:
+                    bdict[button_up] = 'black'
+
+
                 if track.solo and not track.mute:
                     bdict[button_down] = 'blue'
                 elif track.mute and track.solo:
@@ -106,11 +114,6 @@ class QControlComponent(BaseComponent):
                     bdict[button_down] = 'black'
                 else:
                     bdict[button_down] = 'magenta'
-
-                if track.can_be_armed and track.arm:
-                    bdict[button_up] = 'red'
-                else:
-                    bdict[button_up] = 'black'
 
         elif self._control_layer:
             bdict[16] = 'black'
@@ -181,7 +184,7 @@ class QControlComponent(BaseComponent):
                             bdict[i] = 'black'
                     else:
                         #for i in range(9, 17):
-                        for i in range(8):
+                        for i, track in enumerate(self.use_tracks):
                             button_down = i + 9
                             if i == self.selected_track_index%self.npads:
                                 # indicate selected track
@@ -222,6 +225,7 @@ class QControlComponent(BaseComponent):
         self.selected_scene = selected_scene
         self.selected_scene_index = current_index
         self.selected_clip_slot = song.view.highlighted_clip_slot
+        self.update_red_box()
 
 
     def on_selected_track_changed(self):
@@ -230,10 +234,21 @@ class QControlComponent(BaseComponent):
         '''
         try:
             song = self._parent.song()
-            all_tracks = song.tracks
+            #all_tracks = song.tracks
+            all_tracks = []
+            for track in song.tracks:
+                if track.is_grouped:
+                    group = track.group_track
+                    if group.fold_state is True:
+                        continue
+                    else:
+                        all_tracks.append(track)
+                else:
+                    all_tracks.append(track)
+
             selected_track = song.view.selected_track
             current_index = list(all_tracks).index(selected_track)
-            slotid = int(current_index / self.npads) * (self.npads)
+            track_offset = int(current_index / self.npads) * (self.npads)
 
             self.selected_clip_slot = song.view.highlighted_clip_slot
             self.selected_track = selected_track
@@ -246,13 +261,14 @@ class QControlComponent(BaseComponent):
             self._update_lights()
             return
 
-        self.use_tracks = []
-        for i in range(slotid, slotid + self.npads):
-            if len(all_tracks) > i:
-                track = all_tracks[i]
-                self.use_tracks.append(track)
-            else:
-                self.use_tracks.append(None)
+        self.use_tracks = [None for i in range(self.npads)]
+        ntrack = 0
+        for track in all_tracks[track_offset:]:
+            self.use_tracks[ntrack] = track
+            ntrack += 1
+
+            if ntrack >= self.npads:
+                break
 
         for i, track in enumerate(self.use_tracks):
             if track is not None and track.can_be_armed:
@@ -260,7 +276,23 @@ class QControlComponent(BaseComponent):
                     track.add_arm_listener(self._update_lights)
                 if not track.mute_has_listener(self._update_lights):
                     track.add_mute_listener(self._update_lights)
+
+        self.update_red_box()
         self._update_lights()
+
+    def update_red_box(self):
+        track_offset = int(self.selected_track_index / self.npads) * (self.npads)
+        scene_offset = self.selected_scene_index
+        width = len(self.use_tracks)
+        height = 1
+        include_returns = False
+        self._parent.log_message(str((
+            track_offset, scene_offset, width, height,
+            include_returns)))
+        self._parent._c_instance.set_session_highlight(
+            track_offset, scene_offset, width, height,
+            include_returns)
+
 
 
     def _add_control_listeners(self):
@@ -595,11 +627,19 @@ class QControlComponent(BaseComponent):
 
     def _arm_track(self, trackid):
         track = self.use_tracks[trackid]
-        if track is not None and track.can_be_armed:
-            if track.arm == True:
-                track.arm = False
-            else:
-                track.arm = True
+        if track is not None:
+            if track.can_be_armed:
+                if track.arm == True:
+                    track.arm = False
+                else:
+                    track.arm = True
+            elif track.is_foldable:
+                if track.fold_state == True:
+                    track.fold_state = False
+                else:
+                    track.fold_state = True
+                self.on_selected_track_changed()
+
 
     def _mute_track(self, trackid):
         track = self.use_tracks[trackid]
@@ -805,6 +845,10 @@ class QControlComponent(BaseComponent):
             self._track_pan(value, -2)
         elif not self._shift_fixed and not self._control_layer:
             self._track_pan(value, -1)
+
+    def _16_encoder_listener(self, value):
+        self._select_prev_next_scene(value)
+
     #########################################################
 
 
@@ -924,16 +968,17 @@ class QControlComponent(BaseComponent):
             msg = (240, 0, 32, 107, 127, 66, 2, 0) + (3, button, decval, 247)
             self._parent._send_midi(msg)
 
-    def _select_next_scene(self):
+    def _select_next_scene(self, create_new_scenes=True):
         song = self._parent.song()
         selected_scene = song.view.selected_scene
         all_scenes = song.scenes
         if selected_scene != all_scenes[-1]:
             song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
         else:
-            # create new scenes in case we are at the end
-            song.create_scene(-1)
-            song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
+            if create_new_scenes is True:
+                # create new scenes in case we are at the end
+                song.create_scene(-1)
+                song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
 
     def _select_prev_scene(self):
         song = self._parent.song()
@@ -942,3 +987,10 @@ class QControlComponent(BaseComponent):
         if selected_scene != all_scenes[0]:
             index = list(all_scenes).index(selected_scene)
             song.view.selected_scene = all_scenes[index - 1]
+
+    def _select_prev_next_scene(self, value):
+        self._parent.show_message(str(value))
+        if value > 65:
+            self._select_next_scene(create_new_scenes=False)
+        elif value < 65:
+            self._select_prev_scene()

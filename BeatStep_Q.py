@@ -44,7 +44,6 @@ class BeatStep_Q(ControlSurface):
             self._create_Q_control()
 
             self._create_mixer()
-            self._create_session()
 
             self._create_device()
 
@@ -78,7 +77,6 @@ class BeatStep_Q(ControlSurface):
             self.schedule_message(16 - i, self._B_color_callback(i, 16))
         for i in range(15):
             self.schedule_message(20, self._B_color_callback(i, 0))
-
 
     def _setup_hardware(self):
 
@@ -120,7 +118,6 @@ class BeatStep_Q(ControlSurface):
 
         self._send_midi(self.QS.set_S_channel(CHANNEL_SEQUENCER))
 
-
     def _create_controls(self):
         self._play_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 2, name=u'Play_Button')
         self._play_S_button = ButtonElement(True, MIDI_NOTE_TYPE, 0, 60, name=u'Play_Button')
@@ -148,7 +145,6 @@ class BeatStep_Q(ControlSurface):
 
         self._device_encoders = ButtonMatrixElement(rows=[ [ EncoderElement(MIDI_CC_TYPE, CHANNEL, identifier, Live.MidiMap.MapMode.relative_smooth_two_compliment, name=u'Encoder_%d_%d' % (column_index, row_index)) for column_index, identifier in enumerate(row) ] for row_index, row in enumerate((ENCODER_MSG_IDS[:4], ENCODER_MSG_IDS[8:12])) ])
 
-
     def _create_Q_control(self):
 
         self._control_component = QControlComponent(self)
@@ -167,23 +163,6 @@ class BeatStep_Q(ControlSurface):
         for i in xrange(1,17):
             getattr(self._control_component, 'set_' + str(i) + '_encoder_button'
                     )(getattr(self, '_' + str(i) + '_encoder'))
-
-
-
-    def _create_session(self):
-        self._session = SessionComponent(name=u'Session',
-                                         is_enabled=False,
-                                         num_tracks=self._control_component.npads,
-                                         num_scenes=2,
-                                         enable_skinning=False,
-                                         #layer=Layer(scene_select_control=self._16_encoder)
-                                         )
-        self._session.set_scene_select_control(self._16_encoder)
-        # do this to enable the "red-box"
-        self.set_highlighting_session_component(self._session)
-
-        self._session.set_enabled(True)
-
 
     def _create_mixer(self):
         self._mixer = MixerComponent(name=u'Mixer',
