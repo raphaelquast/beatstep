@@ -255,7 +255,7 @@ class QControlComponent(BaseComponent):
                 self.use_tracks.append(None)
 
         for i, track in enumerate(self.use_tracks):
-            if track is not None:
+            if track is not None and track.can_be_armed:
                 if not track.arm_has_listener(self._update_lights):
                     track.add_arm_listener(self._update_lights)
                 if not track.mute_has_listener(self._update_lights):
