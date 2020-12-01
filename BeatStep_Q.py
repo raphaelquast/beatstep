@@ -3,8 +3,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 import Live
 #from _Arturia.ArturiaControlSurface import ArturiaControlSurface
 from _Framework.ControlSurface import ControlSurface
-from _Arturia.SessionComponent import SessionComponent
-from _Arturia.MixerComponent import MixerComponent
 from _Framework.Layer import Layer
 from _Framework.InputControlElement import MIDI_CC_TYPE, MIDI_NOTE_TYPE
 from _Framework.ButtonElement import ButtonElement
@@ -42,8 +40,6 @@ class BeatStep_Q(ControlSurface):
 
             self._create_controls()
             self._create_Q_control()
-
-            self._create_mixer()
 
             self._create_device()
 
@@ -101,6 +97,7 @@ class BeatStep_Q(ControlSurface):
 
         # set transpose encoder channel
         self._send_midi(self.QS.set_E_channel('transpose', CHANNEL))
+        self._send_midi(self.QS.set_E_behaviour('transpose', 2))
 
         # for all buttons
         for i in range(16):
@@ -113,7 +110,8 @@ class BeatStep_Q(ControlSurface):
 
             # set encoder channel
             self._send_midi(self.QS.set_E_channel(i, CHANNEL))
-
+            # set all encoders to relative-mode 2
+            self._send_midi(self.QS.set_E_behaviour(i, 2))
 
         self._send_midi(self.QS.set_S_channel(CHANNEL_SEQUENCER))
 
@@ -162,15 +160,6 @@ class BeatStep_Q(ControlSurface):
         for i in xrange(1,17):
             getattr(self._control_component, 'set_' + str(i) + '_encoder_button'
                     )(getattr(self, '_' + str(i) + '_encoder'))
-
-    def _create_mixer(self):
-        self._mixer = MixerComponent(name=u'Mixer',
-                                     is_enabled=False,
-                                     num_returns=2,
-                                     #layer=Layer(track_select_encoder=self._8_encoder)
-                                     )
-        self._mixer.set_track_select_encoder(self._8_encoder)
-        self._mixer.set_enabled(True)
 
     def _create_device(self):
         self._device = DeviceComponent(name=u'Device', is_enabled=False,

@@ -246,6 +246,8 @@ class QControlComponent(BaseComponent):
                 else:
                     all_tracks.append(track)
 
+            self.all_tracks = all_tracks
+
             selected_track = song.view.selected_track
             current_index = list(all_tracks).index(selected_track)
             track_offset = int(current_index / self.npads) * (self.npads)
@@ -788,6 +790,9 @@ class QControlComponent(BaseComponent):
         elif not self._shift_fixed and not self._control_layer:
             self._track_volume(value, -1)
 
+    def _8_encoder_listener(self, value):
+        self._select_prev_next_track(value)
+
     #########################################################
 
     def _9_encoder_listener(self, value):
@@ -984,8 +989,34 @@ class QControlComponent(BaseComponent):
             index = list(all_scenes).index(selected_scene)
             song.view.selected_scene = all_scenes[index - 1]
 
+        self.on_selected_scene_changed()
+
     def _select_prev_next_scene(self, value):
         if value < 65:
             self._select_next_scene(create_new_scenes=False)
         elif value > 65:
             self._select_prev_scene()
+
+    def _select_prev_track(self):
+        song = self._parent.song()
+        selected_track = song.view.selected_track
+        assert selected_track in self.all_tracks
+        index = list(self.all_tracks).index(selected_track)
+        if selected_track != self.all_tracks[0]:
+            song.view.selected_track = self.all_tracks[index - 1]
+
+        self.on_selected_track_changed()
+
+    def _select_next_track(self):
+        song = self._parent.song()
+        selected_track = song.view.selected_track
+        assert selected_track in self.all_tracks
+        index = list(self.all_tracks).index(selected_track)
+        if selected_track != self.all_tracks[-1]:
+            song.view.selected_track = self.all_tracks[index + 1]
+
+    def _select_prev_next_track(self, value):
+        if value < 65:
+            self._select_next_track()
+        elif value > 65:
+            self._select_prev_track()
