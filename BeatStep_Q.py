@@ -99,7 +99,6 @@ class BeatStep_Q(ControlSurface):
         # set button behaviour to toggle
         self._send_midi(self.QS.set_B_behaviour('cntrl', 0))
 
-
         # set transpose encoder channel
         self._send_midi(self.QS.set_E_channel('transpose', CHANNEL))
 

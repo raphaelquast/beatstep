@@ -388,7 +388,7 @@ class QControlComponent(BaseComponent):
 
     def _7_listener(self, value):
         if value > 0:
-            if self._shift_pressed:
+            if self._shift_pressed or self._shift_fixed or self._control_layer:
                 self._select_prev_scene()
         else:
             self._update_lights()
@@ -490,7 +490,7 @@ class QControlComponent(BaseComponent):
 
     def _15_listener(self, value):
         if value > 0:
-            if self._shift_pressed:
+            if self._shift_pressed or self._shift_fixed or self._control_layer:
                 self._select_next_scene()
         else:
             self._update_lights()
