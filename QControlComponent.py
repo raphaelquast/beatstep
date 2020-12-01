@@ -985,7 +985,7 @@ class QControlComponent(BaseComponent):
             song.view.selected_scene = all_scenes[index - 1]
 
     def _select_prev_next_scene(self, value):
-        if value > 65:
+        if value < 65:
             self._select_next_scene(create_new_scenes=False)
-        elif value < 65:
+        elif value > 65:
             self._select_prev_scene()
