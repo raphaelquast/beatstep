@@ -60,18 +60,21 @@ The lights in the first row indicate the track-arm status:
   
   - `magenta` if the track is armed but muted
 
-- `blue` if the track is set to **solo**
+- `blue` if the track represents a **track-group**
 
 - `off` if the track is muted and **not** armed
 
 The lights in the second indicate the currently activated clip.  (red for midi, blue for audio)  
 (you can change this behaviour or turn the lights off! >> check `"scene control" + button 7`)
 
+
+
 The assignments are as follows:
 
 - `button 1-6`:  select track 1-6 of the currently focussed slots (red box)
   
-  - double tap an already activated track to arm/unarm it !
+  - double tap an already selected track to arm/unarm it
+    - if the selected track is a track-group, instead fold/unfold the group
 
 - `button 7`: select previous scene (e.g. go 1 scene up) 
 
@@ -122,6 +125,8 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 
 - `red` for all lights if `shift` is pressed
 
+
+
 The assignments are as follows:
 
 - `button 1` : redo last step
@@ -168,7 +173,15 @@ The assignments are as follows:
 
 ### If "track control" is active
 
-The lights in the top-row indicate the mute / solo status of the corresponding track.
+The lights in the top-row indicate the arm status of the corresponding track.
+
+- `red` if the track is armed
+
+- `blue` if the track represents a track-group
+
+- `off` if the track is unarmed (and no track-group)
+
+The lights in the bottom-row indicate the mute / solo status of the corresponding track.
 
 - `blue` for a track that is set to solo
 
@@ -178,19 +191,15 @@ The lights in the top-row indicate the mute / solo status of the corresponding t
 
 - `off` if the track is muted and not solo
 
-The lights in the bottom-row indicate the arm status of the corresponding track.
 
-- `red` if the track is armed
-
-- `off` if the track is unarmed
 
 The assignments are as follows:
 
-- the buttons in the upper row (1-6) indicate / set the **mute** status of the first 6 tracks in the red box
+- the buttons in the top row (1-6) set the **arm** (or track-group) status of the first 6 tracks in the red box
+
+- the buttons in the bottom row (9-14) set the **mute** status of the first 6 tracks in the red box
 
 - - holding `shift` while pressing the button will **solo** the corresponding track if **track control** is activated permanently (e.g. if the activation-button has been double-tapped)
-
-- the buttons in the lower row (9-14) indicate / set the **arm** status of the first 6 tracks in the red box
 
 - `button 8` : switch to **song control** (see above)  
 
