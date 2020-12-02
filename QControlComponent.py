@@ -966,7 +966,7 @@ class QControlComponent(BaseComponent):
         self._update_lights()
 
     def _transpose_encoder_listener(self, value):
-        if not self._control_layer_1 and not self._control_layer_2 and not self._shift_pressed:
+        if not self.__control_layer_permanent and not self._shift_pressed:
             self._transpose(value)
 
     def _transpose(self, value, interval=4):
@@ -1001,13 +1001,16 @@ class QControlComponent(BaseComponent):
 
     def _set_notes(self, start):
         # set midi-notes of buttons to start + (0-15)
-        for i in range(1, 17):
-            decval = (start + i - 1)%127
-            if i > 8:
-                i = i - 8
+        for i in range(16):
+            decval = (start + i)%127
+            button = i + 1
+
+            if button > 8:
+                button = button - 8
             else:
-                i = i + 8
-            self._parent._send_midi(self._parent.QS.set_B_cc(i, decval))
+                button = button + 8
+
+            self._parent._send_midi(self._parent.QS.set_B_cc(button, decval))
 
     def _select_next_scene(self, create_new_scenes=True):
         song = self._parent.song()
