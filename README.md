@@ -31,7 +31,8 @@ To indicate a successful setup, the top-row will light up red and blue (about 2 
 
 ## Buttons:
 
-The `shift-button` is used to activate the control-features.  
+The `shift-button` is used to activate the control-features.   
+(**double-tap** it to make the shift-layer permanent, NOT the *"if shift-pressed"* behaviour!)
 `shift` + `button 8` and `shift` + `button 16` is used to activate different control-layers.   
 (**double-tap**  to make the control-layers remain activated until the activation button is pressed again!)  
 
@@ -66,8 +67,6 @@ The lights in the first row indicate the track-arm status:
 
 The lights in the second indicate the currently activated clip.  (red for midi, blue for audio)  
 (you can change this behaviour or turn the lights off! >> check `"scene control" + button 7`)
-
-
 
 The assignments are as follows:
 
@@ -124,8 +123,6 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 - `magenta` for only the top-row if `shift` is pressed
 
 - `red` for all lights if `shift` is pressed
-
-
 
 The assignments are as follows:
 
@@ -190,8 +187,6 @@ The lights in the bottom-row indicate the mute / solo status of the correspondin
 - `red` if the track is both solo and muted
 
 - `off` if the track is muted and not solo
-
-
 
 The assignments are as follows:
 
