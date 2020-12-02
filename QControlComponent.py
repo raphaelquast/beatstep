@@ -564,11 +564,8 @@ class QControlComponent(BaseComponent):
 
     def _duplicate_loop(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-
-        try:
+        if clip_slot.has_clip:
             clip_slot.clip.duplicate_loop()
-        except:
-            pass
 
     def _duplicate_track(self):
         if self.selected_track_index is not None:
@@ -588,10 +585,8 @@ class QControlComponent(BaseComponent):
 
     def _delete_clip(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-        try:
+        if clip_slot.has_clip:
             clip_slot.delete_clip()
-        except:
-            pass
 
     def _stop_clip(self):
         # if shift is pressed, stop all clips and stop playing
@@ -647,7 +642,6 @@ class QControlComponent(BaseComponent):
                 else:
                     track.fold_state = True
                 self.on_selected_track_changed()
-
 
     def _mute_track(self, trackid):
         track = self.use_tracks[trackid]
@@ -740,8 +734,6 @@ class QControlComponent(BaseComponent):
 
         # remove control-listeners (e.g. metronome, automation etc.)
         self._remove_control_listeners()
-
-
 
     def _shift_listener(self, value):
         if value == 127:
@@ -904,7 +896,6 @@ class QControlComponent(BaseComponent):
 
     #########################################################
 
-
     def _track_send_x(self, value, track_id=0, send_id=0):
         accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
         last_access = abs(time.clock() - getattr(self, accessname, 0))
@@ -1010,16 +1001,13 @@ class QControlComponent(BaseComponent):
 
     def _set_notes(self, start):
         # set midi-notes of buttons to start + (0-15)
-        for i in xrange(16):
-            decval = (start + i)%127
-
-            if i > 7:
-                button = 112 + i%8
+        for i in range(1, 17):
+            decval = (start + i - 1)%127
+            if i > 8:
+                i = i - 8
             else:
-                button = 120 + i%8
-
-            msg = (240, 0, 32, 107, 127, 66, 2, 0) + (3, button, decval, 247)
-            self._parent._send_midi(msg)
+                i = i + 8
+            self._parent._send_midi(self._parent.QS.set_B_cc(i, decval))
 
     def _select_next_scene(self, create_new_scenes=True):
         song = self._parent.song()
