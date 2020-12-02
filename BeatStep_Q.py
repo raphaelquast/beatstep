@@ -68,10 +68,10 @@ class BeatStep_Q(ControlSurface):
         return f
 
     def _init_color_sequence(self):
-        for i in range(8):
-            self.schedule_message(i + 1, self._B_color_callback(i, 1))
-            self.schedule_message(16 - i, self._B_color_callback(i, 16))
-        for i in range(15):
+        for i in range(1, 9):
+            self.schedule_message(i, self._B_color_callback(i, 1))
+            self.schedule_message(17 - i, self._B_color_callback(i, 16))
+        for i in range(1, 17):
             self.schedule_message(20, self._B_color_callback(i, 0))
 
     def _setup_hardware(self):
@@ -100,7 +100,7 @@ class BeatStep_Q(ControlSurface):
         self._send_midi(self.QS.set_E_behaviour('transpose', 2))
 
         # for all buttons
-        for i in range(16):
+        for i in range(1, 17):
             # set pad to note-mode
             self._send_midi(self.QS.set_B_mode(i, 9))
             # set pad channel
