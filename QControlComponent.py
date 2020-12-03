@@ -1,6 +1,7 @@
 from BaseComponent import BaseComponent
 import time
 from itertools import cycle
+import Live
 
 VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detail/DeviceChain')
 
@@ -305,7 +306,7 @@ class QControlComponent(BaseComponent):
         if selected_track in all_tracks:
             self.selected_clip_slot = song.view.highlighted_clip_slot
             self.selected_track = selected_track
-            self.selected_track_index = current_index
+            self.selected_track_index = all_tracks.index(selected_track)
         else:
             self.selected_clip_slot = None
             self.selected_track = None
@@ -671,12 +672,33 @@ class QControlComponent(BaseComponent):
             clip_slot.clip.duplicate_loop()
 
     def _duplicate_track(self):
-        if self.selected_track_index is not None:
-            self._parent.song().duplicate_track(self.selected_track_index)
+        song = self._parent.song()
+        # find the track-index  explicitly since the duplicate_track function
+        # uses a different indexing than QControl!
+        selected_track = song.view.selected_track
+        if self.selected_track in self.all_tracks:
+            if isinstance(selected_track, Live.Track.Track) and selected_track not in list(song.return_tracks):
+                selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
+                try:
+                    song.duplicate_track(selected_track_index)
+                except Live.Base.LimitationError:
+                    self._parent.show_message('unable to duplicate... track limit reached!')
+                except RuntimeError:
+                    self._parent.show_message('duplication of track did not work...')
 
     def _delete_track(self):
-        if self.selected_track_index is not None:
-            self._parent.song().delete_track(self.selected_track_index)
+        song = self._parent.song()
+        # find the track-index  explicitly since the duplicate_track function
+        # uses a different indexing than QControl!
+        selected_track = song.view.selected_track
+        if selected_track is not None:
+            selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
+
+            if self.selected_track_index not in [song.master_track]:
+                try:
+                    song.delete_track(selected_track_index)
+                except RuntimeError:
+                    self.show_notification('deletion of track failed')
 
     def _duplicate_scene(self):
         if self.selected_scene_index is not None:
