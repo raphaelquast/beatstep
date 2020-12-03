@@ -52,12 +52,13 @@ class QControlComponent(BaseComponent):
         self._parent.song().view.add_selected_track_listener(self.on_selected_track_changed)
         self._parent.song().view.add_selected_scene_listener(self.on_selected_scene_changed)
         self._parent.song().add_tracks_listener(self.on_selected_track_changed)
+        self._parent.song().add_scenes_listener(self.on_selected_scene_changed)
 
         # call this once to initialize "self.use_tracks"
+        self.use_slots = [[None, None] for i in range(9)]
         self.use_tracks = self._parent.song().tracks[:self.npads]
         self._select_track(0)
         self.on_selected_track_changed()
-
 
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
@@ -77,6 +78,7 @@ class QControlComponent(BaseComponent):
         self._parent.schedule_message(1, callback)
 
     def _update_lights(self):
+        self.update_red_box()
         self._parent.show_message(str([self._shift_pressed,
                                        self._shift_fixed,
                                        self._control_layer_1,
@@ -96,16 +98,11 @@ class QControlComponent(BaseComponent):
 
         bdict = dict()
 
-        if self._shift_fixed:
-            # red = 1 which means "on" for the shift button light
-            # even though it's actually blue
-            bdict['shift'] = 'red'
-        else:
-            bdict['shift'] = 'black'
-
         if self._control_layer_1:
             bdict[16] = 'red'
             bdict[8] = 'black'
+            bdict['shift'] = 'black'
+            bdict['chan'] = 'black'
 
             for i, track in enumerate(self.use_tracks):
                 button_up = i + 1
@@ -137,6 +134,8 @@ class QControlComponent(BaseComponent):
         elif self._control_layer_2:
             bdict[16] = 'black'
             bdict[8] = 'red'
+            bdict['shift'] = 'black'
+            bdict['chan'] = 'black'
 
             used_buttons = [1, 2, 3, 6, 8, 9, 10, 11, 13, 14]
             # turn off all other lights
@@ -172,13 +171,42 @@ class QControlComponent(BaseComponent):
                 bdict[14] = 'black'
 
         elif self._control_layer_3:
-            for i in range(1, 17):
-                if i%2 == 0:
-                    bdict[i] = 'red'
+            # red = 1 which means "on" for the "chan button" light
+            # even though it's actually blue
+            bdict['shift'] = 'black'
+            bdict['chan'] = 'red'
+
+            for i, [slot_up, slot_down] in enumerate(self.use_slots):
+                button_up = i + 1
+                button_down = i + 9
+                if slot_up is not None:
+                    if slot_up.has_clip:
+                        if slot_up.is_playing:
+                            bdict[button_up] = 'red'
+                        else:
+                            bdict[button_up] = 'blue'
+                    else:
+                        bdict[button_up] = 'black'
                 else:
-                    bdict[i] = 'blue'
+                    bdict[button_up] = 'black'
+
+                if slot_down is not None:
+                    if slot_down.has_clip:
+                        if slot_down.is_playing:
+                            bdict[button_down] = 'red'
+                        else:
+                            bdict[button_down] = 'blue'
+                    else:
+                        bdict[button_down] = 'black'
+                else:
+                    bdict[button_down] = 'black'
 
         elif self._shift_pressed or self._shift_fixed:
+            # red = 1 which means "on" for the "shift button" light
+            # even though it's actually blue
+            bdict['shift'] = 'red'
+            bdict['chan'] = 'black'
+
             if self._shift_color_mode == 0:
                 # turn off all lights
                 for i in range(1, 17):
@@ -233,10 +261,12 @@ class QControlComponent(BaseComponent):
                     bdict[15] = 'black'
                     bdict[16] = 'black'
 
-        elif not self.__control_layer_permanent:
+        else:
             # turn off all lights on shift-release
             for i in range(1, 17):
                 bdict[i] = 'black'
+            bdict['shift'] = 'black'
+            bdict['chan'] = 'black'
 
         self._button_light_status = bdict
 
@@ -251,7 +281,8 @@ class QControlComponent(BaseComponent):
         self.selected_scene = selected_scene
         self.selected_scene_index = current_index
         self.selected_clip_slot = song.view.highlighted_clip_slot
-        self.update_red_box()
+        self._get_used_clipslots()
+        self._update_lights()
 
 
     def on_selected_track_changed(self):
@@ -286,6 +317,7 @@ class QControlComponent(BaseComponent):
             self.selected_track = None
             self.selected_track_index = None
             self.selected_clip_slot = None
+            self._get_used_clipslots()
             self._update_lights()
             return
 
@@ -305,14 +337,45 @@ class QControlComponent(BaseComponent):
                 if not track.mute_has_listener(self._update_lights):
                     track.add_mute_listener(self._update_lights)
 
-        self.update_red_box()
+        self._get_used_clipslots()
+        self._update_lights()
+
+    def _get_used_clipslots(self):
+        use_slots = []
+        scene_index = self.selected_scene_index
+        for track in self.use_tracks:
+            useslot = [None, None]
+            if track is not None:
+                slots = list(track.clip_slots)
+                nslots = len(slots)
+                if nslots > scene_index:
+                    useslot[0] = slots[scene_index]
+                if nslots > scene_index + 1:
+                    useslot[1] = slots[scene_index + 1]
+            use_slots += [useslot]
+        self.use_slots = use_slots
+
+    def _play_slot(self, trackid, slotid):
+        clip_slot = self.use_slots[trackid][slotid]
+        if clip_slot is not None and clip_slot.has_clip:
+            clip_slot.fire()
+
+        if slotid == 1:
+            # automatically select the next slot if the lower slot is
+            # activated
+            self._select_next_scene(create_new_scenes=False)
+
         self._update_lights()
 
     def update_red_box(self):
         track_offset = int(self.selected_track_index / self.npads) * (self.npads)
         scene_offset = self.selected_scene_index
         width = len(self.use_tracks)
-        height = 1
+
+        if self._control_layer_3:
+            height = 2
+        else:
+            height = 1
         include_returns = False
         self._parent._c_instance.set_session_highlight(track_offset,
                                                        scene_offset,
@@ -343,6 +406,8 @@ class QControlComponent(BaseComponent):
                 self._arm_track(0)
             elif self._control_layer_2:
                 self._redo()
+            elif self._control_layer_3:
+                self._play_slot(0, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(0)
         else:
@@ -354,6 +419,8 @@ class QControlComponent(BaseComponent):
                 self._arm_track(1)
             elif self._control_layer_2:
                 self._duplicate_track()
+            elif self._control_layer_3:
+                self._play_slot(1, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(1)
         else:
@@ -365,6 +432,8 @@ class QControlComponent(BaseComponent):
                 self._arm_track(2)
             elif self._control_layer_2:
                 self._duplicate_scene()
+            elif self._control_layer_3:
+                self._play_slot(2, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(2)
         else:
@@ -376,6 +445,8 @@ class QControlComponent(BaseComponent):
                 self._arm_track(3)
             elif self._control_layer_2:
                 self._change_detail_view(next(self._view_cycle))
+            elif self._control_layer_3:
+                self._play_slot(3, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(3)
         else:
@@ -387,6 +458,8 @@ class QControlComponent(BaseComponent):
                 self._arm_track(4)
             elif self._control_layer_2:
                 self._change_detail_view(next(self._detail_cycle))
+            elif self._control_layer_3:
+                self._play_slot(4, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(4)
         else:
@@ -409,6 +482,8 @@ class QControlComponent(BaseComponent):
                 self._arm_track(5)
             elif self._control_layer_2:
                 self._toggle_shift_lights()
+            elif self._control_layer_3:
+                self._play_slot(5, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(5)
         else:
@@ -460,6 +535,8 @@ class QControlComponent(BaseComponent):
                 self._mute_solo_track(0)
             elif self._control_layer_2:
                 self._undo()
+            elif self._control_layer_3:
+                self._play_slot(0, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._undo()
         else:
@@ -471,6 +548,8 @@ class QControlComponent(BaseComponent):
                 self._mute_solo_track(1)
             elif self._control_layer_2:
                 self._delete_track()
+            elif self._control_layer_3:
+                self._play_slot(1, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._delete_clip()
         else:
@@ -482,6 +561,8 @@ class QControlComponent(BaseComponent):
                 self._mute_solo_track(2)
             elif self._control_layer_2:
                 self._delete_scene()
+            elif self._control_layer_3:
+                self._play_slot(2, 1)
         else:
             self._update_lights()
 
@@ -491,6 +572,8 @@ class QControlComponent(BaseComponent):
                 self._mute_solo_track(3)
             elif self._control_layer_2:
                 self._tap_tempo()
+            elif self._control_layer_3:
+                self._play_slot(3, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._duplicate_clip()
         else:
@@ -502,6 +585,8 @@ class QControlComponent(BaseComponent):
                 self._mute_solo_track(4)
             elif self._control_layer_2:
                 self._toggle_metronome()
+            elif self._control_layer_3:
+                self._play_slot(4, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._duplicate_loop()
         else:
@@ -513,6 +598,8 @@ class QControlComponent(BaseComponent):
                 self._mute_solo_track(5)
             elif self._control_layer_2:
                 self._toggle_automation()
+            elif self._control_layer_3:
+                self._play_slot(5, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._fire_record()
         else:
@@ -721,6 +808,9 @@ class QControlComponent(BaseComponent):
             except:
                 self._parent.log_message('there was something wrong during removal of listeners!')
                 pass
+
+
+
 
     def _chan_listener(self, value):
         if value == 0:
