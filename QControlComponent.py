@@ -342,8 +342,17 @@ class QControlComponent(BaseComponent):
 
     def _play_slot(self, trackid, slotid):
         clip_slot = self.use_slots[trackid][slotid]
-        if clip_slot is not None and (clip_slot.has_clip or clip_slot.is_group_slot):
-            clip_slot.fire()
+        if self._shift_pressed:
+            track = self.use_tracks[trackid]
+            if track.is_foldable:
+                if track.fold_state == True:
+                    track.fold_state = False
+                else:
+                    track.fold_state = True
+                self.on_selected_track_changed()
+        else:
+            if clip_slot is not None and (clip_slot.has_clip or clip_slot.is_group_slot):
+                clip_slot.fire()
 
         # if slotid == 1:
         #     # automatically select the next slot if the lower slot is
