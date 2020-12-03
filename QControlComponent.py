@@ -56,15 +56,28 @@ class QControlComponent(BaseComponent):
         self._parent.song().add_scenes_listener(self.on_selected_scene_changed)
 
         # call this once to initialize "self.use_tracks"
-        self.use_slots = [[None, None] for i in range(9)]
+        self.use_slots = [[None, None] for i in range(8)]
         self.use_tracks = self._parent.song().tracks[:self.npads]
         self._select_track(0)
         self.on_selected_track_changed()
 
+        # get list of callback-functions that trigger clip-launch lights
+        self._control_3_callbacks = []
+        self._control_3_blink_callbacks = []
+        for i, slots in enumerate(self.use_slots):
+            for j, slot in enumerate(slots):
+                buttonid = 1 + i + 8*j
+                cb = self._playing_state_callback(i, j, buttonid)
+                blinkcb = self._blink_clip_triggered_playing(i, j, buttonid)
+
+                # save a list of the callback-functions so that we can easily
+                # remove them later
+                self._control_3_callbacks.append(cb)
+                self._control_3_blink_callbacks.append(blinkcb)
+
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
         self._parent._send_midi(self._parent.QS.set_B_color(buttonid, colordict[color]))
-
 
     def _blink(self, condition=lambda: False, buttonid=1, timeout=5,
                colors=['red', 'black']):
@@ -171,30 +184,10 @@ class QControlComponent(BaseComponent):
             bdict['shift'] = 'black'
             bdict['chan'] = 'red'
 
-            for i, [slot_up, slot_down] in enumerate(self.use_slots):
-                button_up = i + 1
-                button_down = i + 9
-                if slot_up is not None:
-                    if slot_up.has_clip:
-                        if slot_up.is_playing:
-                            bdict[button_up] = 'red'
-                        else:
-                            bdict[button_up] = 'blue'
-                    else:
-                        bdict[button_up] = 'black'
-                else:
-                    bdict[button_up] = 'black'
-
-                if slot_down is not None:
-                    if slot_down.has_clip:
-                        if slot_down.is_playing:
-                            bdict[button_down] = 'red'
-                        else:
-                            bdict[button_down] = 'blue'
-                    else:
-                        bdict[button_down] = 'black'
-                else:
-                    bdict[button_down] = 'black'
+            self._get_used_clipslots()
+            for cb in self._control_3_callbacks:
+                # call control-layer 3 callbacks to update lights
+                cb()
 
         elif self._shift_pressed or self._shift_fixed:
             # red = 1 which means "on" for the "shift button" light
@@ -265,7 +258,6 @@ class QControlComponent(BaseComponent):
 
         self._button_light_status = bdict
 
-
     def on_selected_scene_changed(self):
         song = self._parent.song()
 
@@ -276,9 +268,10 @@ class QControlComponent(BaseComponent):
         self.selected_scene = selected_scene
         self.selected_scene_index = current_index
         self.selected_clip_slot = song.view.highlighted_clip_slot
-        self._get_used_clipslots()
+        # update clip-slot listeners
+        if self._control_layer_3:
+            self._add_control_3_listeners()
         self._update_lights()
-
 
     def on_selected_track_changed(self):
         '''
@@ -329,33 +322,33 @@ class QControlComponent(BaseComponent):
                 if not track.mute_has_listener(self._update_lights):
                     track.add_mute_listener(self._update_lights)
 
-        self._get_used_clipslots()
+        # update clip-slot listeners
+        if self._control_layer_3:
+            self._add_control_3_listeners()
         self._update_lights()
 
     def _get_used_clipslots(self):
-        use_slots = []
+        use_slots = [[None, None] for i in range(8)]
         scene_index = self.selected_scene_index
-        for track in self.use_tracks:
-            useslot = [None, None]
+        for i, track in enumerate(self.use_tracks):
             if track is not None:
                 slots = list(track.clip_slots)
                 nslots = len(slots)
                 if nslots > scene_index:
-                    useslot[0] = slots[scene_index]
+                    use_slots[i][0] = slots[scene_index]
                 if nslots > scene_index + 1:
-                    useslot[1] = slots[scene_index + 1]
-            use_slots += [useslot]
+                    use_slots[i][1] = slots[scene_index + 1]
         self.use_slots = use_slots
 
     def _play_slot(self, trackid, slotid):
         clip_slot = self.use_slots[trackid][slotid]
-        if clip_slot is not None and clip_slot.has_clip:
+        if clip_slot is not None and (clip_slot.has_clip or clip_slot.is_group_slot):
             clip_slot.fire()
 
-        if slotid == 1:
-            # automatically select the next slot if the lower slot is
-            # activated
-            self._select_next_scene(create_new_scenes=False)
+        # if slotid == 1:
+        #     # automatically select the next slot if the lower slot is
+        #     # activated
+        #     self._select_next_scene(create_new_scenes=False)
 
         self._update_lights()
 
@@ -373,6 +366,93 @@ class QControlComponent(BaseComponent):
                                                        height,
                                                        include_returns)
 
+    def _blink_clip_triggered_playing(self, track_id, slot_id, buttonid=1):
+        def blinkcb():
+            c = cycle(['red', 'black'])
+            def callback():
+                self._get_used_clipslots()
+
+                clip_slot = self.use_slots[track_id][slot_id]
+                if clip_slot is None:
+                    return
+                if clip_slot.has_clip or clip_slot.is_group_slot:
+                    if (not clip_slot.is_playing and clip_slot.is_triggered):
+                        self._set_color(buttonid, next(c))
+                        self._parent.schedule_message(1, callback)
+                    else:
+                        self._playing_state_callback(track_id, slot_id, buttonid)
+            callback()
+        return blinkcb
+
+    def _playing_state_callback(self, track_id, slot_id, buttonid=1):
+        def callback():
+            self._get_used_clipslots()
+            clip_slot = self.use_slots[track_id][slot_id]
+
+            if clip_slot is None:
+                self._set_color(buttonid, 'black')
+                return
+            if clip_slot.is_playing:
+                self._set_color(buttonid, 'red')
+            elif clip_slot.is_group_slot and clip_slot.controls_other_clips:
+                self._set_color(buttonid, 'magenta')
+            elif clip_slot.has_clip:
+                self._set_color(buttonid, 'blue')
+            else:
+                self._set_color(buttonid, 'black')
+        return callback
+
+    def _add_control_3_listeners(self):
+        cbs = iter(self._control_3_callbacks)
+        blinkcbs = iter(self._control_3_blink_callbacks)
+
+        # remove old listeners
+        self._remove_control_3_listeners()
+        # get new clip slots
+        self._get_used_clipslots()
+        # attach new listeners
+        for i, slots in enumerate(self.use_slots):
+            for j, slot in enumerate(slots):
+                cb = next(cbs)
+                blinkcb = next(blinkcbs)
+
+                if slot is None:
+                    continue
+
+                track = self.use_tracks[i]
+                if track is not None:
+                    if not track.fired_slot_index_has_listener(cb):
+                        track.add_fired_slot_index_listener(cb)
+
+                if not slot.is_triggered_has_listener(blinkcb):
+                    slot.add_is_triggered_listener(blinkcb)
+                if not slot.has_clip_has_listener(cb):
+                    slot.add_has_clip_listener(cb)
+                if not slot.playing_status_has_listener(cb):
+                    slot.add_playing_status_listener(cb)
+
+    def _remove_control_3_listeners(self):
+        cbs = iter(self._control_3_callbacks)
+        blinkcbs = iter(self._control_3_blink_callbacks)
+        for i, slots in enumerate(self.use_slots):
+            for j, slot in enumerate(slots):
+                cb = next(cbs)
+                blinkcb = next(blinkcbs)
+
+                if slot is None:
+                    continue
+
+                track = self.use_tracks[i]
+                if track is not None:
+                    if track.fired_slot_index_has_listener(cb):
+                        track.remove_fired_slot_index_listener(cb)
+
+                if slot.is_triggered_has_listener(blinkcb):
+                    slot.remove_is_triggered_listener(blinkcb)
+                if slot.has_clip_has_listener(cb):
+                    slot.remove_has_clip_listener(cb)
+                if slot.playing_status_has_listener(cb):
+                    slot.remove_playing_status_listener(cb)
 
     def _add_control_2_listeners(self):
         song = self._parent.song()
@@ -612,6 +692,7 @@ class QControlComponent(BaseComponent):
                 self._control_layer_2 = False
                 self._control_layer_3 = False
                 self._remove_control_2_listeners()
+                self._remove_control_3_listeners()
                 self._update_lights()
                 return
             else:
@@ -625,13 +706,14 @@ class QControlComponent(BaseComponent):
                         self._control_layer_2 = False
                         self._control_layer_3 = False
                         self._remove_control_2_listeners()
+                        self._remove_control_3_listeners()
                 else:
                     self._shift_fixed = False
                     self._control_layer_1 = True
                     self._control_layer_2 = False
                     self._control_layer_3 = False
                     self._remove_control_2_listeners()
-
+                    self._remove_control_3_listeners()
 
             self._update_lights()
             self.__control_layer_2_clicked = time.clock()
@@ -694,19 +776,27 @@ class QControlComponent(BaseComponent):
         if selected_track is not None:
             selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
 
-            if self.selected_track_index not in [song.master_track]:
+            if selected_track_index not in [song.master_track]:
                 try:
                     song.delete_track(selected_track_index)
                 except RuntimeError:
                     self.show_notification('deletion of track failed')
 
     def _duplicate_scene(self):
-        if self.selected_scene_index is not None:
-            self._parent.song().duplicate_scene(self.selected_scene_index)
+        song = self._parent.song()
+        # find the index in here to avoid issues
+        selected_scene_index = list(song.scenes).index(song.view.selected_scene)
+        if selected_scene_index is not None:
+            song.duplicate_scene(selected_scene_index)
 
     def _delete_scene(self):
-        if self.selected_scene_index is not None:
-            self._parent.song().delete_scene(self.selected_scene_index)
+        song = self._parent.song()
+
+        # find the index in here to avoid issues
+        selected_scene_index = list(song.scenes).index(song.view.selected_scene)
+
+        if selected_scene_index is not None:
+            self._parent.song().delete_scene(selected_scene_index)
 
     def _delete_clip(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
@@ -832,9 +922,6 @@ class QControlComponent(BaseComponent):
                 self._parent.log_message('there was something wrong during removal of listeners!')
                 pass
 
-
-
-
     def _chan_listener(self, value):
         if value == 0:
             if abs(time.clock() - self.__control_layer_3_clicked) <= self._double_tap_time:
@@ -843,6 +930,7 @@ class QControlComponent(BaseComponent):
                 self._control_layer_1 = False
                 self._control_layer_2 = False
                 self._control_layer_3 = True
+                self._add_control_3_listeners()
                 self._update_lights()
                 return
             else:
@@ -855,11 +943,13 @@ class QControlComponent(BaseComponent):
                         self._control_layer_1 = False
                         self._control_layer_2 = False
                         self._control_layer_3 = True
+                        self._add_control_3_listeners()
                 else:
                     self._shift_fixed = False
                     self._control_layer_1 = False
                     self._control_layer_2 = False
                     self._control_layer_3 = True
+                    self._add_control_3_listeners()
             self.__control_layer_3_clicked = time.clock()
 
         self._update_lights()
@@ -898,6 +988,7 @@ class QControlComponent(BaseComponent):
 
         # remove control-listeners (e.g. metronome, automation etc.)
         self._remove_control_2_listeners()
+        self._remove_control_3_listeners()
 
     def _shift_listener(self, value):
         if value == 127:
@@ -922,6 +1013,7 @@ class QControlComponent(BaseComponent):
                         self._control_layer_2 = False
                         self._control_layer_3 = False
                         self._remove_control_2_listeners()
+                        self._remove_control_3_listeners()
                 else:
                     self.__control_layer_permanent = True
                     self._shift_fixed = True
@@ -929,6 +1021,7 @@ class QControlComponent(BaseComponent):
                     self._control_layer_2 = False
                     self._control_layer_3 = False
                     self._remove_control_2_listeners()
+                    self._remove_control_3_listeners()
             else:
                 if self.__control_layer_permanent:
                     if self._shift_fixed:
