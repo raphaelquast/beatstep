@@ -32,11 +32,11 @@ class QControlComponent(BaseComponent):
 
         self.selected_track = None
         self.selected_track_index = 0
+        self.track_offset = 0
         self.selected_scene = None
         self.selected_scene_index = 0
 
         self._double_tap_time = 0.5
-
         self._shift_color_mode = 1   # 0 = none, 1 = top row, 2 = all
         self.npads = 6               # number of pads used to play notes
 
@@ -79,12 +79,6 @@ class QControlComponent(BaseComponent):
 
     def _update_lights(self):
         self.update_red_box()
-        self._parent.show_message(str([self._shift_pressed,
-                                       self._shift_fixed,
-                                       self._control_layer_1,
-                                       self._control_layer_2,
-                                       self._control_layer_3]))
-
         self._update_button_light_status()
         for key, val in self._button_light_status.items():
             if self._sequencer_running:
@@ -289,41 +283,38 @@ class QControlComponent(BaseComponent):
         '''
         update the tracks to focus on the "self.npads" relevant tracks
         '''
-        try:
-            song = self._parent.song()
-            #all_tracks = song.tracks
-            all_tracks = []
-            for track in song.tracks:
-                if track.is_grouped:
-                    group = track.group_track
-                    if group.fold_state is True:
-                        continue
-                    else:
-                        all_tracks.append(track)
+        song = self._parent.song()
+        #all_tracks = song.tracks
+        all_tracks = []
+        for track in list(song.tracks):
+            if track.is_grouped:
+                group = track.group_track
+                if group.fold_state is True:
+                    continue
                 else:
                     all_tracks.append(track)
+            else:
+                all_tracks.append(track)
 
-            self.all_tracks = all_tracks
+        self.all_tracks = all_tracks
 
-            selected_track = song.view.selected_track
-            current_index = list(all_tracks).index(selected_track)
-            track_offset = int(current_index / self.npads) * (self.npads)
+        selected_track = song.view.selected_track
+        current_index = (list(all_tracks) + list(song.return_tracks) + [song.master_track]).index(selected_track)
+        self.track_offset = int(current_index / self.npads) * (self.npads)
 
+        if selected_track in all_tracks:
             self.selected_clip_slot = song.view.highlighted_clip_slot
             self.selected_track = selected_track
             self.selected_track_index = current_index
-        except:
-            # there will be an error in case a return or master-track is selected
+        else:
+            self.selected_clip_slot = None
             self.selected_track = None
             self.selected_track_index = None
-            self.selected_clip_slot = None
-            self._get_used_clipslots()
-            self._update_lights()
-            return
+
 
         self.use_tracks = [None for i in range(self.npads)]
         ntrack = 0
-        for track in all_tracks[track_offset:]:
+        for track in all_tracks[self.track_offset:]:
             self.use_tracks[ntrack] = track
             ntrack += 1
 
@@ -368,19 +359,19 @@ class QControlComponent(BaseComponent):
         self._update_lights()
 
     def update_red_box(self):
-        track_offset = int(self.selected_track_index / self.npads) * (self.npads)
-        scene_offset = self.selected_scene_index
         width = len(self.use_tracks)
-
         if self._control_layer_3:
             height = 2
         else:
             height = 1
+
         include_returns = False
-        self._parent._c_instance.set_session_highlight(track_offset,
-                                                       scene_offset,
-                                                       width, height,
+        self._parent._c_instance.set_session_highlight(self.track_offset,
+                                                       self.selected_scene_index,
+                                                       width,
+                                                       height,
                                                        include_returns)
+
 
     def _add_control_2_listeners(self):
         song = self._parent.song()
@@ -619,6 +610,7 @@ class QControlComponent(BaseComponent):
                 self._control_layer_1 = True
                 self._control_layer_2 = False
                 self._control_layer_3 = False
+                self._remove_control_2_listeners()
                 self._update_lights()
                 return
             else:
@@ -631,11 +623,13 @@ class QControlComponent(BaseComponent):
                         self._control_layer_1 = True
                         self._control_layer_2 = False
                         self._control_layer_3 = False
+                        self._remove_control_2_listeners()
                 else:
                     self._shift_fixed = False
                     self._control_layer_1 = True
                     self._control_layer_2 = False
                     self._control_layer_3 = False
+                    self._remove_control_2_listeners()
 
 
             self._update_lights()
@@ -645,6 +639,7 @@ class QControlComponent(BaseComponent):
 
     def _fire_record(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
+        if clip_slot is None: return
 
         if clip_slot.has_clip and (clip_slot.is_playing or clip_slot.is_recording):
             if self._parent.song().session_record == False:
@@ -656,6 +651,7 @@ class QControlComponent(BaseComponent):
     def _blink_fire_record(self, clip_slot, buttonid=1):
         c = cycle(['red', 'black'])
         def callback():
+            if clip_slot is None: return
             if clip_slot.is_triggered:
                 self._set_color(buttonid, next(c))
                 self._parent.schedule_message(1, callback)
@@ -670,6 +666,7 @@ class QControlComponent(BaseComponent):
 
     def _duplicate_loop(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
+        if clip_slot is None: return
         if clip_slot.has_clip:
             clip_slot.clip.duplicate_loop()
 
@@ -691,6 +688,8 @@ class QControlComponent(BaseComponent):
 
     def _delete_clip(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
+        if clip_slot is None:
+            return
         if clip_slot.has_clip:
             clip_slot.delete_clip()
 
@@ -713,6 +712,8 @@ class QControlComponent(BaseComponent):
     def _duplicate_clip(self):
         all_scenes = self._parent.song().scenes
         # duplicate the clip slot
+        if self.selected_track is None:
+            return
         duplicated_id = self.selected_track.duplicate_clip_slot(self.selected_scene_index)
         duplicated_slot = all_scenes[duplicated_id]
         # move to the duplicated clip_slot
@@ -1182,21 +1183,23 @@ class QControlComponent(BaseComponent):
 
     def _select_prev_track(self):
         song = self._parent.song()
+        tracks_and_returns = self.all_tracks + list(song.return_tracks) + [song.master_track]
         selected_track = song.view.selected_track
-        assert selected_track in self.all_tracks
-        index = list(self.all_tracks).index(selected_track)
-        if selected_track != self.all_tracks[0]:
-            song.view.selected_track = self.all_tracks[index - 1]
+        assert selected_track in tracks_and_returns
+        index = list(tracks_and_returns).index(selected_track)
+        if selected_track != tracks_and_returns[0]:
+            song.view.selected_track = tracks_and_returns[index - 1]
 
         self.on_selected_track_changed()
 
     def _select_next_track(self):
         song = self._parent.song()
+        tracks_and_returns = self.all_tracks + list(song.return_tracks) + [song.master_track]
         selected_track = song.view.selected_track
-        assert selected_track in self.all_tracks
-        index = list(self.all_tracks).index(selected_track)
-        if selected_track != self.all_tracks[-1]:
-            song.view.selected_track = self.all_tracks[index + 1]
+        assert selected_track in tracks_and_returns
+        index = list(tracks_and_returns).index(selected_track)
+        if selected_track != tracks_and_returns[-1]:
+            song.view.selected_track = tracks_and_returns[index + 1]
 
     def _select_prev_next_track(self, value):
         if value < 65:
