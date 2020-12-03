@@ -1059,6 +1059,8 @@ class QControlComponent(BaseComponent):
             self._track_volume(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
+        elif self._control_layer_3:
+            self._track_volume(value, trackid)
 
     def _2_encoder_listener(self, value):
         trackid = 1
@@ -1066,6 +1068,8 @@ class QControlComponent(BaseComponent):
             self._track_volume(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
+        elif self._control_layer_3:
+            self._track_volume(value, trackid)
 
     def _3_encoder_listener(self, value):
         trackid = 2
@@ -1073,6 +1077,8 @@ class QControlComponent(BaseComponent):
             self._track_volume(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
+        elif self._control_layer_3:
+            self._track_volume(value, trackid)
 
     def _4_encoder_listener(self, value):
         trackid = 3
@@ -1080,6 +1086,8 @@ class QControlComponent(BaseComponent):
             self._track_volume(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
+        elif self._control_layer_3:
+            self._track_volume(value, trackid)
 
     def _5_encoder_listener(self, value):
         trackid = 4
@@ -1087,6 +1095,8 @@ class QControlComponent(BaseComponent):
             self._track_volume(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
+        elif self._control_layer_3:
+            self._track_volume(value, trackid)
         else:
             self._track_send_x(value, -1, 0)
 
@@ -1096,6 +1106,8 @@ class QControlComponent(BaseComponent):
             self._track_volume(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
+        elif self._control_layer_3:
+            self._track_volume(value, trackid)
         else:
             self._track_send_x(value, -1, 2)
 
@@ -1117,6 +1129,8 @@ class QControlComponent(BaseComponent):
             self._track_pan(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
+        elif self._control_layer_3:
+            self._track_pan(value, trackid)
 
     def _10_encoder_listener(self, value):
         trackid = 1
@@ -1124,6 +1138,8 @@ class QControlComponent(BaseComponent):
             self._track_pan(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
+        elif self._control_layer_3:
+            self._track_pan(value, trackid)
 
     def _11_encoder_listener(self, value):
         trackid = 2
@@ -1131,6 +1147,8 @@ class QControlComponent(BaseComponent):
             self._track_pan(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
+        elif self._control_layer_3:
+            self._track_pan(value, trackid)
 
     def _12_encoder_listener(self, value):
         trackid = 3
@@ -1138,6 +1156,8 @@ class QControlComponent(BaseComponent):
             self._track_pan(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
+        elif self._control_layer_3:
+            self._track_pan(value, trackid)
 
     def _13_encoder_listener(self, value):
         trackid = 4
@@ -1145,6 +1165,8 @@ class QControlComponent(BaseComponent):
             self._track_pan(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
+        elif self._control_layer_3:
+            self._track_pan(value, trackid)
         else:
             self._track_send_x(value, -1, 1)
 
@@ -1154,6 +1176,8 @@ class QControlComponent(BaseComponent):
             self._track_pan(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
+        elif self._control_layer_3:
+            self._track_pan(value, trackid)
         else:
             self._track_send_x(value, -1, 3)
 
