@@ -6,7 +6,7 @@ class QSetup(object):
     '''
     ##### BUTTON
     set_B_.........  (ID, val)
-                     ID: the button number (0-15), or one of ('play', 'stop', 'cntrl', 'sync', 'recall', 'store', 'shift', 'chan')
+                     ID: the button number (1-16), or one of ('play', 'stop', 'cntrl', 'sync', 'recall', 'store', 'shift', 'chan')
 
           mode:      set button mode
                      (0=off, 1=silent, 2=silent cc switch, 7=mmc, 8=cc, 9=note)
@@ -30,7 +30,7 @@ class QSetup(object):
 
     ##### ENCODER
     set_E_.........  (ID, val)
-                     ID: the encoder number (0-15)
+                     ID: the encoder number (1-16)
 
           mode:      set encoder mode
                      (0=off, 1=Midi cc, 4=RPN/NRPN)
@@ -91,9 +91,9 @@ class QSetup(object):
         # a dict with the encoder IDS
         self._E = dict(transpose=48)
 
-        for i in range(16):
-            self._B[i] = 112 + i
-            self._E[i] = 32 + i
+        for i in range(1, 17):
+            self._B[i] = 111 + i
+            self._E[i] = 31 + i
 
 
         self._funcdict = dict(mode=1, channel=2, cc=3, off=4, on=5, behaviour=6, color=16)
