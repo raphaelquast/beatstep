@@ -572,7 +572,11 @@ class QControlComponent(BaseComponent):
 
     def _7_listener(self, value):
         if value > 0:
-            self._select_prev_scene()
+            if self.__control_layer_permanent:
+                if self._shift_pressed:
+                    self._select_next_track()
+                else:
+                    self._select_prev_scene()
         else:
             self._update_lights()
 
@@ -688,7 +692,11 @@ class QControlComponent(BaseComponent):
 
     def _15_listener(self, value):
         if value > 0:
-            self._select_next_scene()
+            if self.__control_layer_permanent:
+                if self._shift_pressed:
+                    self._select_prev_track()
+                else:
+                    self._select_next_scene()
         else:
             self._update_lights()
 
