@@ -1071,67 +1071,66 @@ class QControlComponent(BaseComponent):
     def _1_encoder_listener(self, value):
         trackid = 0
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
 
     def _2_encoder_listener(self, value):
         trackid = 1
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
 
     def _3_encoder_listener(self, value):
         trackid = 2
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
 
     def _4_encoder_listener(self, value):
         trackid = 3
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
 
     def _5_encoder_listener(self, value):
         trackid = 4
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 0)
 
     def _6_encoder_listener(self, value):
         trackid = 5
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 2)
 
     def _7_encoder_listener(self, value):
-        if not self.__control_layer_permanent:
-            if self._shift_pressed:
-                self._track_volume(value, -2)
-            else:
-                self._track_volume(value, -1)
+        if self._shift_pressed:
+            self._track_volume(value, -2)
+        else:
+            self._track_volume(value, -1)
 
     def _8_encoder_listener(self, value):
         self._select_prev_next_track(value)
@@ -1141,67 +1140,66 @@ class QControlComponent(BaseComponent):
     def _9_encoder_listener(self, value):
         trackid = 0
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
 
     def _10_encoder_listener(self, value):
         trackid = 1
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
 
     def _11_encoder_listener(self, value):
         trackid = 2
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
 
     def _12_encoder_listener(self, value):
         trackid = 3
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
 
     def _13_encoder_listener(self, value):
         trackid = 4
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 1)
 
     def _14_encoder_listener(self, value):
         trackid = 5
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
             self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 3)
 
     def _15_encoder_listener(self, value):
-        if not self.__control_layer_permanent:
-            if self._shift_pressed:
-                self._track_pan(value, -2)
-            else:
-                self._track_pan(value, -1)
+        if self._shift_pressed:
+            self._track_pan(value, -2)
+        else:
+            self._track_pan(value, -1)
 
     def _16_encoder_listener(self, value):
         self._select_prev_next_scene(value)
@@ -1238,6 +1236,20 @@ class QControlComponent(BaseComponent):
                             sends[send_id].value = round(prev_value - .05, 1)
 
             setattr(self, accessname, time.clock())
+
+
+    def _track_volume_or_send(self, value, trackid, sendid=0):
+        if self._shift_pressed and self.__control_layer_permanent:
+            self._track_send_x(value, trackid, sendid)
+        else:
+            self._track_volume(value, trackid)
+
+    def _track_pan_or_send(self, value, trackid, sendid=1):
+        if self._shift_pressed and self.__control_layer_permanent:
+            self._track_send_x(value, trackid, sendid)
+        else:
+            self._track_pan(value, trackid)
+
 
     def _track_volume(self, value, track_id=0):
         if track_id == -1:
