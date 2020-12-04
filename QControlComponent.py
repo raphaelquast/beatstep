@@ -577,6 +577,9 @@ class QControlComponent(BaseComponent):
                     self._select_next_track()
                 else:
                     self._select_prev_scene()
+            else:
+                self._select_prev_scene()
+
         else:
             self._update_lights()
 
@@ -697,6 +700,8 @@ class QControlComponent(BaseComponent):
                     self._select_prev_track()
                 else:
                     self._select_next_scene()
+            else:
+                self._select_next_scene()
         else:
             self._update_lights()
 
