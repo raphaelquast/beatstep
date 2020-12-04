@@ -342,7 +342,7 @@ class QControlComponent(BaseComponent):
 
     def _play_slot(self, trackid, slotid):
         clip_slot = self.use_slots[trackid][slotid]
-        if self._shift_pressed:
+        if self._shift_pressed and self.__control_layer_permanent:
             track = self.use_tracks[trackid]
             if track.is_foldable:
                 if track.fold_state == True:
@@ -901,7 +901,7 @@ class QControlComponent(BaseComponent):
                 track.solo = True
 
     def _mute_solo_track(self, trackid):
-        if self._shift_pressed and self._control_layer_1:
+        if self._shift_pressed and self._control_layer_1 and self.__control_layer_permanent:
             self._solo_track(trackid)
         else:
             self._mute_track(trackid)
