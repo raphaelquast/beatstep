@@ -173,7 +173,9 @@ class QControlComponent(BaseComponent):
             else:
                 bdict[13] = 'black'
 
-            if self._parent.song().session_automation_record:
+            if self._shift_pressed and self.__control_layer_permanent and self._parent.song().re_enable_automation_enabled:
+                bdict[14] = 'blue'
+            elif self._parent.song().session_automation_record:
                 bdict[14] = 'red'
             else:
                 bdict[14] = 'black'
@@ -904,7 +906,7 @@ class QControlComponent(BaseComponent):
                 track.solo = True
 
     def _mute_solo_track(self, trackid):
-        if self._shift_pressed and self._control_layer_1 and self.__control_layer_permanent:
+        if self._shift_pressed and self.__control_layer_permanent:
             self._solo_track(trackid)
         else:
             self._mute_track(trackid)
@@ -917,10 +919,14 @@ class QControlComponent(BaseComponent):
 
     def _toggle_automation(self):
         song = self._parent.song()
-        if song.session_automation_record == True:
-            song.session_automation_record = False
+        if self._shift_pressed and self.__control_layer_permanent:
+            if song.re_enable_automation_enabled:
+                song.re_enable_automation()
         else:
-            song.session_automation_record = True
+            if song.session_automation_record == True:
+                song.session_automation_record = False
+            else:
+                song.session_automation_record = True
 
     def _tap_tempo(self):
         self._parent.song().tap_tempo()
