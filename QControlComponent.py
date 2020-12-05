@@ -1089,7 +1089,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
             self._track_volume_or_send(value, trackid)
 
@@ -1098,7 +1101,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
             self._track_volume_or_send(value, trackid)
 
@@ -1107,7 +1113,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
             self._track_volume_or_send(value, trackid)
 
@@ -1116,7 +1125,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
             self._track_volume_or_send(value, trackid)
 
@@ -1125,7 +1137,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
             self._track_volume_or_send(value, trackid)
         else:
@@ -1136,7 +1151,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
             self._track_volume_or_send(value, trackid)
         else:
@@ -1158,7 +1176,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
             self._track_pan_or_send(value, trackid)
 
@@ -1167,7 +1188,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
             self._track_pan_or_send(value, trackid)
 
@@ -1176,7 +1200,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
             self._track_pan_or_send(value, trackid)
 
@@ -1185,7 +1212,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
             self._track_pan_or_send(value, trackid)
 
@@ -1194,7 +1224,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
             self._track_pan_or_send(value, trackid)
         else:
@@ -1205,7 +1238,10 @@ class QControlComponent(BaseComponent):
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
             self._track_pan_or_send(value, trackid)
         else:
