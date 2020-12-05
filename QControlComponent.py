@@ -145,7 +145,7 @@ class QControlComponent(BaseComponent):
             bdict['shift'] = 'black'
             bdict['chan'] = 'red'
 
-            used_buttons = [1, 2, 3, 6, 8, 9, 10, 11, 13, 14]
+            used_buttons = [1, 6, 8, 9, 10, 11, 13, 14]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -155,11 +155,13 @@ class QControlComponent(BaseComponent):
             bdict[1] = 'magenta'
             bdict[9] = 'magenta'
 
-            bdict[2] = 'blue'
-            bdict[10] = 'red'
+            if self._shift_pressed:
+                bdict[10] = 'red'
+                bdict[11] = 'red'
+            else:
+                bdict[10] = 'blue'
+                bdict[11] = 'blue'
 
-            bdict[3] = 'blue'
-            bdict[11] = 'red'
 
             if self._shift_color_mode == 0:
                 bdict[6] = 'black'
@@ -504,7 +506,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_track(1)
             elif self._control_layer_2:
-                self._duplicate_track()
+                pass
             elif self._control_layer_3:
                 self._play_slot(1, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -517,7 +519,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_track(2)
             elif self._control_layer_2:
-                self._duplicate_scene()
+                pass
             elif self._control_layer_3:
                 self._play_slot(2, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -640,7 +642,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._mute_solo_track(1)
             elif self._control_layer_2:
-                self._delete_track()
+                self._duplicate_or_delete_track()
             elif self._control_layer_3:
                 self._play_slot(1, 1)
             elif self._shift_pressed or self._shift_fixed:
@@ -653,7 +655,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._mute_solo_track(2)
             elif self._control_layer_2:
-                self._delete_scene()
+                self._duplicate_or_delete_scene()
             elif self._control_layer_3:
                 self._play_slot(2, 1)
         else:
@@ -780,27 +782,34 @@ class QControlComponent(BaseComponent):
         if clip_slot.has_clip:
             clip_slot.clip.duplicate_loop()
 
+    def _duplicate_or_delete_track(self):
+        if self.__control_layer_permanent and self._shift_pressed:
+            self._delete_track()
+        else:
+            self._duplicate_track()
+
     def _duplicate_track(self):
         song = self._parent.song()
         # find the track-index  explicitly since the duplicate_track function
         # uses a different indexing than QControl!
         selected_track = song.view.selected_track
-        if self.selected_track in self.all_tracks:
-            if isinstance(selected_track, Live.Track.Track) and selected_track not in list(song.return_tracks):
-                selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
-                try:
-                    song.duplicate_track(selected_track_index)
-                except Live.Base.LimitationError:
-                    self._parent.show_message('unable to duplicate... track limit reached!')
-                except RuntimeError:
-                    self._parent.show_message('duplication of track did not work...')
+        if selected_track != None:
+            if self.selected_track in self.all_tracks:
+                if isinstance(selected_track, Live.Track.Track) and selected_track not in list(song.return_tracks):
+                    selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
+                    try:
+                        song.duplicate_track(selected_track_index)
+                    except Live.Base.LimitationError:
+                        self._parent.show_message('unable to duplicate... track limit reached!')
+                    except RuntimeError:
+                        self._parent.show_message('duplication of track did not work...')
 
     def _delete_track(self):
         song = self._parent.song()
         # find the track-index  explicitly since the duplicate_track function
         # uses a different indexing than QControl!
         selected_track = song.view.selected_track
-        if selected_track is not None:
+        if selected_track != None:
             selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
 
             if selected_track_index not in [song.master_track]:
@@ -809,28 +818,35 @@ class QControlComponent(BaseComponent):
                 except RuntimeError:
                     self.show_notification('deletion of track failed')
 
+    def _duplicate_or_delete_scene(self):
+        if self.__control_layer_permanent and self._shift_pressed:
+            self._delete_scene()
+        else:
+            self._duplicate_scene()
+
     def _duplicate_scene(self):
         song = self._parent.song()
+        selected_scene = song.view.selected_scene
+
         # find the index in here to avoid issues
-        selected_scene_index = list(song.scenes).index(song.view.selected_scene)
-        if selected_scene_index is not None:
+        if selected_scene != None:
+            selected_scene_index = list(song.scenes).index(selected_scene)
             song.duplicate_scene(selected_scene_index)
 
     def _delete_scene(self):
         song = self._parent.song()
+        selected_scene = song.view.selected_scene
 
-        # find the index in here to avoid issues
-        selected_scene_index = list(song.scenes).index(song.view.selected_scene)
-
-        if selected_scene_index is not None:
+        if selected_scene !=  None:
+            # find the index in here to avoid issues
+            selected_scene_index = list(song.scenes).index(selected_scene)
             self._parent.song().delete_scene(selected_scene_index)
 
     def _delete_clip(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-        if clip_slot is None:
-            return
-        if clip_slot.has_clip:
-            clip_slot.delete_clip()
+        if clip_slot != None:
+            if clip_slot.has_clip:
+                clip_slot.delete_clip()
 
     def _stop_clip(self):
         # if shift is pressed, stop all clips and stop playing
@@ -1237,7 +1253,6 @@ class QControlComponent(BaseComponent):
 
             setattr(self, accessname, time.clock())
 
-
     def _track_volume_or_send(self, value, trackid, sendid=0):
         if self._shift_pressed and self.__control_layer_permanent:
             self._track_send_x(value, trackid, sendid)
@@ -1249,7 +1264,6 @@ class QControlComponent(BaseComponent):
             self._track_send_x(value, trackid, sendid)
         else:
             self._track_pan(value, trackid)
-
 
     def _track_volume(self, value, track_id=0):
         if track_id == -1:
