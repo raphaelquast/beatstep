@@ -155,7 +155,7 @@ class QControlComponent(BaseComponent):
             bdict[1] = 'magenta'
             bdict[9] = 'magenta'
 
-            if self._shift_pressed:
+            if self._shift_pressed and self.__control_layer_permanent:
                 bdict[10] = 'red'
                 bdict[11] = 'red'
             else:
