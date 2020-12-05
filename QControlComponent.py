@@ -18,6 +18,7 @@ class QControlComponent(BaseComponent):
         self.__last_selected = -1
         self.__transpose_val = 36
         self.__transpose_start = 36
+        self.__transpose_interval = 4
 
         self._shift_pressed = False
         self._shift_fixed = False
@@ -1031,7 +1032,9 @@ class QControlComponent(BaseComponent):
                 self._parent._device.set_enabled(True)
                 self._remove_handler()
                 # transpose notes back to last set transpose-val
-                self._set_notes(self.__transpose_val)
+                # take care of the transpose-interval!
+                if self.__transpose_val%self.__transpose_interval == 0:
+                    self._set_notes(self.__transpose_val)
                 # always update lights on shift release
 
         # remove control-listeners (e.g. metronome, automation etc.)
@@ -1368,7 +1371,7 @@ class QControlComponent(BaseComponent):
         if not self.__control_layer_permanent and not self._shift_pressed:
             self._transpose(value)
 
-    def _transpose(self, value, interval=4):
+    def _transpose(self, value):
         tval = self.__transpose_val
         if value < 64:
             if tval <= 126-15:
@@ -1379,11 +1382,11 @@ class QControlComponent(BaseComponent):
 
         self.__transpose_val = tval
 
-        if tval%interval == 0:
+        if tval%self.__transpose_interval == 0:
             self._set_notes(tval)
             # ---------------
             # indicate the transposed note via button lights
-            buttonid = tval/interval
+            buttonid = tval/self.__transpose_interval
             usebuttons = [1,2,3,4,5,6,9,10,11,12,13,14]
             b = usebuttons[int(buttonid%len(usebuttons))]
             if buttonid%3 == 0:
