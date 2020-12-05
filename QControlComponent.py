@@ -18,6 +18,7 @@ class QControlComponent(BaseComponent):
         self.__last_selected = -1
         self.__transpose_val = 36
         self.__transpose_start = 36
+        self.__transpose_interval = 4
 
         self._shift_pressed = False
         self._shift_fixed = False
@@ -141,11 +142,11 @@ class QControlComponent(BaseComponent):
 
         elif self._control_layer_2:
             bdict[16] = 'black'
-            bdict[8] = 'red'
+            bdict[8] = 'black'
             bdict['shift'] = 'black'
-            bdict['chan'] = 'black'
+            bdict['chan'] = 'red'
 
-            used_buttons = [1, 2, 3, 6, 8, 9, 10, 11, 13, 14]
+            used_buttons = [1, 6, 8, 9, 10, 11, 13, 14]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -155,11 +156,13 @@ class QControlComponent(BaseComponent):
             bdict[1] = 'magenta'
             bdict[9] = 'magenta'
 
-            bdict[2] = 'blue'
-            bdict[10] = 'red'
+            if self._shift_pressed and self.__control_layer_permanent:
+                bdict[10] = 'red'
+                bdict[11] = 'red'
+            else:
+                bdict[10] = 'blue'
+                bdict[11] = 'blue'
 
-            bdict[3] = 'blue'
-            bdict[11] = 'red'
 
             if self._shift_color_mode == 0:
                 bdict[6] = 'black'
@@ -173,7 +176,9 @@ class QControlComponent(BaseComponent):
             else:
                 bdict[13] = 'black'
 
-            if self._parent.song().session_automation_record:
+            if self._shift_pressed and self.__control_layer_permanent and self._parent.song().re_enable_automation_enabled:
+                bdict[14] = 'blue'
+            elif self._parent.song().session_automation_record:
                 bdict[14] = 'red'
             else:
                 bdict[14] = 'black'
@@ -181,8 +186,11 @@ class QControlComponent(BaseComponent):
         elif self._control_layer_3:
             # red = 1 which means "on" for the "chan button" light
             # even though it's actually blue
+            bdict[16] = 'black'
+            bdict[8] = 'red'
             bdict['shift'] = 'black'
-            bdict['chan'] = 'red'
+            bdict['chan'] = 'black'
+
 
             self._get_used_clipslots()
             for cb in self._control_3_callbacks:
@@ -342,7 +350,7 @@ class QControlComponent(BaseComponent):
 
     def _play_slot(self, trackid, slotid):
         clip_slot = self.use_slots[trackid][slotid]
-        if self._shift_pressed:
+        if self._shift_pressed and self.__control_layer_permanent:
             track = self.use_tracks[trackid]
             if track.is_foldable:
                 if track.fold_state == True:
@@ -499,7 +507,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_track(1)
             elif self._control_layer_2:
-                self._duplicate_track()
+                pass
             elif self._control_layer_3:
                 self._play_slot(1, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -512,7 +520,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_track(2)
             elif self._control_layer_2:
-                self._duplicate_scene()
+                pass
             elif self._control_layer_3:
                 self._play_slot(2, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -585,35 +593,35 @@ class QControlComponent(BaseComponent):
 
     def _8_listener(self, value):
         if value == 0:
-            if abs(time.clock() - self.__control_layer_1_clicked) <= self._double_tap_time:
+            if abs(time.clock() - self.__control_layer_3_clicked) <= self._double_tap_time:
                 self.__control_layer_permanent = True
                 self._shift_fixed = False
                 self._control_layer_1 = False
-                self._control_layer_2 = True
-                self._control_layer_3 = False
-                self._add_control_2_listeners()
+                self._control_layer_2 = False
+                self._control_layer_3 = True
+                self._add_control_3_listeners()
                 self._update_lights()
                 return
             else:
                 if self.__control_layer_permanent:
-                    if self._control_layer_2:
+                    if self._control_layer_3:
                         self.__control_layer_permanent = False
                         self._unpress_shift()
                     else:
                         self._shift_fixed = False
                         self._control_layer_1 = False
-                        self._control_layer_2 = True
-                        self._control_layer_3 = False
-                        self._add_control_2_listeners()
+                        self._control_layer_2 = False
+                        self._control_layer_3 = True
+                        self._add_control_3_listeners()
                 else:
                     self._shift_fixed = False
                     self._control_layer_1 = False
-                    self._control_layer_2 = True
-                    self._control_layer_3 = False
-                    self._add_control_2_listeners()
+                    self._control_layer_2 = False
+                    self._control_layer_3 = True
+                    self._add_control_3_listeners()
+            self.__control_layer_3_clicked = time.clock()
 
-            self._update_lights()
-            self.__control_layer_1_clicked = time.clock()
+        self._update_lights()
 
     ###################################################
 
@@ -635,7 +643,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._mute_solo_track(1)
             elif self._control_layer_2:
-                self._delete_track()
+                self._duplicate_or_delete_track()
             elif self._control_layer_3:
                 self._play_slot(1, 1)
             elif self._shift_pressed or self._shift_fixed:
@@ -648,7 +656,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._mute_solo_track(2)
             elif self._control_layer_2:
-                self._delete_scene()
+                self._duplicate_or_delete_scene()
             elif self._control_layer_3:
                 self._play_slot(2, 1)
         else:
@@ -775,27 +783,34 @@ class QControlComponent(BaseComponent):
         if clip_slot.has_clip:
             clip_slot.clip.duplicate_loop()
 
+    def _duplicate_or_delete_track(self):
+        if self.__control_layer_permanent and self._shift_pressed:
+            self._delete_track()
+        else:
+            self._duplicate_track()
+
     def _duplicate_track(self):
         song = self._parent.song()
         # find the track-index  explicitly since the duplicate_track function
         # uses a different indexing than QControl!
         selected_track = song.view.selected_track
-        if self.selected_track in self.all_tracks:
-            if isinstance(selected_track, Live.Track.Track) and selected_track not in list(song.return_tracks):
-                selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
-                try:
-                    song.duplicate_track(selected_track_index)
-                except Live.Base.LimitationError:
-                    self._parent.show_message('unable to duplicate... track limit reached!')
-                except RuntimeError:
-                    self._parent.show_message('duplication of track did not work...')
+        if selected_track != None:
+            if self.selected_track in self.all_tracks:
+                if isinstance(selected_track, Live.Track.Track) and selected_track not in list(song.return_tracks):
+                    selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
+                    try:
+                        song.duplicate_track(selected_track_index)
+                    except Live.Base.LimitationError:
+                        self._parent.show_message('unable to duplicate... track limit reached!')
+                    except RuntimeError:
+                        self._parent.show_message('duplication of track did not work...')
 
     def _delete_track(self):
         song = self._parent.song()
         # find the track-index  explicitly since the duplicate_track function
         # uses a different indexing than QControl!
         selected_track = song.view.selected_track
-        if selected_track is not None:
+        if selected_track != None:
             selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(selected_track)
 
             if selected_track_index not in [song.master_track]:
@@ -804,28 +819,35 @@ class QControlComponent(BaseComponent):
                 except RuntimeError:
                     self.show_notification('deletion of track failed')
 
+    def _duplicate_or_delete_scene(self):
+        if self.__control_layer_permanent and self._shift_pressed:
+            self._delete_scene()
+        else:
+            self._duplicate_scene()
+
     def _duplicate_scene(self):
         song = self._parent.song()
+        selected_scene = song.view.selected_scene
+
         # find the index in here to avoid issues
-        selected_scene_index = list(song.scenes).index(song.view.selected_scene)
-        if selected_scene_index is not None:
+        if selected_scene != None:
+            selected_scene_index = list(song.scenes).index(selected_scene)
             song.duplicate_scene(selected_scene_index)
 
     def _delete_scene(self):
         song = self._parent.song()
+        selected_scene = song.view.selected_scene
 
-        # find the index in here to avoid issues
-        selected_scene_index = list(song.scenes).index(song.view.selected_scene)
-
-        if selected_scene_index is not None:
+        if selected_scene !=  None:
+            # find the index in here to avoid issues
+            selected_scene_index = list(song.scenes).index(selected_scene)
             self._parent.song().delete_scene(selected_scene_index)
 
     def _delete_clip(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-        if clip_slot is None:
-            return
-        if clip_slot.has_clip:
-            clip_slot.delete_clip()
+        if clip_slot != None:
+            if clip_slot.has_clip:
+                clip_slot.delete_clip()
 
     def _stop_clip(self):
         # if shift is pressed, stop all clips and stop playing
@@ -901,7 +923,7 @@ class QControlComponent(BaseComponent):
                 track.solo = True
 
     def _mute_solo_track(self, trackid):
-        if self._shift_pressed and self._control_layer_1:
+        if self._shift_pressed and self.__control_layer_permanent:
             self._solo_track(trackid)
         else:
             self._mute_track(trackid)
@@ -913,10 +935,15 @@ class QControlComponent(BaseComponent):
             self._parent.song().metronome = True
 
     def _toggle_automation(self):
-        if self._parent.song().session_automation_record == True:
-            self._parent.song().session_automation_record = False
+        song = self._parent.song()
+        if self._shift_pressed and self.__control_layer_permanent:
+            if song.re_enable_automation_enabled:
+                song.re_enable_automation()
         else:
-            self._parent.song().session_automation_record = True
+            if song.session_automation_record == True:
+                song.session_automation_record = False
+            else:
+                song.session_automation_record = True
 
     def _tap_tempo(self):
         self._parent.song().tap_tempo()
@@ -946,35 +973,35 @@ class QControlComponent(BaseComponent):
 
     def _chan_listener(self, value):
         if value == 0:
-            if abs(time.clock() - self.__control_layer_3_clicked) <= self._double_tap_time:
+            if abs(time.clock() - self.__control_layer_1_clicked) <= self._double_tap_time:
                 self.__control_layer_permanent = True
                 self._shift_fixed = False
                 self._control_layer_1 = False
-                self._control_layer_2 = False
-                self._control_layer_3 = True
-                self._add_control_3_listeners()
+                self._control_layer_2 = True
+                self._control_layer_3 = False
+                self._add_control_2_listeners()
                 self._update_lights()
                 return
             else:
                 if self.__control_layer_permanent:
-                    if self._control_layer_3:
+                    if self._control_layer_2:
                         self.__control_layer_permanent = False
                         self._unpress_shift()
                     else:
                         self._shift_fixed = False
                         self._control_layer_1 = False
-                        self._control_layer_2 = False
-                        self._control_layer_3 = True
-                        self._add_control_3_listeners()
+                        self._control_layer_2 = True
+                        self._control_layer_3 = False
+                        self._add_control_2_listeners()
                 else:
                     self._shift_fixed = False
                     self._control_layer_1 = False
-                    self._control_layer_2 = False
-                    self._control_layer_3 = True
-                    self._add_control_3_listeners()
-            self.__control_layer_3_clicked = time.clock()
+                    self._control_layer_2 = True
+                    self._control_layer_3 = False
+                    self._add_control_2_listeners()
 
-        self._update_lights()
+            self._update_lights()
+            self.__control_layer_1_clicked = time.clock()
 
     def _play_listener(self, value):
         if value > 0:
@@ -1005,7 +1032,9 @@ class QControlComponent(BaseComponent):
                 self._parent._device.set_enabled(True)
                 self._remove_handler()
                 # transpose notes back to last set transpose-val
-                self._set_notes(self.__transpose_val)
+                # take care of the transpose-interval!
+                if self.__transpose_val%self.__transpose_interval == 0:
+                    self._set_notes(self.__transpose_val)
                 # always update lights on shift release
 
         # remove control-listeners (e.g. metronome, automation etc.)
@@ -1061,67 +1090,97 @@ class QControlComponent(BaseComponent):
     def _1_encoder_listener(self, value):
         trackid = 0
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_volume_or_send(value, trackid)
+
 
     def _2_encoder_listener(self, value):
         trackid = 1
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_volume_or_send(value, trackid)
 
     def _3_encoder_listener(self, value):
         trackid = 2
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_volume_or_send(value, trackid)
 
     def _4_encoder_listener(self, value):
         trackid = 3
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_volume_or_send(value, trackid)
 
     def _5_encoder_listener(self, value):
         trackid = 4
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_volume_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 0)
 
     def _6_encoder_listener(self, value):
         trackid = 5
         if self._control_layer_1:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 0)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 2)
+            else:
+                self._track_send_x(value, trackid, 0)
         elif self._control_layer_3:
-            self._track_volume(value, trackid)
+            self._track_volume_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_volume_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 2)
 
     def _7_encoder_listener(self, value):
-        if not self.__control_layer_permanent:
-            if self._shift_pressed:
-                self._track_volume(value, -2)
-            else:
-                self._track_volume(value, -1)
+        if self._shift_pressed:
+            self._track_volume(value, -2)
+        else:
+            self._track_volume(value, -1)
 
     def _8_encoder_listener(self, value):
         self._select_prev_next_track(value)
@@ -1131,67 +1190,96 @@ class QControlComponent(BaseComponent):
     def _9_encoder_listener(self, value):
         trackid = 0
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_pan_or_send(value, trackid)
 
     def _10_encoder_listener(self, value):
         trackid = 1
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_pan_or_send(value, trackid)
 
     def _11_encoder_listener(self, value):
         trackid = 2
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_pan_or_send(value, trackid)
 
     def _12_encoder_listener(self, value):
         trackid = 3
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_pan_or_send(value, trackid)
 
     def _13_encoder_listener(self, value):
         trackid = 4
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_pan_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 1)
 
     def _14_encoder_listener(self, value):
         trackid = 5
         if self._control_layer_1:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
         elif self._control_layer_2:
-            self._track_send_x(value, trackid, 1)
+            if self.__control_layer_permanent and self._shift_pressed:
+                self._track_send_x(value, trackid, 3)
+            else:
+                self._track_send_x(value, trackid, 1)
         elif self._control_layer_3:
-            self._track_pan(value, trackid)
+            self._track_pan_or_send(value, trackid)
+        elif self._shift_pressed or self._shift_fixed:
+            self._track_pan_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 3)
 
     def _15_encoder_listener(self, value):
-        if not self.__control_layer_permanent:
-            if self._shift_pressed:
-                self._track_pan(value, -2)
-            else:
-                self._track_pan(value, -1)
+        if self._shift_pressed:
+            self._track_pan(value, -2)
+        else:
+            self._track_pan(value, -1)
 
     def _16_encoder_listener(self, value):
         self._select_prev_next_scene(value)
@@ -1228,6 +1316,18 @@ class QControlComponent(BaseComponent):
                             sends[send_id].value = round(prev_value - .05, 1)
 
             setattr(self, accessname, time.clock())
+
+    def _track_volume_or_send(self, value, trackid, sendid=0):
+        if self._shift_pressed and self.__control_layer_permanent:
+            self._track_send_x(value, trackid, sendid)
+        else:
+            self._track_volume(value, trackid)
+
+    def _track_pan_or_send(self, value, trackid, sendid=1):
+        if self._shift_pressed and self.__control_layer_permanent:
+            self._track_send_x(value, trackid, sendid)
+        else:
+            self._track_pan(value, trackid)
 
     def _track_volume(self, value, track_id=0):
         if track_id == -1:
@@ -1271,7 +1371,7 @@ class QControlComponent(BaseComponent):
         if not self.__control_layer_permanent and not self._shift_pressed:
             self._transpose(value)
 
-    def _transpose(self, value, interval=4):
+    def _transpose(self, value):
         tval = self.__transpose_val
         if value < 64:
             if tval <= 126-15:
@@ -1282,11 +1382,11 @@ class QControlComponent(BaseComponent):
 
         self.__transpose_val = tval
 
-        if tval%interval == 0:
+        if tval%self.__transpose_interval == 0:
             self._set_notes(tval)
             # ---------------
             # indicate the transposed note via button lights
-            buttonid = tval/interval
+            buttonid = tval/self.__transpose_interval
             usebuttons = [1,2,3,4,5,6,9,10,11,12,13,14]
             b = usebuttons[int(buttonid%len(usebuttons))]
             if buttonid%3 == 0:
