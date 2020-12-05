@@ -33,6 +33,10 @@ To indicate a successful setup, the top-row will light up red and blue (about 2 
 
 The `shift-button` is used to activate the control-features.   
 (**double-tap** it to make the shift-layer permanent, NOT the *"if shift-pressed"* behaviour!)
+
+The "if shift-pressed"* behaviour only works if the corresponding layer is activated permanently AND the `shift-button` is pressed!
+
+  
 `shift` + `button 8` and `shift` + `button 16`  and `shift + chan` are used to activate 
 the individual control-layers.   
 (**double-tap**  to make the control-layers remain activated until the activation button is pressed again!)  
@@ -48,13 +52,17 @@ The `transpose-slider` transposes the note-assignments of the buttons.
 
 - `encoder 5, 6, 13, 14` : send A, B, C, D of selected track
 
-- `encoder 7` : volume of selected track
+- `encoder 7` : volume of selected track 
+  
+  - *"if shift-pressed"*: volume of master-track
 
-- `encoder 15` : pan of selected track
+- `encoder 15` : pan of selected track 
+  
+  - *"if shift-pressed"*: pan of master-track
 
 --- 
 
-### If **shift** is pressed:
+### If **shift** is active:
 
 You can always **double-tap** `shift` to re-activate the shift-layer permanently!
 
@@ -71,8 +79,6 @@ The lights in the first row indicate the track-arm status:
 The lights in the second indicate the currently activated clip.  (red for midi, blue for audio)  
 (you can change this behaviour or turn the lights off! >> check `"scene control" + button 7`)
 
-
-
 The assignments are as follows:
 
 - `button 1-6`:  select track 1-6 of the currently focussed slots (red box)
@@ -84,7 +90,7 @@ The assignments are as follows:
   
   - if the control-layer is activated permanently, holding `shift` will switch to track-selection
 
-- `button 8`: activate **song control** (see below)
+- `button 8`: switch to **clip launch** (see below)
 
 - `button 9`: undo
 
@@ -104,17 +110,23 @@ The assignments are as follows:
   
   - if the control-layer is activated permanently, holding `shift` will switch to track-selection
 
-- `button 16` : activate **track control** (see below)
+- `button 16` : switch to **track control** (see below)
 
+- `chan` : switch to **song control** (see below)   
 
+   
+
+- `encoder 7` : volume of selected track 
+  
+  - *"if shift-pressed"*: volume of master-track
 
 - `encoder 8` : track-selection (left-right) 
 
 - `encoder 16` : scene selection (up-down)
 
-- `encoder 7` : volume of master-track
-
-- `encoder 15` : pan of master-track
+- `encoder 15` : pan of selected track 
+  
+  - *"if shift-pressed"*: pan of master-track
 
 ---
 
@@ -123,9 +135,11 @@ The assignments are as follows:
 Most lights are simply there to help remembering the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live 
 
-- `red` for ON 
+- `button 13` indicates the status of the metronome (e.g. `red` for on)
 
-- `off` for off
+- `button 14` indicates the status of "automation arm" (e.g. `red` for active)
+  
+  - "if shift-pressed"* and an automation has been overridden, the button will turn `blue`  
 
 The light of `button 7` indicates the visibility of the shift-button lights:
 
@@ -133,17 +147,13 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 
 - `magenta` for only the top-row if `shift` is pressed
 
-- `red` for all lights if `shift` is pressed
+- `red` for all lights if `shift` is pressed  
 
-
+  
 
 The assignments are as follows:
 
 - `button 1` : redo last step
-
-- `button 2` : duplicate currently selected track
-
-- `button 3` : duplicate currently selected scene
 
 - `button 4` : toggle between Ableton's session-view and arrangement-view
 
@@ -155,37 +165,110 @@ The assignments are as follows:
 
 - `button 7` : select previous scene (e.g. go 1 scene up)
   
-  - if the control-layer is activated permanently, holding `shift` will switch to track-selection
+  - *"if shift-pressed"*: select previous track
 
-- `button 8` : get back to the normal behaviour (e.g. deactivate song control)
+- `button 8` : switch to **clip launch** (see below)
 
 - `button 9` : undo last step
 
-- `button 10` : delete currently selected track
+- `button 10` : duplicate currently selected track 
+  
+  - "if shift pressed"*: delete currently selected track
 
-- `button 11` : delete currently selected scene
+- `button 11` : duplicate currently selected scene
+  
+  - *"if shift pressed"*: delete currently selected scene
 
 - `button 12` : tap tempo
 
 - `button 13` : toggle metronome
 
-- `button 14` : toggle session automation record
+- `button 14` : toggle session automation record 
+  
+  - *"if shift-pressed"* and an automation has been overridden:  re-enable automation
 
 - `button 15` : select next scene (if at the end, add a new scene)
   
-  - if the control-layer is activated permanently, holding `shift` will switch to track-selection
+  - *"if shift-pressed"*: select next track
 
 - `button 16`: switch to **track control** (see below)
 
-- `chan` : switch to **scene launch** (see below)
+- `chan` : get back to the normal behaviour (e.g. deactivate **song control**)
 
-
+  
 
 - the top-row of the encoders (`1-6`) control "send A"
+  
+  - *"if shift-pressed"*: "send C"
 
 - the bottom-row of the encoders (`9-14`) control "send B"
+  
+  - *"if shift-pressed"*: "send D"
+
+- `encoder 7` : volume of selected track
+  
+  - *"if shift-pressed"*: volume of master-track
 
 - `encoder 8` : track-selection (left-right)
+
+- `encoder 15` : pan of selected track
+  
+  - *"if shift-pressed"*: pan of master-track
+
+- `encoder 16` : scene selection (up-down)
+
+---
+
+### If "clip launch"  is active
+
+In this control-layer, both button-rows (e.g. `1-6` and `9-14`)  represent clip-slots.
+The lights indicate the status of the clip-slots, e.g.:
+
+- `blue` indicates a slot with a clip
+
+- `red` indicates a clip that is playing (blinking indicates that it is triggered)
+
+- `magenta` indicates a group-track (`red` if playing)
+
+The assignments are as follows:
+
+- `button 1-6` : launch the clips present in the top-row of the selection.
+  
+  - *"if shift-pressed"* and the slot is a "group-slot": fold/unfold the corresponding group
+- `button 7` : select previous scene (e.g. go 1 scene up)
+  - *"if shift-pressed"*: select previous track
+
+- `button 9-14` : same as `1-6` but for the bottom row of the selection.
+
+- `button 8` : get back to the normal behaviour (e.g. deactivate **clip launch**)
+
+- `button 15` : select next scene (if at the end, add a new scene)
+  
+  - *"if shift-pressed"*: select next track
+
+- `button 16` : switch to **track control** (see below)
+
+- `chan` : switch to **song control** (see above)
+
+  
+
+- the top-row of the encoders (`1-6`) control the "track volume"
+  
+  - *"if shift-pressed"*: "send A"
+
+- the bottom-row of the encoders (`9-14`) control the "track pan"
+  
+  - *"if shift-pressed"*: "send B"
+
+- `encoder 7` : volume of selected track
+  
+  - *"if shift-pressed"*: volume of master-track
+
+- `encoder 8` : track-selection (left-right)
+
+- `encoder 15` : pan of selected track
+
+- - *"if shift-pressed"*: pan of master-track
 
 - `encoder 16` : scene selection (up-down)
 
@@ -211,7 +294,7 @@ The lights in the bottom-row indicate the mute / solo status of the correspondin
 
 - `off` if the track is muted and not solo
 
-
+  
 
 The assignments are as follows:
 
@@ -219,77 +302,45 @@ The assignments are as follows:
 
 - the buttons in the bottom row (9-14) set the **mute** status of the first 6 tracks in the red box
 
-- - holding `shift` while pressing the button will **solo** the corresponding track if **track control** is activated permanently (e.g. if the activation-button has been double-tapped)
+- - *"if shift-pressed"*:  **solo** the corresponding track
 
 - `button 7` : select previous scene (e.g. go 1 scene up)
   
-  - if the control-layer is activated permanently, holding `shift` will switch to track-selection
+  - *"if shift-pressed"*: select previous track
 
-- `button 8` : switch to **song control** (see above)  
+- `button 8` : switch to **clip launch** (see above)
 
 - `button 15` : select next scene (if at the end, add a new scene)
   
-  - if the control-layer is activated permanently, holding `shift` will switch to track-selection
+  - "if shift-pressed"*: select next track
 
-- `button 16` : get back to the normal behaviour (e.g. deactivate track control)
+- `button 16` : get back to the normal behaviour (e.g. deactivate **track control**)
 
-- `chan` : switch to **"scene launch"** (see below)
+- `chan` : switch to **"song control"** (see below)
 
-
-
-- the top-row of the encoders (`1-6`) control the "track volume"
-
-- the bottom-row of the encoders (`9-14`) control the "track pan"
-
-- `encoder 8` : track-selection (left-right)
-
-- `encoder 16` : scene selection (up-down)
-
----
-
-### If "clip launch"  is active
-
-In this control-layer, both button-rows (e.g. `1-6` and `9-14`)  represent clip-slots.
-The lights indicate the status of the clip-slots, e.g.:
-
-- `blue` indicates a slot with a clip
-
-- `red` indicates a clip that is playing (blinking indicates that it is triggered)
-
-- `magenta` indicates a group-track (`red` if playing)
-
-
-
-The assignments are as follows:
-
-- `button 1-6` : launch the clips present in the top-row of the selection.
   
-  - if "clip-launch" is activated permanently, holding down `shift`  while tapping on 
-    a "group-slot" will fold/unfold the corresponding group
-
-- `button 9-14` : same as `1-6` but for the bottom row of the selection.
-
-- `button 8` : switch to **song control** (see above)
-
-- `button 16` : switch to **track control** (see above)
-
-- `chan` : get back to the normal behaviour (e.g. deactivate "clip launch")
-
-
 
 - the top-row of the encoders (`1-6`) control the "track volume"
+  
+  - *"if shift-pressed"*: "send A"
 
 - the bottom-row of the encoders (`9-14`) control the "track pan"
+  
+  - *"if shift-pressed"*: "send B"
+
+- `encoder 7` : volume of selected track
+  
+  - *"if shift-pressed"*: volume of master-track
 
 - `encoder 8` : track-selection (left-right)
 
 - `encoder 16` : scene selection (up-down)
 
+- `encoder 15` : pan of selected track
+  
+  - *"if shift-pressed"*: pan of master-track
+
 ---
-
-
-
-
 
 # Thanks to
 
