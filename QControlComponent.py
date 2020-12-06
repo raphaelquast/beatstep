@@ -17,8 +17,10 @@ class QControlComponent(BaseComponent):
         self.__shift_clicked = -99
         self.__last_selected = -1
         self.__transpose_val = 36
+
         self.__transpose_start = 36
         self.__transpose_interval = 4
+        self.__transpose_cnt = 0
 
         self._shift_pressed = False
         self._shift_fixed = False
@@ -1033,8 +1035,7 @@ class QControlComponent(BaseComponent):
                 self._remove_handler()
                 # transpose notes back to last set transpose-val
                 # take care of the transpose-interval!
-                if self.__transpose_val%self.__transpose_interval == 0:
-                    self._set_notes(self.__transpose_val)
+                self._set_notes(self.__transpose_val)
                 # always update lights on shift release
 
         # remove control-listeners (e.g. metronome, automation etc.)
@@ -1372,21 +1373,23 @@ class QControlComponent(BaseComponent):
             self._transpose(value)
 
     def _transpose(self, value):
-        tval = self.__transpose_val
-        if value < 64:
-            if tval <= 126-15:
-                tval = (tval + 1)
-        else:
-            if tval > 0:
-                tval = (tval - 1)
+        # increase notes only every 4 ticks of the transpose-slider
+        # (e.g. to make it a little less sensitive)
+        self.__transpose_cnt = (self.__transpose_cnt + 1)%4
 
-        self.__transpose_val = tval
+        if self.__transpose_cnt == 0:
 
-        if tval%self.__transpose_interval == 0:
-            self._set_notes(tval)
+            if value < 64:
+                if self.__transpose_val <= 126-15:
+                    self.__transpose_val = (self.__transpose_val + self.__transpose_interval)
+            else:
+                if self.__transpose_val > 0:
+                    self.__transpose_val = (self.__transpose_val - self.__transpose_interval)
+
+            self._set_notes(self.__transpose_val)
             # ---------------
             # indicate the transposed note via button lights
-            buttonid = tval/self.__transpose_interval
+            buttonid = int(self.__transpose_val/self.__transpose_interval)
             usebuttons = [1,2,3,4,5,6,9,10,11,12,13,14]
             b = usebuttons[int(buttonid%len(usebuttons))]
             if buttonid%3 == 0:
