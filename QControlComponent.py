@@ -143,6 +143,9 @@ class QControlComponent(BaseComponent):
                     bdict[button_down] = 'magenta'
 
         elif self._control_layer_2:
+            # red = 1 which means "on" for the "chan button" light
+            # even though it's actually blue
+
             bdict[16] = 'black'
             bdict[8] = 'black'
             bdict['shift'] = 'black'
@@ -186,8 +189,6 @@ class QControlComponent(BaseComponent):
                 bdict[14] = 'black'
 
         elif self._control_layer_3:
-            # red = 1 which means "on" for the "chan button" light
-            # even though it's actually blue
             bdict[16] = 'black'
             bdict[8] = 'red'
             bdict['shift'] = 'black'
