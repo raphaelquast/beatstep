@@ -362,8 +362,12 @@ class QControlComponent(BaseComponent):
                     track.fold_state = True
                 self.on_selected_track_changed()
         else:
-            if clip_slot is not None and (clip_slot.has_clip or clip_slot.is_group_slot):
-                clip_slot.fire()
+            if clip_slot is not None:
+                if clip_slot.has_clip or clip_slot.is_group_slot:
+                    if clip_slot.is_playing:
+                        clip_slot.stop()
+                    else:
+                        clip_slot.fire()
 
         # if slotid == 1:
         #     # automatically select the next slot if the lower slot is
@@ -387,20 +391,29 @@ class QControlComponent(BaseComponent):
                                                        include_returns)
 
     def _blink_clip_triggered_playing(self, track_id, slot_id, buttonid=1):
+
         def blinkcb():
             c = cycle(['red', 'black'])
+            c2 = cycle(['blue', 'black'])
             def callback():
                 self._get_used_clipslots()
-
                 clip_slot = self.use_slots[track_id][slot_id]
                 if clip_slot is None:
                     return
                 if clip_slot.has_clip or clip_slot.is_group_slot:
-                    if (not clip_slot.is_playing and clip_slot.is_triggered):
-                        self._set_color(buttonid, next(c))
-                        self._parent.schedule_message(1, callback)
+                    if self._control_layer_3:
+                        if clip_slot.is_triggered and not clip_slot.is_playing:
+                            self._set_color(buttonid, next(c))
+                            self._parent.schedule_message(1, callback)
+                        elif (clip_slot.is_playing and clip_slot.canonical_parent.fired_slot_index == -2):
+                            self._set_color(buttonid, next(c2))
+                            self._parent.schedule_message(1, callback)
+                        else:
+                            self._playing_state_callback(track_id, slot_id, buttonid)
                     else:
-                        self._playing_state_callback(track_id, slot_id, buttonid)
+                        # update lights in case the callback is released while the
+                        # control-layer has already been changed
+                        self._update_lights()
             callback()
         return blinkcb
 
@@ -444,8 +457,8 @@ class QControlComponent(BaseComponent):
                     if not track.fired_slot_index_has_listener(cb):
                         track.add_fired_slot_index_listener(cb)
 
-                if not slot.is_triggered_has_listener(blinkcb):
-                    slot.add_is_triggered_listener(blinkcb)
+                if not slot.canonical_parent.fired_slot_index_has_listener(blinkcb):
+                    slot.canonical_parent.add_fired_slot_index_listener(blinkcb)
                 if not slot.has_clip_has_listener(cb):
                     slot.add_has_clip_listener(cb)
                 if not slot.playing_status_has_listener(cb):
@@ -467,8 +480,8 @@ class QControlComponent(BaseComponent):
                     if track.fired_slot_index_has_listener(cb):
                         track.remove_fired_slot_index_listener(cb)
 
-                if slot.is_triggered_has_listener(blinkcb):
-                    slot.remove_is_triggered_listener(blinkcb)
+                if slot.canonical_parent.fired_slot_index_has_listener(blinkcb):
+                    slot.canonical_parent.remove_fired_slot_index_listener(blinkcb)
                 if slot.has_clip_has_listener(cb):
                     slot.remove_has_clip_listener(cb)
                 if slot.playing_status_has_listener(cb):
