@@ -36,7 +36,6 @@ The `shift-button` is used to activate the control-features.
 
 The "if shift-pressed"* behaviour only works if the corresponding layer is activated permanently AND the `shift-button` is pressed!
 
-  
 `shift` + `button 8` and `shift` + `button 16`  and `shift + chan` are used to activate 
 the individual control-layers.   
 (**double-tap**  to make the control-layers remain activated until the activation button is pressed again!)  
@@ -114,8 +113,6 @@ The assignments are as follows:
 
 - `chan` : switch to **song control** (see below)   
 
-   
-
 - `encoder 7` : volume of selected track 
   
   - *"if shift-pressed"*: volume of master-track
@@ -148,8 +145,6 @@ The light of `button 7` indicates the visibility of the shift-button lights:
 - `magenta` for only the top-row if `shift` is pressed
 
 - `red` for all lights if `shift` is pressed  
-
-  
 
 The assignments are as follows:
 
@@ -195,8 +190,6 @@ The assignments are as follows:
 
 - `chan` : get back to the normal behaviour (e.g. deactivate **song control**)
 
-  
-
 - the top-row of the encoders (`1-6`) control "send A"
   
   - *"if shift-pressed"*: "send C"
@@ -225,8 +218,12 @@ In this control-layer, both button-rows (e.g. `1-6` and `9-14`)  represent clip-
 The lights indicate the status of the clip-slots, e.g.:
 
 - `blue` indicates a slot with a clip
+  
+  - a `blue blinking` slot indicates a clip that is triggered to **stop**
 
-- `red` indicates a clip that is playing (blinking indicates that it is triggered)
+- `red` indicates a clip that is playing
+  
+  - a `red blinking` slot indicates a clip that is triggered to **play**
 
 - `magenta` indicates a group-track (`red` if playing)
 
@@ -235,7 +232,9 @@ The assignments are as follows:
 - `button 1-6` : launch the clips present in the top-row of the selection.
   
   - *"if shift-pressed"* and the slot is a "group-slot": fold/unfold the corresponding group
+
 - `button 7` : select previous scene (e.g. go 1 scene up)
+  
   - *"if shift-pressed"*: select previous track
 
 - `button 9-14` : same as `1-6` but for the bottom row of the selection.
@@ -249,8 +248,6 @@ The assignments are as follows:
 - `button 16` : switch to **track control** (see below)
 
 - `chan` : switch to **song control** (see above)
-
-  
 
 - the top-row of the encoders (`1-6`) control the "track volume"
   
@@ -294,8 +291,6 @@ The lights in the bottom-row indicate the mute / solo status of the correspondin
 
 - `off` if the track is muted and not solo
 
-  
-
 The assignments are as follows:
 
 - the buttons in the top row (1-6) set the **arm** (or track-group) status of the first 6 tracks in the red box
@@ -317,8 +312,6 @@ The assignments are as follows:
 - `button 16` : get back to the normal behaviour (e.g. deactivate **track control**)
 
 - `chan` : switch to **"song control"** (see below)
-
-  
 
 - the top-row of the encoders (`1-6`) control the "track volume"
   
