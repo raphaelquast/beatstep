@@ -1425,7 +1425,7 @@ class QControlComponent(BaseComponent):
 
     def _select_prev_track(self):
         song = self._parent.song()
-        tracks_and_returns = self.all_tracks + list(song.return_tracks) + [song.master_track]
+        tracks_and_returns = self.all_tracks + list(song.return_tracks)
         selected_track = song.view.selected_track
         assert selected_track in tracks_and_returns
         index = list(tracks_and_returns).index(selected_track)
@@ -1436,7 +1436,7 @@ class QControlComponent(BaseComponent):
 
     def _select_next_track(self):
         song = self._parent.song()
-        tracks_and_returns = self.all_tracks + list(song.return_tracks) + [song.master_track]
+        tracks_and_returns = self.all_tracks + list(song.return_tracks)
         selected_track = song.view.selected_track
         assert selected_track in tracks_and_returns
         index = list(tracks_and_returns).index(selected_track)
