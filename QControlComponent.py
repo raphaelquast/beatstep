@@ -60,6 +60,7 @@ class QControlComponent(BaseComponent):
 
         # call this once to initialize "self.use_tracks"
         self.use_slots = [[None, None] for i in range(8)]
+
         self.use_tracks = self._parent.song().tracks[:self.npads]
         self._select_track(0)
         self.on_selected_track_changed()
@@ -77,6 +78,9 @@ class QControlComponent(BaseComponent):
                 # remove them later
                 self._control_3_callbacks.append(cb)
                 self._control_3_blink_callbacks.append(blinkcb)
+
+        # call update lights at the end of initialization
+        self._update_lights()
 
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
@@ -291,7 +295,7 @@ class QControlComponent(BaseComponent):
         song = self._parent.song()
         #all_tracks = song.tracks
         all_tracks = []
-        for track in list(song.tracks):
+        for track in list(song.tracks) + list(song.return_tracks):
             if track.is_grouped:
                 group = track.group_track
                 if group.fold_state is True:
@@ -395,17 +399,19 @@ class QControlComponent(BaseComponent):
         def blinkcb():
             c = cycle(['red', 'black'])
             c2 = cycle(['blue', 'black'])
+
             def callback():
                 self._get_used_clipslots()
                 clip_slot = self.use_slots[track_id][slot_id]
                 if clip_slot is None:
                     return
+                track = clip_slot.canonical_parent
                 if clip_slot.has_clip or clip_slot.is_group_slot:
                     if self._control_layer_3:
                         if clip_slot.is_triggered and not clip_slot.is_playing:
                             self._set_color(buttonid, next(c))
                             self._parent.schedule_message(1, callback)
-                        elif (clip_slot.is_playing and clip_slot.canonical_parent.fired_slot_index == -2):
+                        elif (clip_slot.is_playing and track.fired_slot_index == -2):
                             self._set_color(buttonid, next(c2))
                             self._parent.schedule_message(1, callback)
                         else:
@@ -452,6 +458,10 @@ class QControlComponent(BaseComponent):
                 if slot is None:
                     continue
 
+                # do this to ignore return-tracks
+                if not slot.has_stop_button:
+                    continue
+
                 track = self.use_tracks[i]
                 if track is not None:
                     if not track.fired_slot_index_has_listener(cb):
@@ -473,6 +483,9 @@ class QControlComponent(BaseComponent):
                 blinkcb = next(blinkcbs)
 
                 if slot is None:
+                    continue
+                # do this to ignore return-tracks
+                if not slot.has_stop_button:
                     continue
 
                 track = self.use_tracks[i]
