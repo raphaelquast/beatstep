@@ -383,7 +383,7 @@ class QControlComponent(BaseComponent):
         else:
             height = 1
 
-        include_returns = False
+        include_returns = True
         self._parent._c_instance.set_session_highlight(self.track_offset,
                                                        self.selected_scene_index,
                                                        width,
