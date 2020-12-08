@@ -8,6 +8,9 @@ VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detai
 
 class QControlComponent(BaseComponent):
     def __init__(self, parent):
+
+
+
         self.__selected_track = -99
         self.__stop_clicked = -99
         self.__control_layer_1_clicked = -99
@@ -22,12 +25,19 @@ class QControlComponent(BaseComponent):
         self.__transpose_interval = 4
         self.__transpose_cnt = 0
 
+
         self._shift_pressed = False
         self._shift_fixed = False
         self._control_layer_1 = False
         self._control_layer_2 = False
         self._control_layer_3 = False
         self.__control_layer_permanent = False
+        self.layers = {'_shift_fixed', '_control_layer_1',
+                       '_control_layer_2', '_control_layer_3'}
+        self.layer_listener = {'_control_layer_2': '_control_2_listeners',
+                               '_control_layer_3': '_control_3_listeners'}
+
+
 
         self._sequencer_running = False
 
@@ -516,6 +526,38 @@ class QControlComponent(BaseComponent):
         if song.session_automation_record_has_listener(self._update_lights):
             song.remove_session_automation_record_listener(self._update_lights)
 
+    def _activate_control_layer(self, layer, permanent=False):
+        if self.__control_layer_permanent:
+            if getattr(self, layer):
+                self.__control_layer_permanent = False
+                self._unpress_shift()
+            else:
+                for l in self.layers:
+                    if l == layer:
+                        setattr(self, l, True)
+                    else:
+                        setattr(self, l, False)
+                for key, val in self.layer_listener.items():
+                    if key == layer:
+                        getattr(self, '_add' + val)()
+                    else:
+                        getattr(self, '_remove' + val)()
+        else:
+            if permanent:
+                self.__control_layer_permanent = True
+            for l in self.layers:
+                if l == layer:
+                    setattr(self, l, True)
+                else:
+                    setattr(self, l, False)
+            for key, val in self.layer_listener.items():
+                if key == layer:
+                    getattr(self, '_add' + val)()
+                else:
+                    getattr(self, '_remove' + val)()
+
+        self._update_lights()
+
     ###################################################
 
     def _1_listener(self, value):
@@ -623,34 +665,11 @@ class QControlComponent(BaseComponent):
     def _8_listener(self, value):
         if value == 0:
             if abs(time.clock() - self.__control_layer_3_clicked) <= self._double_tap_time:
-                self.__control_layer_permanent = True
-                self._shift_fixed = False
-                self._control_layer_1 = False
-                self._control_layer_2 = False
-                self._control_layer_3 = True
-                self._add_control_3_listeners()
-                self._update_lights()
-                return
+                self._activate_control_layer('_control_layer_3', True)
             else:
-                if self.__control_layer_permanent:
-                    if self._control_layer_3:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                    else:
-                        self._shift_fixed = False
-                        self._control_layer_1 = False
-                        self._control_layer_2 = False
-                        self._control_layer_3 = True
-                        self._add_control_3_listeners()
-                else:
-                    self._shift_fixed = False
-                    self._control_layer_1 = False
-                    self._control_layer_2 = False
-                    self._control_layer_3 = True
-                    self._add_control_3_listeners()
-            self.__control_layer_3_clicked = time.clock()
+                self._activate_control_layer('_control_layer_3', False)
+                self.__control_layer_3_clicked = time.clock()
 
-        self._update_lights()
 
     ###################################################
 
@@ -745,37 +764,11 @@ class QControlComponent(BaseComponent):
     def _16_listener(self, value):
         if value == 0:
             if abs(time.clock() - self.__control_layer_2_clicked) <= self._double_tap_time:
-                self.__control_layer_permanent = True
-                self._shift_fixed = False
-                self._control_layer_1 = True
-                self._control_layer_2 = False
-                self._control_layer_3 = False
-                self._remove_control_2_listeners()
-                self._remove_control_3_listeners()
-                self._update_lights()
+                self._activate_control_layer('_control_layer_1', True)
                 return
             else:
-                if self.__control_layer_permanent:
-                    if self._control_layer_1:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                    else:
-                        self._shift_fixed = False
-                        self._control_layer_1 = True
-                        self._control_layer_2 = False
-                        self._control_layer_3 = False
-                        self._remove_control_2_listeners()
-                        self._remove_control_3_listeners()
-                else:
-                    self._shift_fixed = False
-                    self._control_layer_1 = True
-                    self._control_layer_2 = False
-                    self._control_layer_3 = False
-                    self._remove_control_2_listeners()
-                    self._remove_control_3_listeners()
-
-            self._update_lights()
-            self.__control_layer_2_clicked = time.clock()
+                self._activate_control_layer('_control_layer_1', False)
+                self.__control_layer_2_clicked = time.clock()
 
     ###################################################
 
@@ -1003,34 +996,10 @@ class QControlComponent(BaseComponent):
     def _chan_listener(self, value):
         if value == 0:
             if abs(time.clock() - self.__control_layer_1_clicked) <= self._double_tap_time:
-                self.__control_layer_permanent = True
-                self._shift_fixed = False
-                self._control_layer_1 = False
-                self._control_layer_2 = True
-                self._control_layer_3 = False
-                self._add_control_2_listeners()
-                self._update_lights()
-                return
+                self._activate_control_layer('_control_layer_2', True)
             else:
-                if self.__control_layer_permanent:
-                    if self._control_layer_2:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                    else:
-                        self._shift_fixed = False
-                        self._control_layer_1 = False
-                        self._control_layer_2 = True
-                        self._control_layer_3 = False
-                        self._add_control_2_listeners()
-                else:
-                    self._shift_fixed = False
-                    self._control_layer_1 = False
-                    self._control_layer_2 = True
-                    self._control_layer_3 = False
-                    self._add_control_2_listeners()
-
-            self._update_lights()
-            self.__control_layer_1_clicked = time.clock()
+                self._activate_control_layer('_control_layer_2', False)
+                self.__control_layer_1_clicked = time.clock()
 
     def _play_listener(self, value):
         if value > 0:
