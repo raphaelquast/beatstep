@@ -1051,25 +1051,7 @@ class QControlComponent(BaseComponent):
             # on release
             if abs(time.clock() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
-                if self.__control_layer_permanent:
-                    if self._shift_fixed:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                    else:
-                        self._shift_fixed = True
-                        self._control_layer_1 = False
-                        self._control_layer_2 = False
-                        self._control_layer_3 = False
-                        self._remove_control_2_listeners()
-                        self._remove_control_3_listeners()
-                else:
-                    self.__control_layer_permanent = True
-                    self._shift_fixed = True
-                    self._control_layer_1 = False
-                    self._control_layer_2 = False
-                    self._control_layer_3 = False
-                    self._remove_control_2_listeners()
-                    self._remove_control_3_listeners()
+                self._activate_control_layer('_shift_fixed', True)
             else:
                 if self.__control_layer_permanent:
                     if self._shift_fixed:
@@ -1078,7 +1060,7 @@ class QControlComponent(BaseComponent):
                 else:
                     self._unpress_shift()
 
-            self.__shift_clicked = time.clock()
+                self.__shift_clicked = time.clock()
 
         self._update_lights()
 
