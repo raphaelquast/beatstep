@@ -78,45 +78,47 @@ class BeatStep_Q(ControlSurface):
 
         self._init_color_sequence()
         # set shift button to note-mode
-        self._send_midi(self.QS.set_B_mode('shift', 9))
+        self._send_midi(self.QS.set_B_mode('shift', 8))
         self._send_midi(self.QS.set_B_channel('shift', CHANNEL))
         self._send_midi(self.QS.set_B_behaviour('shift', 1))
 
         # set stop button to note-mode
-        self._send_midi(self.QS.set_B_mode('stop', 9))
+        self._send_midi(self.QS.set_B_mode('stop', 8))
         self._send_midi(self.QS.set_B_channel('stop', CHANNEL))
         self._send_midi(self.QS.set_B_behaviour('stop', 1))
 
         # set play button to note-mode
-        self._send_midi(self.QS.set_B_mode('play', 9))
+        self._send_midi(self.QS.set_B_mode('play', 8))
         self._send_midi(self.QS.set_B_channel('play', CHANNEL))
         self._send_midi(self.QS.set_B_behaviour('play', 1))
 
         # set cntrl/seq button to note-mode
-        self._send_midi(self.QS.set_B_mode('cntrl', 9))
+        self._send_midi(self.QS.set_B_mode('cntrl', 8))
         self._send_midi(self.QS.set_B_channel('cntrl', CHANNEL))
         # set button behaviour to toggle
         self._send_midi(self.QS.set_B_behaviour('cntrl', 0))
 
         # set chan button to note mode
-        self._send_midi(self.QS.set_B_mode('chan', 9))
+        self._send_midi(self.QS.set_B_mode('chan', 8))
         self._send_midi(self.QS.set_B_channel('chan', CHANNEL))
         self._send_midi(self.QS.set_B_behaviour('chan', 1))
 
         # set store button to note mode
-        self._send_midi(self.QS.set_B_mode('store', 9))
+        self._send_midi(self.QS.set_B_mode('store', 8))
         self._send_midi(self.QS.set_B_channel('store', CHANNEL))
         self._send_midi(self.QS.set_B_behaviour('store', 1))
 
         # set store button to note mode
-        self._send_midi(self.QS.set_B_mode('recall', 9))
+        self._send_midi(self.QS.set_B_mode('recall', 8))
         self._send_midi(self.QS.set_B_channel('recall', CHANNEL))
         self._send_midi(self.QS.set_B_behaviour('recall', 1))
-
 
         # set transpose encoder channel
         self._send_midi(self.QS.set_E_channel('transpose', CHANNEL))
         self._send_midi(self.QS.set_E_behaviour('transpose', 2))
+        # set encoder cc to something else than the shift-encoder cc
+        # (4 is unused since it would represent the ext/sync button)
+        self._send_midi(self.QS.set_E_cc('transpose', 4))
 
 
         # for all buttons
@@ -136,15 +138,15 @@ class BeatStep_Q(ControlSurface):
         self._send_midi(self.QS.set_S_channel(CHANNEL_SEQUENCER))
 
     def _create_controls(self):
-        self._play_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 2, name=u'Play_Button')
+        self._play_button = ButtonElement(True, MIDI_CC_TYPE, CHANNEL, 2, name=u'Play_Button')
         self._play_S_button = ButtonElement(True, MIDI_NOTE_TYPE, 0, 60, name=u'Play_Button')
 
-        self._stop_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 1, name=u'Stop_Button')
-        self._cntrl_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 3, name=u'cntrl_Button')
-        self._recall_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 5, name=u'recall_Button')
-        self._store_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 6, name=u'store_Button')
-        self._shift_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 7, name=u'Shift_Button')
-        self._chan_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 8, name=u'chan_Button')
+        self._stop_button = ButtonElement(True, MIDI_CC_TYPE, CHANNEL, 1, name=u'Stop_Button')
+        self._cntrl_button = ButtonElement(True, MIDI_CC_TYPE, CHANNEL, 3, name=u'cntrl_Button')
+        self._recall_button = ButtonElement(True, MIDI_CC_TYPE, CHANNEL, 5, name=u'recall_Button')
+        self._store_button = ButtonElement(True, MIDI_CC_TYPE, CHANNEL, 6, name=u'store_Button')
+        self._shift_button = ButtonElement(True, MIDI_CC_TYPE, CHANNEL, 7, name=u'Shift_Button')
+        self._chan_button = ButtonElement(True, MIDI_CC_TYPE, CHANNEL, 8, name=u'chan_Button')
 
         for i in xrange(1,17):
             msgid = PAD_MSG_IDS[i-1]
@@ -152,7 +154,7 @@ class BeatStep_Q(ControlSurface):
                      ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, msgid,
                                    name='_' + str(i) + '_button'))
 
-            self._transpose_encoder = EncoderElement(MIDI_CC_TYPE, CHANNEL, 7,
+            self._transpose_encoder = EncoderElement(MIDI_CC_TYPE, CHANNEL, 4,
                                                      Live.MidiMap.MapMode.relative_smooth_two_compliment,
                                                      name='_transpose_encoder')
 
