@@ -124,7 +124,7 @@ class QControlComponent(BaseComponent):
 
         bdict = dict()
 
-        if self._control_layer_1:
+        if self._control_layer_1:           # e.g. track-control
             bdict['shift'] = 'black'
             bdict['chan'] = 'red'
             bdict['store'] = 'black'
@@ -157,7 +157,7 @@ class QControlComponent(BaseComponent):
                 else:
                     bdict[button_down] = 'magenta'
 
-        elif self._control_layer_2:
+        elif self._control_layer_2:          # e.g. song-control
             # red = 1 which means "on" for the "chan button" light
             # even though it's actually blue
             bdict['shift'] = 'black'
@@ -176,6 +176,7 @@ class QControlComponent(BaseComponent):
             bdict[9] = 'magenta'
 
             if self._shift_pressed and self.__control_layer_permanent:
+                bdict[3] = 'red'
                 bdict[10] = 'red'
                 bdict[11] = 'red'
             else:
@@ -201,7 +202,7 @@ class QControlComponent(BaseComponent):
             else:
                 bdict[14] = 'black'
 
-        elif self._control_layer_3:
+        elif self._control_layer_3:            # e.g. clip-launch
             bdict['shift'] = 'black'
             bdict['chan'] = 'black'
             bdict['store'] = 'red'
