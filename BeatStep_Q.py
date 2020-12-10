@@ -103,6 +103,17 @@ class BeatStep_Q(ControlSurface):
         self._send_midi(self.QS.set_B_channel('chan', CHANNEL))
         self._send_midi(self.QS.set_B_behaviour('chan', 1))
 
+        # set store button to note mode
+        self._send_midi(self.QS.set_B_mode('store', 9))
+        self._send_midi(self.QS.set_B_channel('store', CHANNEL))
+        self._send_midi(self.QS.set_B_behaviour('store', 1))
+
+        # set store button to note mode
+        self._send_midi(self.QS.set_B_mode('recall', 9))
+        self._send_midi(self.QS.set_B_channel('recall', CHANNEL))
+        self._send_midi(self.QS.set_B_behaviour('recall', 1))
+
+
         # set transpose encoder channel
         self._send_midi(self.QS.set_E_channel('transpose', CHANNEL))
         self._send_midi(self.QS.set_E_behaviour('transpose', 2))
@@ -130,6 +141,8 @@ class BeatStep_Q(ControlSurface):
 
         self._stop_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 1, name=u'Stop_Button')
         self._cntrl_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 3, name=u'cntrl_Button')
+        self._recall_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 5, name=u'recall_Button')
+        self._store_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 6, name=u'store_Button')
         self._shift_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 7, name=u'Shift_Button')
         self._chan_button = ButtonElement(True, MIDI_NOTE_TYPE, CHANNEL, 8, name=u'chan_Button')
 
@@ -161,6 +174,8 @@ class BeatStep_Q(ControlSurface):
         self._control_component.set_play_S_button(self._play_S_button)
         self._control_component.set_cntrl_button(self._cntrl_button)
         self._control_component.set_chan_button(self._chan_button)
+        self._control_component.set_store_button(self._store_button)
+        self._control_component.set_recall_button(self._recall_button)
 
         self._control_component.set_transpose_encoder_button(self._transpose_encoder)
 
