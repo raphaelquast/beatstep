@@ -620,27 +620,13 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_or_fold_track(4)
             elif self._control_layer_2:
-                if self.__control_layer_permanent and self._shift_pressed:
-                    self._change_ableton_view(next(self._view_cycle))
-                else:
-                    self._change_ableton_view(next(self._detail_cycle))
+                pass
             elif self._control_layer_3:
                 self._play_slot(4, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(4)
         else:
             self._update_lights()
-
-
-    def _change_ableton_view(self, view):
-        assert view in VIEWS
-        app_view = self._parent.application().view
-        if view == u'Detail/DeviceChain' or u'Detail/Clip':
-            if not app_view.is_view_visible(u'Detail'):
-                app_view.show_view(u'Detail')
-        if not app_view.is_view_visible(view):
-            app_view.focus_view(view)
-
 
     def _6_listener(self, value):
         if value > 0:
@@ -660,7 +646,10 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_or_fold_track(6)
             elif self._control_layer_2:
-                pass
+                if self.__control_layer_permanent and self._shift_pressed:
+                    self._change_ableton_view(next(self._view_cycle))
+                else:
+                    self._change_ableton_view(next(self._detail_cycle))
             elif self._control_layer_3:
                 self._play_slot(6, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -931,7 +920,6 @@ class QControlComponent(BaseComponent):
         else:
             self._toggle_device_on_off()
 
-
     def _stop_clip(self):
         # if shift is pressed, stop all clips and stop playing
         if self._shift_pressed:
@@ -977,7 +965,6 @@ class QControlComponent(BaseComponent):
                     else:
                         if t.can_be_armed:
                             t.arm = False
-
 
             self.__select_track_clicked = time.clock()
             self.__last_selected = trackid
@@ -1047,6 +1034,15 @@ class QControlComponent(BaseComponent):
 
     def _redo(self):
         self._parent.song().redo()
+
+    def _change_ableton_view(self, view):
+        assert view in VIEWS
+        app_view = self._parent.application().view
+        if view == u'Detail/DeviceChain' or u'Detail/Clip':
+            if not app_view.is_view_visible(u'Detail'):
+                app_view.show_view(u'Detail')
+        if not app_view.is_view_visible(view):
+            app_view.focus_view(view)
 
     #########################################################
 
@@ -1213,8 +1209,6 @@ class QControlComponent(BaseComponent):
             self._track_pan(value, -2)
         else:
             self._track_pan(value, -1)
-
-
 
     def _16_encoder_listener(self, value):
         self._select_prev_next_scene(value)
@@ -1426,7 +1420,6 @@ class QControlComponent(BaseComponent):
             app.view.show_view(u'Detail/DeviceChain')
             app.view.focus_view(u'Detail/DeviceChain')
 
-
         # increase notes only every 4 ticks of the transpose-slider
         # (e.g. to make it a little less sensitive)
         self.__transpose_cnt = (self.__transpose_cnt + 1)%4
@@ -1516,7 +1509,6 @@ class QControlComponent(BaseComponent):
                 # take care of the transpose-interval!
                 self._set_notes(self.__transpose_val)
                 # always update lights on shift release
-
 
     def _chan_listener(self, value):
         if value == 0:
