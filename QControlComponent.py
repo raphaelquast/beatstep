@@ -130,6 +130,14 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
 
+            # indicate selector-buttons
+            if self.__control_layer_permanent and self._shift_pressed:
+                bdict[8] = 'blue'
+                bdict[16] = 'blue'
+            else:
+                bdict[8] = 'black'
+                bdict[16] = 'black'
+
             for i, track in enumerate(self.use_tracks):
                 button_up = i + 1
                 button_down = i + 9
@@ -165,7 +173,15 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'red'
 
-            used_buttons = [1, 6, 8, 9, 10, 11, 13, 14]
+            # indicate selector-buttons
+            if self.__control_layer_permanent and self._shift_pressed:
+                bdict[8] = 'blue'
+                bdict[16] = 'blue'
+            else:
+                bdict[8] = 'black'
+                bdict[16] = 'black'
+
+            used_buttons = [1, 6, 8, 9, 10, 11, 13, 14, 16]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -208,6 +224,14 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'red'
             bdict['recall'] = 'black'
 
+            # indicate selector-buttons
+            if self.__control_layer_permanent and self._shift_pressed:
+                bdict[8] = 'blue'
+                bdict[16] = 'blue'
+            else:
+                bdict[8] = 'black'
+                bdict[16] = 'black'
+
             self._get_used_clipslots()
             for cb in self._control_3_callbacks:
                 # call control-layer 3 callbacks to update lights
@@ -220,6 +244,14 @@ class QControlComponent(BaseComponent):
             bdict['chan'] = 'black'
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
+
+            # indicate selector-buttons
+            if self.__control_layer_permanent and self._shift_pressed:
+                bdict[8] = 'blue'
+                bdict[16] = 'blue'
+            else:
+                bdict[8] = 'black'
+                bdict[16] = 'black'
 
             if self._shift_color_mode == 0:
                 # turn off all lights
