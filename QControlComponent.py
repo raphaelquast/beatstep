@@ -607,7 +607,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_or_fold_track(3)
             elif self._control_layer_2:
-                self._change_detail_view(next(self._view_cycle))
+                pass
             elif self._control_layer_3:
                 self._play_slot(3, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -620,7 +620,10 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_or_fold_track(4)
             elif self._control_layer_2:
-                self._change_detail_view(next(self._detail_cycle))
+                if self.__control_layer_permanent and self._shift_pressed:
+                    self._change_ableton_view(next(self._view_cycle))
+                else:
+                    self._change_ableton_view(next(self._detail_cycle))
             elif self._control_layer_3:
                 self._play_slot(4, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -629,7 +632,7 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
 
-    def _change_detail_view(self, view):
+    def _change_ableton_view(self, view):
         assert view in VIEWS
         app_view = self._parent.application().view
         if view == u'Detail/DeviceChain' or u'Detail/Clip':
