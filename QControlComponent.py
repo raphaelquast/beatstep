@@ -1375,7 +1375,7 @@ class QControlComponent(BaseComponent):
             if create_new_scenes is True:
                 # create new scenes in case we are at the end
                 song.create_scene(-1)
-                song.view.selected_scene = all_scenes[selected_scene_index + 1]
+                song.view.selected_scene = song.scenes[-1]
 
     def _select_prev_scene(self):
         song = self._parent.song()
