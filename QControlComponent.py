@@ -130,20 +130,12 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
 
-            # indicate selector-buttons
-            if self.__control_layer_permanent and self._shift_pressed:
-                bdict[8] = 'blue'
-                bdict[16] = 'blue'
-            else:
-                bdict[8] = 'black'
-                bdict[16] = 'black'
-
             for i, track in enumerate(self.use_tracks):
                 button_up = i + 1
                 button_down = i + 9
 
                 # if there is no track, turn the lights off
-                if track is None:
+                if track == None:
                     bdict[button_up] = 'black'
                     bdict[button_down] = 'black'
                     continue
@@ -172,14 +164,6 @@ class QControlComponent(BaseComponent):
             bdict['chan'] = 'black'
             bdict['store'] = 'black'
             bdict['recall'] = 'red'
-
-            # indicate selector-buttons
-            if self.__control_layer_permanent and self._shift_pressed:
-                bdict[8] = 'blue'
-                bdict[16] = 'blue'
-            else:
-                bdict[8] = 'black'
-                bdict[16] = 'black'
 
             used_buttons = [1, 6, 8, 9, 10, 11, 13, 14, 16]
             # turn off all other lights
@@ -224,14 +208,6 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'red'
             bdict['recall'] = 'black'
 
-            # indicate selector-buttons
-            if self.__control_layer_permanent and self._shift_pressed:
-                bdict[8] = 'blue'
-                bdict[16] = 'blue'
-            else:
-                bdict[8] = 'black'
-                bdict[16] = 'black'
-
             self._get_used_clipslots()
             for cb in self._control_3_callbacks:
                 # call control-layer 3 callbacks to update lights
@@ -245,14 +221,6 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
 
-            # indicate selector-buttons
-            if self.__control_layer_permanent and self._shift_pressed:
-                bdict[8] = 'blue'
-                bdict[16] = 'blue'
-            else:
-                bdict[8] = 'black'
-                bdict[16] = 'black'
-
             if self._shift_color_mode == 0:
                 # turn off all lights
                 for i in range(1, 17):
@@ -263,7 +231,7 @@ class QControlComponent(BaseComponent):
                     button_up = i + 1
                     button_down = i + 9
                     # if there is no track, turn the lights off
-                    if track is None:
+                    if track == None:
                         bdict[button_up] = 'black'
                         continue
 
@@ -375,7 +343,7 @@ class QControlComponent(BaseComponent):
                 break
 
         for i, track in enumerate(self.use_tracks):
-            if track is not None and track.can_be_armed:
+            if track != None and track.can_be_armed:
                 if not track.arm_has_listener(self._update_lights):
                     track.add_arm_listener(self._update_lights)
                 if not track.mute_has_listener(self._update_lights):
@@ -390,7 +358,7 @@ class QControlComponent(BaseComponent):
         use_slots = [[None, None] for i in range(8)]
         scene_index = self.selected_scene_index
         for i, track in enumerate(self.use_tracks):
-            if track is not None:
+            if track != None:
                 slots = list(track.clip_slots)
                 nslots = len(slots)
                 if nslots > scene_index:
@@ -410,7 +378,7 @@ class QControlComponent(BaseComponent):
                     track.fold_state = True
                 self.on_selected_track_changed()
         else:
-            if clip_slot is not None:
+            if clip_slot != None:
                 if clip_slot.has_clip or clip_slot.is_group_slot:
                     if clip_slot.is_playing:
                         clip_slot.stop()
@@ -447,7 +415,7 @@ class QControlComponent(BaseComponent):
             def callback():
                 self._get_used_clipslots()
                 clip_slot = self.use_slots[track_id][slot_id]
-                if clip_slot is None:
+                if clip_slot == None:
                     return
                 track = clip_slot.canonical_parent
                 if clip_slot.has_clip or clip_slot.is_group_slot:
@@ -472,7 +440,7 @@ class QControlComponent(BaseComponent):
             self._get_used_clipslots()
             clip_slot = self.use_slots[track_id][slot_id]
 
-            if clip_slot is None:
+            if clip_slot == None:
                 self._set_color(buttonid, 'black')
                 return
             if clip_slot.is_playing:
@@ -499,7 +467,7 @@ class QControlComponent(BaseComponent):
                 cb = next(cbs)
                 blinkcb = next(blinkcbs)
 
-                if slot is None:
+                if slot == None:
                     continue
 
                 # do this to ignore return-tracks
@@ -507,7 +475,7 @@ class QControlComponent(BaseComponent):
                     continue
 
                 track = slot.canonical_parent
-                if track is not None and track.can_be_armed:
+                if track != None and track.can_be_armed:
                     if not track.fired_slot_index_has_listener(cb):
                         track.add_fired_slot_index_listener(cb)
                     if not track.fired_slot_index_has_listener(blinkcb):
@@ -526,14 +494,14 @@ class QControlComponent(BaseComponent):
                 cb = next(cbs)
                 blinkcb = next(blinkcbs)
 
-                if slot is None:
+                if slot == None:
                     continue
                 # do this to ignore return-tracks
                 if not slot.has_stop_button:
                     continue
 
                 track = slot.canonical_parent
-                if track is not None and track.can_be_armed:
+                if track != None and track.can_be_armed:
                     if track.fired_slot_index_has_listener(cb):
                         track.remove_fired_slot_index_listener(cb)
 
@@ -810,7 +778,7 @@ class QControlComponent(BaseComponent):
 
     def _fire_record(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-        if clip_slot is None: return
+        if clip_slot == None: return
 
         if clip_slot.has_clip and (clip_slot.is_playing or clip_slot.is_recording):
             if self._parent.song().session_record == False:
@@ -822,7 +790,7 @@ class QControlComponent(BaseComponent):
     def _blink_fire_record(self, clip_slot, buttonid=1):
         c = cycle(['red', 'black'])
         def callback():
-            if clip_slot is None: return
+            if clip_slot == None: return
             if clip_slot.is_triggered:
                 self._set_color(buttonid, next(c))
                 self._parent.schedule_message(1, callback)
@@ -837,7 +805,7 @@ class QControlComponent(BaseComponent):
 
     def _duplicate_loop(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-        if clip_slot is None: return
+        if clip_slot == None: return
         if clip_slot.has_clip:
             clip_slot.clip.duplicate_loop()
 
@@ -972,7 +940,7 @@ class QControlComponent(BaseComponent):
     def _duplicate_clip(self):
         all_scenes = self._parent.song().scenes
         # duplicate the clip slot
-        if self.selected_track is None:
+        if self.selected_track == None:
             return
         duplicated_id = self.selected_track.duplicate_clip_slot(self.selected_scene_index)
         duplicated_slot = all_scenes[duplicated_id]
@@ -986,7 +954,7 @@ class QControlComponent(BaseComponent):
 
     def _select_track(self, trackid):
         track = self.use_tracks[trackid]
-        if track is not None:
+        if track != None:
             self._parent.song().view.selected_track = track
 
             # on arm the track on double-click
@@ -1003,10 +971,10 @@ class QControlComponent(BaseComponent):
             self.__last_selected = trackid
 
     def _arm_or_fold_track(self, trackid=None, toggle=True, track=None):
-        if trackid is not None:
+        if trackid != None:
             track = self.use_tracks[trackid]
 
-        if track is not None:
+        if track != None:
             if track.can_be_armed:
                 if track.arm == True:
                     if toggle:
@@ -1022,7 +990,7 @@ class QControlComponent(BaseComponent):
 
     def _mute_track(self, trackid):
         track = self.use_tracks[trackid]
-        if track is not None:
+        if track != None:
             if track.mute:
                 track.mute = False
             else:
@@ -1030,7 +998,7 @@ class QControlComponent(BaseComponent):
 
     def _solo_track(self, trackid):
         track = self.use_tracks[trackid]
-        if track is not None:
+        if track != None:
             if track.solo:
                 track.solo = False
             else:
@@ -1257,7 +1225,7 @@ class QControlComponent(BaseComponent):
         else:
             track = self.use_tracks[track_id]
 
-        if track is not None:
+        if track != None:
             sends = track.mixer_device.sends
 
             if send_id < len(sends):
@@ -1305,7 +1273,7 @@ class QControlComponent(BaseComponent):
         else:
             track = self.use_tracks[track_id]
 
-        if track is not None:
+        if track != None:
             prev_value = track.mixer_device.volume.value
             if value < 65:
                 if round(prev_value + .01, 2) <= 1:
@@ -1322,7 +1290,7 @@ class QControlComponent(BaseComponent):
         else:
             track = self.use_tracks[track_id]
 
-        if track is not None:
+        if track != None:
             prev_value = track.mixer_device.panning.value
             if value < 65:
                 if round(prev_value + .05, 2) <= 1:
@@ -1380,6 +1348,7 @@ class QControlComponent(BaseComponent):
             # -------------
 
     def _set_notes(self, start):
+
         # set midi-notes of buttons to start + (0-15)
         for i in range(16):
             decval = (start + i)%127
@@ -1395,14 +1364,18 @@ class QControlComponent(BaseComponent):
     def _select_next_scene(self, create_new_scenes=True):
         song = self._parent.song()
         selected_scene = song.view.selected_scene
-        all_scenes = song.scenes
+        if selected_scene == None: return
+
+        all_scenes = list(song.scenes)
+        selected_scene_index = all_scenes.index(selected_scene)
+
         if selected_scene != all_scenes[-1]:
-            song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
+            song.view.selected_scene = all_scenes[selected_scene_index + 1]
         else:
             if create_new_scenes is True:
                 # create new scenes in case we are at the end
                 song.create_scene(-1)
-                song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
+                song.view.selected_scene = all_scenes[selected_scene_index + 1]
 
     def _select_prev_scene(self):
         song = self._parent.song()
@@ -1564,3 +1537,4 @@ class QControlComponent(BaseComponent):
             else:
                 self._activate_control_layer('_control_layer_3', True)
 
+# -------------------------------------
