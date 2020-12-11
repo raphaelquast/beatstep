@@ -1441,17 +1441,21 @@ class QControlComponent(BaseComponent):
             selected_pad = usedevice.view.selected_drum_pad
             selected_pad_id = allpads.index(selected_pad)
 
-            ncols = int(len(allpads)/4) - 1
+            nrows = int(len(allpads)/4) - 1
 
             row = int(selected_pad_id / 4)
             pos = selected_pad_id%4
 
             if value > 65:
-                newpadid = int((row + 1)%ncols * 4) + pos
+                newpadid = int((row + 1)%nrows * 4) + pos
             else:
-                newpadid = int((row - 1)%ncols * 4) + pos
+                newpadid = int((row - 1)%nrows * 4) + pos
 
             usedevice.view.selected_drum_pad = allpads[newpadid]
+
+            # the + 1 is there to ensure that the start is at C0
+            scrollrow = int(row/4)*4 + 1
+            usedevice.view.drum_pads_scroll_position = scrollrow%nrows
 
     # ------------------------------------------------------------------------
 
