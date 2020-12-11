@@ -1391,20 +1391,29 @@ class QControlComponent(BaseComponent):
         device = track.view.selected_device
 
         if device != None:
-            if device.can_have_drum_pads:
-                allpads = list(device.drum_pads)
-                selected_pad = device.view.selected_drum_pad
-                selected_pad_id = allpads.index(selected_pad)
+            if not device.can_have_drum_pads:
+                # try this to be able to scroll drumpads while they are selected
+                try:
+                    if device.canonical_parent.canonical_parent.can_have_drum_pads:
+                        usedevice = device.canonical_parent.canonical_parent
+                except Exception:
+                    return
+            else:
+                usedevice = device
 
-                row = int(selected_pad_id / 4)
-                pos = selected_pad_id%4
+            allpads = list(usedevice.drum_pads)
+            selected_pad = usedevice.view.selected_drum_pad
+            selected_pad_id = allpads.index(selected_pad)
 
-                if value > 65:
-                    newpadid = int(row * 4) + (pos - 1)%4
-                else:
-                    newpadid = int(row * 4) + (pos + 1)%4
+            row = int(selected_pad_id / 4)
+            pos = selected_pad_id%4
 
-                device.view.selected_drum_pad = allpads[newpadid]
+            if value > 65:
+                newpadid = int(row * 4) + (pos - 1)%4
+            else:
+                newpadid = int(row * 4) + (pos + 1)%4
+
+            usedevice.view.selected_drum_pad = allpads[newpadid]
 
     def _scroll_drum_pad_col(self, value):
         # reduce sensitivity to make it easier to select items
@@ -1417,22 +1426,32 @@ class QControlComponent(BaseComponent):
         device = track.view.selected_device
 
         if device != None:
-            if device.can_have_drum_pads:
-                allpads = list(device.drum_pads)
-                selected_pad = device.view.selected_drum_pad
-                selected_pad_id = allpads.index(selected_pad)
+            if not device.can_have_drum_pads:
+                # try this to be able to scroll drumpads while they are selected
+                try:
+                    if device.canonical_parent.canonical_parent.can_have_drum_pads:
+                        usedevice = device.canonical_parent.canonical_parent
+                except Exception:
+                    return
+            else:
+                usedevice = device
 
-                ncols = int(len(allpads)/4) - 1
 
-                row = int(selected_pad_id / 4)
-                pos = selected_pad_id%4
+            allpads = list(usedevice.drum_pads)
+            selected_pad = usedevice.view.selected_drum_pad
+            selected_pad_id = allpads.index(selected_pad)
 
-                if value > 65:
-                    newpadid = int((row + 1)%ncols * 4) + pos
-                else:
-                    newpadid = int((row - 1)%ncols * 4) + pos
+            ncols = int(len(allpads)/4) - 1
 
-                device.view.selected_drum_pad = allpads[newpadid]
+            row = int(selected_pad_id / 4)
+            pos = selected_pad_id%4
+
+            if value > 65:
+                newpadid = int((row + 1)%ncols * 4) + pos
+            else:
+                newpadid = int((row - 1)%ncols * 4) + pos
+
+            usedevice.view.selected_drum_pad = allpads[newpadid]
 
     # ------------------------------------------------------------------------
 
