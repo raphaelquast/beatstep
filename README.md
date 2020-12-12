@@ -19,16 +19,13 @@ Any comments / suggestions for improvements etc. are highly welcome!
 
 # Installation
 
-To use this script, simply copy the contents into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. 
-(make sure to activate both `track`and `remote` for this device!)
+To use this script, simply copy the contents into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences.  (make sure to activate both `track`and `remote` for this device!)
 
 ---
 
 # More detailed explanations on the assignments:
 
-The script will set all encoders and buttons to send messages on the Midi-channel 10.  
-To indicate a successful setup, the top-row will light up red and blue (about 2 seconds after plugin).  
-(it's best to plug the device after Ableton started)
+The script will set all encoders and buttons to send messages on the Midi-channel 10.  To indicate a successful setup, the top-row will light up red and blue (about 2 seconds after plugin).  It's best to plug the device after Ableton started to ensure that all settings are properly assigned.
 
 ## Buttons:
 
