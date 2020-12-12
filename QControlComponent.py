@@ -2,6 +2,7 @@ from BaseComponent import BaseComponent
 import time
 from itertools import cycle
 import Live
+NavDirection = Live.Application.Application.View.NavDirection
 
 VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detail/DeviceChain')
 
@@ -13,6 +14,7 @@ class QControlComponent(BaseComponent):
         self.__control_layer_1_clicked = -99
         self.__control_layer_2_clicked = -99
         self.__control_layer_3_clicked = -99
+
         self.__select_track_clicked = -99
         self.__shift_clicked = -99
         self.__last_selected = -1
@@ -20,14 +22,26 @@ class QControlComponent(BaseComponent):
 
         self.__transpose_start = 36
         self.__transpose_interval = 4
-        self.__transpose_cnt = 0
+        self.__transpose_cnt = 1
+
+        self.__drumpad_row_cnt = 1
+        self.__drumpad_col_cnt = 1
+        self.__sel_track_cnt = 1
+        self.__sel_scene_cnt = 1
 
         self._shift_pressed = False
         self._shift_fixed = False
         self._control_layer_1 = False
         self._control_layer_2 = False
         self._control_layer_3 = False
+
         self.__control_layer_permanent = False
+        self.layers = {'_shift_fixed', '_control_layer_1',
+                       '_control_layer_2', '_control_layer_3'}
+
+        self.layer_listener = {'_control_layer_2': '_control_2_listeners',
+                               '_control_layer_3': '_control_3_listeners'}
+
 
         self._sequencer_running = False
 
@@ -41,14 +55,14 @@ class QControlComponent(BaseComponent):
         self.selected_scene_index = 0
 
         self._double_tap_time = 0.5
-        self._shift_color_mode = 1   # 0 = none, 1 = top row, 2 = all
-        self.npads = 6               # number of pads used to play notes
+        self.npads = 7               # number of pads used to play notes
 
         self._button_light_status = {i:'black' for i in xrange(16)}
 
         buttonnames = ['_'+ str(i) for i in xrange(1,17)] + \
                       ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + \
-                      ['_shift', '_stop', '_play', '_play_S', '_cntrl', '_chan', '_transpose_encoder']
+                      ['_shift', '_stop', '_play', '_play_S', '_cntrl', '_chan', '_store', '_recall',
+                       '_transpose_encoder']
         super(QControlComponent, self).__init__(parent, buttonnames)
 
         self.use_tracks = [None for i in range(self.npads)]
@@ -60,6 +74,7 @@ class QControlComponent(BaseComponent):
 
         # call this once to initialize "self.use_tracks"
         self.use_slots = [[None, None] for i in range(8)]
+
         self.use_tracks = self._parent.song().tracks[:self.npads]
         self._select_track(0)
         self.on_selected_track_changed()
@@ -77,6 +92,9 @@ class QControlComponent(BaseComponent):
                 # remove them later
                 self._control_3_callbacks.append(cb)
                 self._control_3_blink_callbacks.append(blinkcb)
+
+        # call update lights at the end of initialization
+        self._update_lights()
 
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
@@ -109,18 +127,18 @@ class QControlComponent(BaseComponent):
 
         bdict = dict()
 
-        if self._control_layer_1:
-            bdict[16] = 'red'
-            bdict[8] = 'black'
+        if self._control_layer_1:           # e.g. track-control
             bdict['shift'] = 'black'
-            bdict['chan'] = 'black'
+            bdict['chan'] = 'red'
+            bdict['store'] = 'black'
+            bdict['recall'] = 'black'
 
             for i, track in enumerate(self.use_tracks):
                 button_up = i + 1
                 button_down = i + 9
 
                 # if there is no track, turn the lights off
-                if track is None:
+                if track == None:
                     bdict[button_up] = 'black'
                     bdict[button_down] = 'black'
                     continue
@@ -142,16 +160,15 @@ class QControlComponent(BaseComponent):
                 else:
                     bdict[button_down] = 'magenta'
 
-        elif self._control_layer_2:
+        elif self._control_layer_2:          # e.g. song-control
             # red = 1 which means "on" for the "chan button" light
             # even though it's actually blue
-
-            bdict[16] = 'black'
-            bdict[8] = 'black'
             bdict['shift'] = 'black'
-            bdict['chan'] = 'red'
+            bdict['chan'] = 'black'
+            bdict['store'] = 'black'
+            bdict['recall'] = 'red'
 
-            used_buttons = [1, 6, 8, 9, 10, 11, 13, 14]
+            used_buttons = [1, 8, 9, 10, 11, 13, 14, 16]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -162,19 +179,12 @@ class QControlComponent(BaseComponent):
             bdict[9] = 'magenta'
 
             if self._shift_pressed and self.__control_layer_permanent:
+                bdict[3] = 'red'
                 bdict[10] = 'red'
                 bdict[11] = 'red'
             else:
                 bdict[10] = 'blue'
                 bdict[11] = 'blue'
-
-
-            if self._shift_color_mode == 0:
-                bdict[6] = 'black'
-            elif self._shift_color_mode == 1:
-                bdict[6] = 'magenta'
-            elif self._shift_color_mode == 2:
-                bdict[6] = 'red'
 
             if self._parent.song().metronome:
                 bdict[13] = 'red'
@@ -188,12 +198,11 @@ class QControlComponent(BaseComponent):
             else:
                 bdict[14] = 'black'
 
-        elif self._control_layer_3:
-            bdict[16] = 'black'
-            bdict[8] = 'red'
+        elif self._control_layer_3:            # e.g. clip-launch
             bdict['shift'] = 'black'
             bdict['chan'] = 'black'
-
+            bdict['store'] = 'red'
+            bdict['recall'] = 'black'
 
             self._get_used_clipslots()
             for cb in self._control_3_callbacks:
@@ -205,60 +214,42 @@ class QControlComponent(BaseComponent):
             # even though it's actually blue
             bdict['shift'] = 'red'
             bdict['chan'] = 'black'
+            bdict['store'] = 'black'
+            bdict['recall'] = 'black'
 
-            if self._shift_color_mode == 0:
-                # turn off all lights
-                for i in range(1, 17):
-                    bdict[i] = 'black'
-            else:
-                # highlite track mute and arm status
+            # highlite track mute and arm status
+            for i, track in enumerate(self.use_tracks):
+                button_up = i + 1
+                button_down = i + 9
+                # if there is no track, turn the lights off
+                if track == None:
+                    bdict[button_up] = 'black'
+                    continue
+
+                # indicate armed tracks (red) and track-groups (blue)
+                if track.can_be_armed and track.arm:
+                    if (track.mute or track.muted_via_solo):
+                        bdict[button_up] = 'magenta'
+                    else:
+                        bdict[button_up] = 'red'
+                elif track.is_foldable:
+                    bdict[button_up] = 'blue'
+                else:
+                    bdict[button_up] = 'black'
+
                 for i, track in enumerate(self.use_tracks):
-                    button_up = i + 1
                     button_down = i + 9
-                    # if there is no track, turn the lights off
-                    if track is None:
-                        bdict[button_up] = 'black'
-                        continue
-
-                    if track.can_be_armed and track.arm:
-                        if (track.mute or track.muted_via_solo):
-                            bdict[button_up] = 'magenta'
-                        else:
-                            bdict[button_up] = 'red'
-                    elif track.is_foldable:
-                        bdict[button_up] = 'blue'
-                    else:
-                        bdict[button_up] = 'black'
-
-                if self._shift_color_mode == 1:
-
-                    if self.selected_track_index == None:
-                        for i in range(9, 17):
-                            bdict[i] = 'black'
-                    else:
-                        #for i in range(9, 17):
-                        for i, track in enumerate(self.use_tracks):
-                            button_down = i + 9
-                            if i == self.selected_track_index%self.npads:
-                                # indicate selected track
-                                if self.selected_track.has_audio_input:
-                                    bdict[button_down] = 'red'
-                                else:
-                                    bdict[button_down] = 'blue'
+                    if i == self.selected_track_index%self.npads:
+                        # indicate selected track
+                        if self.selected_track.has_audio_input:
+                            if self.selected_track in self._parent.song().return_tracks:
+                                bdict[button_down] = 'magenta'
                             else:
-                                bdict[button_down] = 'black'
-
-                # indicate control-buttons
-                if self._shift_color_mode == 2:
-                    bdict[8] = 'red'
-                    bdict[9] = 'magenta'
-                    bdict[10] = 'red'
-                    bdict[11] = 'black'
-                    bdict[12] = 'blue'
-                    bdict[13] = 'blue'
-                    bdict[14] = 'red'
-                    bdict[15] = 'black'
-                    bdict[16] = 'black'
+                                bdict[button_down] = 'red'
+                        else:
+                            bdict[button_down] = 'blue'
+                    else:
+                        bdict[button_down] = 'black'
 
         else:
             # turn off all lights on shift-release
@@ -266,7 +257,8 @@ class QControlComponent(BaseComponent):
                 bdict[i] = 'black'
             bdict['shift'] = 'black'
             bdict['chan'] = 'black'
-
+            bdict['store'] = 'black'
+            bdict['recall'] = 'black'
         self._button_light_status = bdict
 
     def on_selected_scene_changed(self):
@@ -291,7 +283,7 @@ class QControlComponent(BaseComponent):
         song = self._parent.song()
         #all_tracks = song.tracks
         all_tracks = []
-        for track in list(song.tracks):
+        for track in list(song.tracks) + list(song.return_tracks):
             if track.is_grouped:
                 group = track.group_track
                 if group.fold_state is True:
@@ -327,7 +319,7 @@ class QControlComponent(BaseComponent):
                 break
 
         for i, track in enumerate(self.use_tracks):
-            if track is not None and track.can_be_armed:
+            if track != None and track.can_be_armed:
                 if not track.arm_has_listener(self._update_lights):
                     track.add_arm_listener(self._update_lights)
                 if not track.mute_has_listener(self._update_lights):
@@ -342,7 +334,7 @@ class QControlComponent(BaseComponent):
         use_slots = [[None, None] for i in range(8)]
         scene_index = self.selected_scene_index
         for i, track in enumerate(self.use_tracks):
-            if track is not None:
+            if track != None:
                 slots = list(track.clip_slots)
                 nslots = len(slots)
                 if nslots > scene_index:
@@ -353,21 +345,24 @@ class QControlComponent(BaseComponent):
 
     def _play_slot(self, trackid, slotid):
         clip_slot = self.use_slots[trackid][slotid]
+        if clip_slot == None: return
+
         if self._shift_pressed and self.__control_layer_permanent:
-            track = self.use_tracks[trackid]
+            track = clip_slot.canonical_parent
             if track.is_foldable:
                 if track.fold_state == True:
                     track.fold_state = False
                 else:
                     track.fold_state = True
-                self.on_selected_track_changed()
+                self._parent.song().view.selected_track = track
+            else:
+                self._parent.song().view.selected_track = track
         else:
-            if clip_slot is not None:
-                if clip_slot.has_clip or clip_slot.is_group_slot:
-                    if clip_slot.is_playing:
-                        clip_slot.stop()
-                    else:
-                        clip_slot.fire()
+            if clip_slot.has_clip or clip_slot.is_group_slot:
+                if clip_slot.is_playing:
+                    clip_slot.stop()
+                else:
+                    clip_slot.fire()
 
         # if slotid == 1:
         #     # automatically select the next slot if the lower slot is
@@ -383,7 +378,7 @@ class QControlComponent(BaseComponent):
         else:
             height = 1
 
-        include_returns = False
+        include_returns = True
         self._parent._c_instance.set_session_highlight(self.track_offset,
                                                        self.selected_scene_index,
                                                        width,
@@ -395,17 +390,19 @@ class QControlComponent(BaseComponent):
         def blinkcb():
             c = cycle(['red', 'black'])
             c2 = cycle(['blue', 'black'])
+
             def callback():
                 self._get_used_clipslots()
                 clip_slot = self.use_slots[track_id][slot_id]
-                if clip_slot is None:
+                if clip_slot == None:
                     return
+                track = clip_slot.canonical_parent
                 if clip_slot.has_clip or clip_slot.is_group_slot:
                     if self._control_layer_3:
                         if clip_slot.is_triggered and not clip_slot.is_playing:
                             self._set_color(buttonid, next(c))
                             self._parent.schedule_message(1, callback)
-                        elif (clip_slot.is_playing and clip_slot.canonical_parent.fired_slot_index == -2):
+                        elif (clip_slot.is_playing and track.fired_slot_index == -2):
                             self._set_color(buttonid, next(c2))
                             self._parent.schedule_message(1, callback)
                         else:
@@ -422,7 +419,7 @@ class QControlComponent(BaseComponent):
             self._get_used_clipslots()
             clip_slot = self.use_slots[track_id][slot_id]
 
-            if clip_slot is None:
+            if clip_slot == None:
                 self._set_color(buttonid, 'black')
                 return
             if clip_slot.is_playing:
@@ -449,16 +446,20 @@ class QControlComponent(BaseComponent):
                 cb = next(cbs)
                 blinkcb = next(blinkcbs)
 
-                if slot is None:
+                if slot == None:
                     continue
 
-                track = self.use_tracks[i]
-                if track is not None:
+                # do this to ignore return-tracks
+                if not slot.has_stop_button:
+                    continue
+
+                track = slot.canonical_parent
+                if track != None and track.can_be_armed:
                     if not track.fired_slot_index_has_listener(cb):
                         track.add_fired_slot_index_listener(cb)
+                    if not track.fired_slot_index_has_listener(blinkcb):
+                        track.add_fired_slot_index_listener(blinkcb)
 
-                if not slot.canonical_parent.fired_slot_index_has_listener(blinkcb):
-                    slot.canonical_parent.add_fired_slot_index_listener(blinkcb)
                 if not slot.has_clip_has_listener(cb):
                     slot.add_has_clip_listener(cb)
                 if not slot.playing_status_has_listener(cb):
@@ -472,16 +473,20 @@ class QControlComponent(BaseComponent):
                 cb = next(cbs)
                 blinkcb = next(blinkcbs)
 
-                if slot is None:
+                if slot == None:
+                    continue
+                # do this to ignore return-tracks
+                if not slot.has_stop_button:
                     continue
 
-                track = self.use_tracks[i]
-                if track is not None:
+                track = slot.canonical_parent
+                if track != None and track.can_be_armed:
                     if track.fired_slot_index_has_listener(cb):
                         track.remove_fired_slot_index_listener(cb)
 
-                if slot.canonical_parent.fired_slot_index_has_listener(blinkcb):
-                    slot.canonical_parent.remove_fired_slot_index_listener(blinkcb)
+                    if track.fired_slot_index_has_listener(blinkcb):
+                        track.remove_fired_slot_index_listener(blinkcb)
+
                 if slot.has_clip_has_listener(cb):
                     slot.remove_has_clip_listener(cb)
                 if slot.playing_status_has_listener(cb):
@@ -503,12 +508,45 @@ class QControlComponent(BaseComponent):
         if song.session_automation_record_has_listener(self._update_lights):
             song.remove_session_automation_record_listener(self._update_lights)
 
+
+    def _activate_control_layer(self, layer, permanent=False):
+        if self.__control_layer_permanent and getattr(self, layer):
+            # deactivate the layer if it was already permanently activated
+            self.__control_layer_permanent = False
+            self._unpress_shift()
+        else:
+            if permanent:
+                self.__control_layer_permanent = True
+
+            # transpose notes to start-values
+            self._set_notes(self.__transpose_start)
+            # add value listeners to buttons in case shift is pressed
+            self._add_handler()
+
+            for l in self.layers:
+                if l == layer:
+                    setattr(self, l, True)
+                else:
+                    setattr(self, l, False)
+            for key, val in self.layer_listener.items():
+                if key == layer:
+                    getattr(self, '_add' + val)()
+                else:
+                    getattr(self, '_remove' + val)()
+
+            if layer in ['_control_layer_2', '_control_layer_3', '_shift_fixed']:
+                self._parent._device.set_enabled(True)
+            else:
+                self._parent._device.set_enabled(False)
+
+        self._update_lights()
+
     ###################################################
 
     def _1_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_track(0)
+                self._arm_or_fold_track(0)
             elif self._control_layer_2:
                 self._redo()
             elif self._control_layer_3:
@@ -521,9 +559,9 @@ class QControlComponent(BaseComponent):
     def _2_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_track(1)
+                self._arm_or_fold_track(1)
             elif self._control_layer_2:
-                pass
+                self._collapse_device()
             elif self._control_layer_3:
                 self._play_slot(1, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -534,9 +572,9 @@ class QControlComponent(BaseComponent):
     def _3_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_track(2)
+                self._arm_or_fold_track(2)
             elif self._control_layer_2:
-                pass
+                self._toggle_or_delete_device()
             elif self._control_layer_3:
                 self._play_slot(2, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -547,9 +585,9 @@ class QControlComponent(BaseComponent):
     def _4_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_track(3)
+                self._arm_or_fold_track(3)
             elif self._control_layer_2:
-                self._change_detail_view(next(self._view_cycle))
+                pass
             elif self._control_layer_3:
                 self._play_slot(3, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -560,9 +598,9 @@ class QControlComponent(BaseComponent):
     def _5_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_track(4)
+                self._arm_or_fold_track(4)
             elif self._control_layer_2:
-                self._change_detail_view(next(self._detail_cycle))
+                pass
             elif self._control_layer_3:
                 self._play_slot(4, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -570,23 +608,12 @@ class QControlComponent(BaseComponent):
         else:
             self._update_lights()
 
-
-    def _change_detail_view(self, view):
-        assert view in VIEWS
-        app_view = self._parent.application().view
-        if view == u'Detail/DeviceChain' or u'Detail/Clip':
-            if not app_view.is_view_visible(u'Detail'):
-                app_view.show_view(u'Detail')
-        if not app_view.is_view_visible(view):
-            app_view.focus_view(view)
-
-
     def _6_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_track(5)
+                self._arm_or_fold_track(5)
             elif self._control_layer_2:
-                self._toggle_shift_lights()
+                pass
             elif self._control_layer_3:
                 self._play_slot(5, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -595,6 +622,22 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _7_listener(self, value):
+        if value > 0:
+            if self._control_layer_1:
+                self._arm_or_fold_track(6)
+            elif self._control_layer_2:
+                if self.__control_layer_permanent and self._shift_pressed:
+                    self._change_ableton_view(next(self._view_cycle))
+                else:
+                    self._change_ableton_view(next(self._detail_cycle))
+            elif self._control_layer_3:
+                self._play_slot(6, 0)
+            elif self._shift_pressed or self._shift_fixed:
+                self._select_track(6)
+        else:
+            self._update_lights()
+
+    def _8_listener(self, value):
         if value > 0:
             if self.__control_layer_permanent:
                 if self._shift_pressed:
@@ -606,38 +649,6 @@ class QControlComponent(BaseComponent):
 
         else:
             self._update_lights()
-
-    def _8_listener(self, value):
-        if value == 0:
-            if abs(time.clock() - self.__control_layer_3_clicked) <= self._double_tap_time:
-                self.__control_layer_permanent = True
-                self._shift_fixed = False
-                self._control_layer_1 = False
-                self._control_layer_2 = False
-                self._control_layer_3 = True
-                self._add_control_3_listeners()
-                self._update_lights()
-                return
-            else:
-                if self.__control_layer_permanent:
-                    if self._control_layer_3:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                    else:
-                        self._shift_fixed = False
-                        self._control_layer_1 = False
-                        self._control_layer_2 = False
-                        self._control_layer_3 = True
-                        self._add_control_3_listeners()
-                else:
-                    self._shift_fixed = False
-                    self._control_layer_1 = False
-                    self._control_layer_2 = False
-                    self._control_layer_3 = True
-                    self._add_control_3_listeners()
-            self.__control_layer_3_clicked = time.clock()
-
-        self._update_lights()
 
     ###################################################
 
@@ -713,11 +724,24 @@ class QControlComponent(BaseComponent):
             elif self._control_layer_3:
                 self._play_slot(5, 1)
             elif self._shift_pressed or self._shift_fixed:
-                self._fire_record()
+                pass
         else:
             self._update_lights()
 
     def _15_listener(self, value):
+        if value > 0:
+            if self._control_layer_1:
+                self._mute_solo_track(6)
+            elif self._control_layer_2:
+                pass
+            elif self._control_layer_3:
+                self._play_slot(6, 1)
+            elif self._shift_pressed or self._shift_fixed:
+                self._fire_record()
+        else:
+            self._update_lights()
+
+    def _16_listener(self, value):
         if value > 0:
             if self.__control_layer_permanent:
                 if self._shift_pressed:
@@ -729,46 +753,11 @@ class QControlComponent(BaseComponent):
         else:
             self._update_lights()
 
-    def _16_listener(self, value):
-        if value == 0:
-            if abs(time.clock() - self.__control_layer_2_clicked) <= self._double_tap_time:
-                self.__control_layer_permanent = True
-                self._shift_fixed = False
-                self._control_layer_1 = True
-                self._control_layer_2 = False
-                self._control_layer_3 = False
-                self._remove_control_2_listeners()
-                self._remove_control_3_listeners()
-                self._update_lights()
-                return
-            else:
-                if self.__control_layer_permanent:
-                    if self._control_layer_1:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                    else:
-                        self._shift_fixed = False
-                        self._control_layer_1 = True
-                        self._control_layer_2 = False
-                        self._control_layer_3 = False
-                        self._remove_control_2_listeners()
-                        self._remove_control_3_listeners()
-                else:
-                    self._shift_fixed = False
-                    self._control_layer_1 = True
-                    self._control_layer_2 = False
-                    self._control_layer_3 = False
-                    self._remove_control_2_listeners()
-                    self._remove_control_3_listeners()
-
-            self._update_lights()
-            self.__control_layer_2_clicked = time.clock()
-
     ###################################################
 
     def _fire_record(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-        if clip_slot is None: return
+        if clip_slot == None: return
 
         if clip_slot.has_clip and (clip_slot.is_playing or clip_slot.is_recording):
             if self._parent.song().session_record == False:
@@ -780,7 +769,7 @@ class QControlComponent(BaseComponent):
     def _blink_fire_record(self, clip_slot, buttonid=1):
         c = cycle(['red', 'black'])
         def callback():
-            if clip_slot is None: return
+            if clip_slot == None: return
             if clip_slot.is_triggered:
                 self._set_color(buttonid, next(c))
                 self._parent.schedule_message(1, callback)
@@ -795,7 +784,7 @@ class QControlComponent(BaseComponent):
 
     def _duplicate_loop(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-        if clip_slot is None: return
+        if clip_slot == None: return
         if clip_slot.has_clip:
             clip_slot.clip.duplicate_loop()
 
@@ -865,6 +854,52 @@ class QControlComponent(BaseComponent):
             if clip_slot.has_clip:
                 clip_slot.delete_clip()
 
+    def _delete_device(self):
+        track = self._parent.song().view.selected_track
+        device = track.view.selected_device
+        device_index = list(track.devices).index(device)
+
+        if device != None:
+            track.delete_device(device_index)
+
+
+    def _device_on_off_parameter(self, device):
+        result = None
+        if device != None:
+            for parameter in device.parameters:
+                if str(parameter.name).startswith(u'Device On'):
+                    result = parameter
+                    break
+        return result
+
+    def _toggle_device_on_off(self):
+        track = self._parent.song().view.selected_track
+        device = track.view.selected_device
+
+        if device != None:
+            parameter = self._device_on_off_parameter(device)
+
+            if parameter.value > 0:
+                parameter.value = 0
+            else:
+                parameter.value = 1
+
+    def _collapse_device(self):
+        track = self._parent.song().view.selected_track
+        device = track.view.selected_device
+
+        if device != None:
+            if device.view.is_collapsed:
+                device.view.is_collapsed = False
+            else:
+                device.view.is_collapsed = True
+
+    def _toggle_or_delete_device(self):
+        if self.__control_layer_permanent and self._shift_pressed:
+            self._delete_device()
+        else:
+            self._toggle_device_on_off()
+
     def _stop_clip(self):
         # if shift is pressed, stop all clips and stop playing
         if self._shift_pressed:
@@ -884,7 +919,7 @@ class QControlComponent(BaseComponent):
     def _duplicate_clip(self):
         all_scenes = self._parent.song().scenes
         # duplicate the clip slot
-        if self.selected_track is None:
+        if self.selected_track == None:
             return
         duplicated_id = self.selected_track.duplicate_clip_slot(self.selected_scene_index)
         duplicated_slot = all_scenes[duplicated_id]
@@ -898,21 +933,31 @@ class QControlComponent(BaseComponent):
 
     def _select_track(self, trackid):
         track = self.use_tracks[trackid]
-        if track is not None:
+        if track != None:
             self._parent.song().view.selected_track = track
 
             # on arm the track on double-click
             if abs(time.clock() - self.__select_track_clicked) <= self._double_tap_time and self.__last_selected == trackid:
-                self._arm_track(trackid)
+
+                for t in self._parent.song().tracks:
+                    if t == track:
+                        self._arm_or_fold_track(track=t, toggle=False)
+                    else:
+                        if t.can_be_armed:
+                            t.arm = False
+
             self.__select_track_clicked = time.clock()
             self.__last_selected = trackid
 
-    def _arm_track(self, trackid):
-        track = self.use_tracks[trackid]
-        if track is not None:
+    def _arm_or_fold_track(self, trackid=None, toggle=True, track=None):
+        if trackid != None:
+            track = self.use_tracks[trackid]
+
+        if track != None:
             if track.can_be_armed:
                 if track.arm == True:
-                    track.arm = False
+                    if toggle:
+                        track.arm = False
                 else:
                     track.arm = True
             elif track.is_foldable:
@@ -924,7 +969,7 @@ class QControlComponent(BaseComponent):
 
     def _mute_track(self, trackid):
         track = self.use_tracks[trackid]
-        if track is not None:
+        if track != None:
             if track.mute:
                 track.mute = False
             else:
@@ -932,7 +977,7 @@ class QControlComponent(BaseComponent):
 
     def _solo_track(self, trackid):
         track = self.use_tracks[trackid]
-        if track is not None:
+        if track != None:
             if track.solo:
                 track.solo = False
             else:
@@ -970,135 +1015,14 @@ class QControlComponent(BaseComponent):
     def _redo(self):
         self._parent.song().redo()
 
-    def _add_handler(self):
-        for i in list(range(1,17)) + ['chan']:
-            try:
-                getattr(self, '_'+str(i)+'_button').remove_value_listener(getattr(self, '_'+str(i)+'_listener'))
-                getattr(self, '_'+str(i)+'_button').add_value_listener(getattr(self, '_'+str(i)+'_listener'))
-            except:
-                self._parent.log_message('there was something wrong while trying to add button listeners!')
-                pass
-
-    def _remove_handler(self):
-        for i in list(range(1,17)) + ['chan']:
-            try:
-                getattr(self, '_'+str(i)+'_button').remove_value_listener(getattr(self, '_'+str(i)+'_listener'))
-            except:
-                self._parent.log_message('there was something wrong during removal of listeners!')
-                pass
-
-    def _chan_listener(self, value):
-        if value == 0:
-            if abs(time.clock() - self.__control_layer_1_clicked) <= self._double_tap_time:
-                self.__control_layer_permanent = True
-                self._shift_fixed = False
-                self._control_layer_1 = False
-                self._control_layer_2 = True
-                self._control_layer_3 = False
-                self._add_control_2_listeners()
-                self._update_lights()
-                return
-            else:
-                if self.__control_layer_permanent:
-                    if self._control_layer_2:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                    else:
-                        self._shift_fixed = False
-                        self._control_layer_1 = False
-                        self._control_layer_2 = True
-                        self._control_layer_3 = False
-                        self._add_control_2_listeners()
-                else:
-                    self._shift_fixed = False
-                    self._control_layer_1 = False
-                    self._control_layer_2 = True
-                    self._control_layer_3 = False
-                    self._add_control_2_listeners()
-
-            self._update_lights()
-            self.__control_layer_1_clicked = time.clock()
-
-    def _play_listener(self, value):
-        if value > 0:
-            if self._sequencer_running:
-                self._sequencer_running = False
-            else:
-                self._sequencer_running = True
-        self._update_lights()
-
-    def _stop_listener(self, value):
-        if value > 0:
-            self._stop_clip()
-
-        self._sequencer_running = False
-        self._update_lights()
-
-    def _unpress_shift(self):
-        self._shift_pressed = False
-        if not self.__control_layer_permanent:
-            self._shift_fixed = False
-            self._control_layer_1 = False
-            self._control_layer_2 = False
-            self._control_layer_3 = False
-
-            if not self._shift_pressed:
-                # remove value listeners from buttons in case shift is released
-                # (so that we can play instruments if shift is not pressed)
-                self._parent._device.set_enabled(True)
-                self._remove_handler()
-                # transpose notes back to last set transpose-val
-                # take care of the transpose-interval!
-                self._set_notes(self.__transpose_val)
-                # always update lights on shift release
-
-        # remove control-listeners (e.g. metronome, automation etc.)
-        self._remove_control_2_listeners()
-        self._remove_control_3_listeners()
-
-    def _shift_listener(self, value):
-        if value == 127:
-            self._shift_pressed = True
-            self._parent._device.set_enabled(False)
-            # transpose notes to start-values
-            self._set_notes(self.__transpose_start)
-            # add value listeners to buttons in case shift is pressed
-            self._add_handler()
-        else:
-            self._shift_pressed = False
-            # on release
-            if abs(time.clock() - self.__shift_clicked) <= self._double_tap_time * 0.5:
-                # if double-tapped
-                if self.__control_layer_permanent:
-                    if self._shift_fixed:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                    else:
-                        self._shift_fixed = True
-                        self._control_layer_1 = False
-                        self._control_layer_2 = False
-                        self._control_layer_3 = False
-                        self._remove_control_2_listeners()
-                        self._remove_control_3_listeners()
-                else:
-                    self.__control_layer_permanent = True
-                    self._shift_fixed = True
-                    self._control_layer_1 = False
-                    self._control_layer_2 = False
-                    self._control_layer_3 = False
-                    self._remove_control_2_listeners()
-                    self._remove_control_3_listeners()
-            else:
-                if self.__control_layer_permanent:
-                    if self._shift_fixed:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                else:
-                    self._unpress_shift()
-
-            self.__shift_clicked = time.clock()
-
-        self._update_lights()
+    def _change_ableton_view(self, view):
+        assert view in VIEWS
+        app_view = self._parent.application().view
+        if view == u'Detail/DeviceChain' or u'Detail/Clip':
+            if not app_view.is_view_visible(u'Detail'):
+                app_view.show_view(u'Detail')
+        if not app_view.is_view_visible(view):
+            app_view.focus_view(view)
 
     #########################################################
 
@@ -1106,71 +1030,25 @@ class QControlComponent(BaseComponent):
         trackid = 0
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 2)
-            else:
-                self._track_send_x(value, trackid, 0)
-        elif self._control_layer_3:
-            self._track_volume_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
-            self._track_volume_or_send(value, trackid)
-
 
     def _2_encoder_listener(self, value):
         trackid = 1
         if self._control_layer_1:
-            self._track_volume_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 2)
-            else:
-                self._track_send_x(value, trackid, 0)
-        elif self._control_layer_3:
-            self._track_volume_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
             self._track_volume_or_send(value, trackid)
 
     def _3_encoder_listener(self, value):
         trackid = 2
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 2)
-            else:
-                self._track_send_x(value, trackid, 0)
-        elif self._control_layer_3:
-            self._track_volume_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
-            self._track_volume_or_send(value, trackid)
 
     def _4_encoder_listener(self, value):
         trackid = 3
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 2)
-            else:
-                self._track_send_x(value, trackid, 0)
-        elif self._control_layer_3:
-            self._track_volume_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
-            self._track_volume_or_send(value, trackid)
 
     def _5_encoder_listener(self, value):
         trackid = 4
         if self._control_layer_1:
-            self._track_volume_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 2)
-            else:
-                self._track_send_x(value, trackid, 0)
-        elif self._control_layer_3:
-            self._track_volume_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
             self._track_volume_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 0)
@@ -1179,26 +1057,21 @@ class QControlComponent(BaseComponent):
         trackid = 5
         if self._control_layer_1:
             self._track_volume_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 2)
-            else:
-                self._track_send_x(value, trackid, 0)
-        elif self._control_layer_3:
-            self._track_volume_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
-            self._track_volume_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 2)
 
     def _7_encoder_listener(self, value):
-        if self._shift_pressed:
-            self._track_volume(value, -2)
+        trackid = 6
+        if self._control_layer_1:
+            self._track_volume_or_send(value, trackid)
         else:
-            self._track_volume(value, -1)
+            self._track_volume_master_or_current(value)
 
     def _8_encoder_listener(self, value):
-        self._select_prev_next_track(value)
+        if self._shift_pressed:
+            self._scroll_drum_pad_row(value)
+        else:
+            self._select_prev_next_track(value)
 
     #########################################################
 
@@ -1206,70 +1079,25 @@ class QControlComponent(BaseComponent):
         trackid = 0
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 3)
-            else:
-                self._track_send_x(value, trackid, 1)
-        elif self._control_layer_3:
-            self._track_pan_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
-            self._track_pan_or_send(value, trackid)
 
     def _10_encoder_listener(self, value):
         trackid = 1
         if self._control_layer_1:
-            self._track_pan_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 3)
-            else:
-                self._track_send_x(value, trackid, 1)
-        elif self._control_layer_3:
-            self._track_pan_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
             self._track_pan_or_send(value, trackid)
 
     def _11_encoder_listener(self, value):
         trackid = 2
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 3)
-            else:
-                self._track_send_x(value, trackid, 1)
-        elif self._control_layer_3:
-            self._track_pan_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
-            self._track_pan_or_send(value, trackid)
 
     def _12_encoder_listener(self, value):
         trackid = 3
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 3)
-            else:
-                self._track_send_x(value, trackid, 1)
-        elif self._control_layer_3:
-            self._track_pan_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
-            self._track_pan_or_send(value, trackid)
 
     def _13_encoder_listener(self, value):
         trackid = 4
         if self._control_layer_1:
-            self._track_pan_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 3)
-            else:
-                self._track_send_x(value, trackid, 1)
-        elif self._control_layer_3:
-            self._track_pan_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
             self._track_pan_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 1)
@@ -1278,113 +1106,31 @@ class QControlComponent(BaseComponent):
         trackid = 5
         if self._control_layer_1:
             self._track_pan_or_send(value, trackid)
-        elif self._control_layer_2:
-            if self.__control_layer_permanent and self._shift_pressed:
-                self._track_send_x(value, trackid, 3)
-            else:
-                self._track_send_x(value, trackid, 1)
-        elif self._control_layer_3:
-            self._track_pan_or_send(value, trackid)
-        elif self._shift_pressed or self._shift_fixed:
-            self._track_pan_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 3)
 
     def _15_encoder_listener(self, value):
-        if self._shift_pressed:
-            self._track_pan(value, -2)
+        trackid = 6
+        if self._control_layer_1:
+            self._track_pan_or_send(value, trackid)
         else:
-            self._track_pan(value, -1)
+            self._track_pan_master_or_current(value)
 
     def _16_encoder_listener(self, value):
-        self._select_prev_next_scene(value)
+        if self._shift_pressed:
+            self._scroll_drum_pad_col(value)
+        else:
+            self._select_prev_next_scene(value)
 
     #########################################################
-
-    def _track_send_x(self, value, track_id=0, send_id=0):
-        accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
-        last_access = abs(time.clock() - getattr(self, accessname, 0))
-
-        if track_id == -1:
-            track = self._parent.song().view.selected_track
-        else:
-            track = self.use_tracks[track_id]
-
-        if track is not None:
-            sends = track.mixer_device.sends
-
-            if send_id < len(sends):
-                prev_value = sends[send_id].value
-                if value < 65:
-                    if last_access > 0.01:
-                        if round(prev_value + .01, 2) <= 1:
-                            sends[send_id].value = round(prev_value + .01, 2)
-                    else:
-                        if round(prev_value + .05, 1) <= 1:
-                            sends[send_id].value = round(prev_value + .05, 1)
-                elif value > 65 and prev_value > 0:
-                    if last_access > 0.01:
-                        if round(prev_value - .01, 2) >= 0:
-                            sends[send_id].value = round(prev_value - .01, 2)
-                    else:
-                        if round(prev_value - .05, 1) >= 0:
-                            sends[send_id].value = round(prev_value - .05, 1)
-
-            setattr(self, accessname, time.clock())
-
-    def _track_volume_or_send(self, value, trackid, sendid=0):
-        if self._shift_pressed and self.__control_layer_permanent:
-            self._track_send_x(value, trackid, sendid)
-        else:
-            self._track_volume(value, trackid)
-
-    def _track_pan_or_send(self, value, trackid, sendid=1):
-        if self._shift_pressed and self.__control_layer_permanent:
-            self._track_send_x(value, trackid, sendid)
-        else:
-            self._track_pan(value, trackid)
-
-    def _track_volume(self, value, track_id=0):
-        if track_id == -1:
-            track = self._parent.song().view.selected_track
-        elif track_id == -2:
-            track = self._parent.song().master_track
-        else:
-            track = self.use_tracks[track_id]
-
-        if track is not None:
-            prev_value = track.mixer_device.volume.value
-            if value < 65:
-                if round(prev_value + .01, 2) <= 1:
-                    track.mixer_device.volume.value = round(prev_value + .01, 2)
-            elif value > 65 :
-                if round(prev_value - .01, 2) >= 0:
-                    track.mixer_device.volume.value = round(prev_value - .01, 2)
-
-    def _track_pan(self, value, track_id=0):
-        if track_id == -1:
-            track = self._parent.song().view.selected_track
-        elif track_id == -2:
-            track = self._parent.song().master_track
-        else:
-            track = self.use_tracks[track_id]
-
-        if track is not None:
-            prev_value = track.mixer_device.panning.value
-            if value < 65:
-                if round(prev_value + .05, 2) <= 1:
-                    track.mixer_device.panning.value = round(prev_value + .05, 2)
-            elif value > 65 :
-                if round(prev_value - .05, 2) >= -1:
-                    track.mixer_device.panning.value = round(prev_value - .05, 2)
-
-    def _toggle_shift_lights(self):
-        self._shift_color_mode = (self._shift_color_mode + 1)%3
-        self._update_lights()
 
     def _transpose_encoder_listener(self, value):
         if not self.__control_layer_permanent and not self._shift_pressed:
             self._transpose(value)
+        elif self._control_layer_1:
+            self._track_volume(value, -2)
+        else:
+            self._scroll_device_chain(value)
 
     def _transpose(self, value):
         # increase notes only every 4 ticks of the transpose-slider
@@ -1419,6 +1165,7 @@ class QControlComponent(BaseComponent):
             # -------------
 
     def _set_notes(self, start):
+
         # set midi-notes of buttons to start + (0-15)
         for i in range(16):
             decval = (start + i)%127
@@ -1431,19 +1178,124 @@ class QControlComponent(BaseComponent):
 
             self._parent._send_midi(self._parent.QS.set_B_cc(button, decval))
 
+    def _track_send_x(self, value, track_id=0, send_id=0):
+        accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
+        last_access = abs(time.clock() - getattr(self, accessname, 0))
+
+        if track_id == -1:
+            track = self._parent.song().view.selected_track
+        else:
+            track = self.use_tracks[track_id]
+
+        if track != None:
+            sends = track.mixer_device.sends
+
+            if send_id < len(sends):
+                prev_value = sends[send_id].value
+                if value < 65:
+                    if last_access > 0.01:
+                        if round(prev_value + .01, 2) <= 1:
+                            sends[send_id].value = round(prev_value + .01, 2)
+                    else:
+                        if round(prev_value + .05, 1) <= 1:
+                            sends[send_id].value = round(prev_value + .05, 1)
+                elif value > 65 and prev_value > 0:
+                    if last_access > 0.01:
+                        if round(prev_value - .01, 2) >= 0:
+                            sends[send_id].value = round(prev_value - .01, 2)
+                    else:
+                        if round(prev_value - .05, 1) >= 0:
+                            sends[send_id].value = round(prev_value - .05, 1)
+
+            setattr(self, accessname, time.clock())
+
+    def _track_send_x_or_y(self, value, track_id=0, send_id=1, send_id_shift=0):
+        if self._shift_pressed and self.__control_layer_permanent:
+            self._track_send_x(value, track_id, send_id_shift)
+        else:
+            self._track_send_x(value, track_id, send_id)
+
+    def _track_volume_or_send(self, value, trackid, sendid=0):
+        if self._shift_pressed and self.__control_layer_permanent:
+            self._track_send_x(value, trackid, sendid)
+        else:
+            self._track_volume(value, trackid)
+
+    def _track_pan_or_send(self, value, trackid, sendid=1):
+        if self._shift_pressed and self.__control_layer_permanent:
+            self._track_send_x(value, trackid, sendid)
+        else:
+            self._track_pan(value, trackid)
+
+    def _track_volume(self, value, track_id=0):
+        if track_id == -1:
+            track = self._parent.song().view.selected_track
+        elif track_id == -2:
+            track = self._parent.song().master_track
+        else:
+            track = self.use_tracks[track_id]
+
+        if track != None:
+            prev_value = track.mixer_device.volume.value
+            if value < 65:
+                if round(prev_value + .01, 2) <= 1:
+                    track.mixer_device.volume.value = round(prev_value + .01, 2)
+            elif value > 65 :
+                if round(prev_value - .01, 2) >= 0:
+                    track.mixer_device.volume.value = round(prev_value - .01, 2)
+
+    def _track_volume_master_or_current(self, value):
+        if self._shift_pressed:
+            self._track_volume(value, -2)
+        else:
+            self._track_volume(value, -1)
+
+    def _track_pan_master_or_current(self, value):
+        if self._shift_pressed:
+            self._track_pan(value, -2)
+        else:
+            self._track_pan(value, -1)
+
+    def _track_pan(self, value, track_id=0):
+        if track_id == -1:
+            track = self._parent.song().view.selected_track
+        elif track_id == -2:
+            track = self._parent.song().master_track
+        else:
+            track = self.use_tracks[track_id]
+
+        if track != None:
+            prev_value = track.mixer_device.panning.value
+            if value < 65:
+                if round(prev_value + .05, 2) <= 1:
+                    track.mixer_device.panning.value = round(prev_value + .05, 2)
+            elif value > 65 :
+                if round(prev_value - .05, 2) >= -1:
+                    track.mixer_device.panning.value = round(prev_value - .05, 2)
+
     def _select_next_scene(self, create_new_scenes=True):
         song = self._parent.song()
         selected_scene = song.view.selected_scene
-        all_scenes = song.scenes
+        if selected_scene == None: return
+
+        all_scenes = list(song.scenes)
+        selected_scene_index = all_scenes.index(selected_scene)
+
         if selected_scene != all_scenes[-1]:
-            song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
+            song.view.selected_scene = all_scenes[selected_scene_index + 1]
         else:
             if create_new_scenes is True:
                 # create new scenes in case we are at the end
                 song.create_scene(-1)
-                song.view.selected_scene = all_scenes[self.selected_scene_index + 1]
+                song.view.selected_scene = song.scenes[-1]
 
     def _select_prev_scene(self):
+        # reduce sensitivity to make it easier to select items
+        self.__sel_scene_cnt = (self.__sel_scene_cnt + 1)%5
+        if self.__sel_scene_cnt != 0:
+            return
+        self.__sel_scene_cnt = 1
+
         song = self._parent.song()
         selected_scene = song.view.selected_scene
         all_scenes = song.scenes
@@ -1461,7 +1313,7 @@ class QControlComponent(BaseComponent):
 
     def _select_prev_track(self):
         song = self._parent.song()
-        tracks_and_returns = self.all_tracks + list(song.return_tracks) + [song.master_track]
+        tracks_and_returns = self.all_tracks + list(song.return_tracks)
         selected_track = song.view.selected_track
         assert selected_track in tracks_and_returns
         index = list(tracks_and_returns).index(selected_track)
@@ -1472,7 +1324,7 @@ class QControlComponent(BaseComponent):
 
     def _select_next_track(self):
         song = self._parent.song()
-        tracks_and_returns = self.all_tracks + list(song.return_tracks) + [song.master_track]
+        tracks_and_returns = self.all_tracks + list(song.return_tracks)
         selected_track = song.view.selected_track
         assert selected_track in tracks_and_returns
         index = list(tracks_and_returns).index(selected_track)
@@ -1480,7 +1332,219 @@ class QControlComponent(BaseComponent):
             song.view.selected_track = tracks_and_returns[index + 1]
 
     def _select_prev_next_track(self, value):
+        # reduce sensitivity to make it easier to select items
+        self.__sel_track_cnt = (self.__sel_track_cnt + 1)%5
+        if self.__sel_track_cnt != 0:
+            return
+        self.__sel_track_cnt = 1
+
         if value < 65:
             self._select_next_track()
         elif value > 65:
             self._select_prev_track()
+
+    def _scroll_device_chain(self, value):
+        app = self._parent.application()
+
+        if not app.view.is_view_visible(u'Detail/DeviceChain'):
+            app.view.show_view(u'Detail/DeviceChain')
+            app.view.focus_view(u'Detail/DeviceChain')
+
+        # increase notes only every 4 ticks of the transpose-slider
+        # (e.g. to make it a little less sensitive)
+        self.__transpose_cnt = (self.__transpose_cnt + 1)%4
+
+        if self.__transpose_cnt == 0:
+
+            if value > 65:
+                app.view.scroll_view(NavDirection.left, u'Detail/DeviceChain', False)
+            else:
+                app.view.scroll_view(NavDirection.right, u'Detail/DeviceChain', False)
+
+    def _scroll_drum_pad_row(self, value):
+        # reduce sensitivity to make it easier to select items
+        self.__drumpad_row_cnt = (self.__drumpad_row_cnt + 1)%5
+        if self.__drumpad_row_cnt != 0:
+            return
+        self.__drumpad_row_cnt = 1
+
+        track = self._parent.song().view.selected_track
+        device = track.view.selected_device
+
+        if device != None:
+            if not device.can_have_drum_pads:
+                # try this to be able to scroll drumpads while they are selected
+                try:
+                    if device.canonical_parent.canonical_parent.can_have_drum_pads:
+                        usedevice = device.canonical_parent.canonical_parent
+                except Exception:
+                    return
+            else:
+                usedevice = device
+
+            allpads = list(usedevice.drum_pads)
+            selected_pad = usedevice.view.selected_drum_pad
+            selected_pad_id = allpads.index(selected_pad)
+
+            scrollpos = usedevice.view.drum_pads_scroll_position
+
+            row = int(selected_pad_id / 4)
+            pos = (selected_pad_id - scrollpos*4)%16
+
+            if value > 65:
+                newpadid = scrollpos*4 + (pos - 1)%16
+            else:
+                newpadid = scrollpos*4 + (pos + 1)%16
+
+            self._parent.show_message(str([
+                selected_pad_id, row, pos, scrollpos, newpadid]))
+
+            usedevice.view.selected_drum_pad = allpads[newpadid]
+
+    def _scroll_drum_pad_col(self, value):
+        # reduce sensitivity to make it easier to select items
+        self.__drumpad_col_cnt = (self.__drumpad_col_cnt + 1)%5
+        if self.__drumpad_col_cnt != 0:
+            return
+        self.__drumpad_col_cnt = 1
+
+        track = self._parent.song().view.selected_track
+        device = track.view.selected_device
+
+        if device != None:
+            if not device.can_have_drum_pads:
+                # try this to be able to scroll drumpads while they are selected
+                try:
+                    if device.canonical_parent.canonical_parent.can_have_drum_pads:
+                        usedevice = device.canonical_parent.canonical_parent
+                except Exception:
+                    return
+            else:
+                usedevice = device
+
+
+            allpads = list(usedevice.drum_pads)
+            selected_pad = usedevice.view.selected_drum_pad
+            selected_pad_id = allpads.index(selected_pad)
+
+            nrows = int(len(allpads)/4) - 1
+
+            row = int(selected_pad_id / 4)
+            pos = selected_pad_id%4
+
+            if value > 65:
+                newpadid = int((row + 1)%nrows * 4) + pos
+            else:
+                newpadid = int((row - 1)%nrows * 4) + pos
+
+            usedevice.view.selected_drum_pad = allpads[newpadid]
+
+            scrollpos = usedevice.view.drum_pads_scroll_position
+            newscrollpos = int(newpadid / 4)
+            if newscrollpos < scrollpos:
+                usedevice.view.drum_pads_scroll_position = newscrollpos%(nrows)
+            elif newscrollpos > scrollpos + 3:
+                usedevice.view.drum_pads_scroll_position = (newscrollpos - 3)%(nrows)
+
+
+    # ------------------------------------------------------------------------
+
+    def _add_handler(self):
+        for i in list(range(1,17)):# + ['chan', 'recall', 'store']:
+            try:
+                getattr(self, '_'+str(i)+'_button').remove_value_listener(getattr(self, '_' + str(i) + '_listener'))
+                getattr(self, '_'+str(i)+'_button').add_value_listener(getattr(self, '_' + str(i) + '_listener'))
+            except:
+                self._parent.log_message('there was something wrong while trying to add button listeners!')
+                pass
+
+    def _remove_handler(self):
+        for i in list(range(1,17)):# + ['chan', 'recall', 'store']:
+            try:
+                getattr(self, '_'+str(i)+'_button').remove_value_listener(getattr(self, '_' + str(i) + '_listener'))
+            except:
+                self._parent.log_message('there was something wrong during removal of listeners!')
+                pass
+
+    def _play_listener(self, value):
+        if value > 0:
+            if self._sequencer_running:
+                self._sequencer_running = False
+            else:
+                self._sequencer_running = True
+        self._update_lights()
+
+    def _stop_listener(self, value):
+        if value > 0:
+            self._stop_clip()
+
+        self._sequencer_running = False
+        self._update_lights()
+
+    def _shift_listener(self, value):
+        if value == 127:
+            self._shift_pressed = True
+            self._parent._device.set_enabled(True)
+
+            # transpose notes to start-values
+            self._set_notes(self.__transpose_start)
+            # add value listeners to buttons in case shift is pressed
+            self._add_handler()
+        else:
+            self._shift_pressed = False
+            # on release
+            if abs(time.clock() - self.__shift_clicked) <= self._double_tap_time * 0.5:
+                # if double-tapped
+                self._activate_control_layer('_shift_fixed', True)
+            else:
+                if self.__control_layer_permanent:
+                    if self._shift_fixed:
+                        self.__control_layer_permanent = False
+                        self._unpress_shift()
+                else:
+                    self._unpress_shift()
+
+                self.__shift_clicked = time.clock()
+
+        self._update_lights()
+
+    def _unpress_shift(self):
+        self._shift_pressed = False
+        if not self.__control_layer_permanent:
+            for l in self.layers:
+                setattr(self, l, False)
+            for key, val in self.layer_listener.items():
+                getattr(self, '_remove' + val)()
+
+            if not self._shift_pressed:
+                # remove value listeners from buttons in case shift is released
+                # (so that we can play instruments if shift is not pressed)
+                self._parent._device.set_enabled(True)
+                self._remove_handler()
+                # transpose notes back to last set transpose-val
+                # take care of the transpose-interval!
+                self._set_notes(self.__transpose_val)
+                # always update lights on shift release
+
+    def _chan_listener(self, value):
+        if value == 0:
+            if self._shift_pressed:
+                self._activate_control_layer('_control_layer_1', False)
+            else:
+                self._activate_control_layer('_control_layer_1', True)
+
+    def _recall_listener(self, value):
+        if value == 0:
+            if self._shift_pressed:
+                self._activate_control_layer('_control_layer_2', False)
+            else:
+                self._activate_control_layer('_control_layer_2', True)
+
+    def _store_listener(self, value):
+        if value == 0:
+            if self._shift_pressed:
+                self._activate_control_layer('_control_layer_3', False)
+            else:
+                self._activate_control_layer('_control_layer_3', True)
+
+# -------------------------------------
