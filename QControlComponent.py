@@ -269,14 +269,14 @@ class QControlComponent(BaseComponent):
 
                 # indicate control-buttons
                 if self._shift_color_mode == 2:
-                    bdict[8] = 'red'
-                    bdict[9] = 'magenta'
+                    bdict[8]  = 'black'
+                    bdict[9]  = 'magenta'
                     bdict[10] = 'red'
                     bdict[11] = 'black'
                     bdict[12] = 'blue'
                     bdict[13] = 'blue'
-                    bdict[14] = 'red'
-                    bdict[15] = 'black'
+                    bdict[14] = 'black'
+                    bdict[15] = 'red'
                     bdict[16] = 'black'
 
         else:
