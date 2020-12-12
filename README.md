@@ -34,9 +34,11 @@ To indicate a successful setup, the top-row will light up red and blue (about 2 
 
 The buttons  `recall`, `store` ,`chan` and `shift`  are used to activate the control-layers.   
 
+- to maintain the initial functionality of the buttons, the layers are activated when the buttons are **released** !
+
 - all layers (except the *"shift-layer"*) remain activated until the corresponding button is pressed again
 
-- the *"shift-layer"* can be activated permanent by **double-tapping** the  `shift` button
+- the *"shift-layer"* can be activated permanently by **double-tapping** the  `shift` button
 
 - holding `shift` while pressing one of the layer-buttons will activate the layer until `shift` is released
 
@@ -66,7 +68,9 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 - `encoder 15` : pan of selected track 
   
   - *"if shift pressed"*: pan of master-track
+
 - `encoder 8` : track-selection (left-right)
+  
   - *"if shift pressed"* **and** a *"drum-rack"* is selected: 
     
     select drum-pad slot of the viewed 16 slots
@@ -124,8 +128,6 @@ The lights in the second indicate the currently activated clip.
   
   - if the control-layer is activated permanently, holding `shift` will switch to track-selection
 
-
-
 All encoders are assigned as described above except for the `transpose-encoder`, which is now used to **select devices** in the device-chain of the selected track. (turning the `transpose-encoder` will automatically focus the view to the device-chain!)
 
 ---
@@ -140,6 +142,7 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 - `button 14` indicates the status of "automation arm" ( `red` for active)
   
   - "if shift pressed" and an automation has been overridden, the button will turn `blue`  
+
 - `button 3`, `10` and `11` will turn red if shift is pressed to highlight the alternative functionality
 
 #### The assignments are as follows:
@@ -182,8 +185,6 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
   
   - *"if shift-pressed"*: select next track
 
-
-
 All encoders are assigned similar to the *"shift-layer"*.
 
 ---
@@ -219,8 +220,6 @@ The lights indicate the status of the clip-slots, e.g.:
 - `button 16` : select next scene (if at the end, add a new scene)
   
   - *"if shift-pressed"*: select next track
-
-
 
 All encoders are assigned similar to the *"shift-layer"*.
 
@@ -263,8 +262,6 @@ The lights in the bottom-row indicate the mute / solo status of the correspondin
 - `button 16` : select next scene (if at the end, create a new scene)
 
 - - "if shift pressed" : select next track
-
-  
 
 - `encoder 1-7` : *"track volume"* of corresponding track
   
