@@ -26,7 +26,8 @@ class QControlComponent(BaseComponent):
 
         self.__drumpad_row_cnt = 1
         self.__drumpad_col_cnt = 1
-
+        self.__sel_track_cnt = 1
+        self.__sel_scene_cnt = 1
 
         self._shift_pressed = False
         self._shift_fixed = False
@@ -1321,6 +1322,12 @@ class QControlComponent(BaseComponent):
                 song.view.selected_scene = song.scenes[-1]
 
     def _select_prev_scene(self):
+        # reduce sensitivity to make it easier to select items
+        self.__sel_scene_cnt = (self.__sel_scene_cnt + 1)%5
+        if self.__sel_scene_cnt != 0:
+            return
+        self.__sel_scene_cnt = 1
+
         song = self._parent.song()
         selected_scene = song.view.selected_scene
         all_scenes = song.scenes
@@ -1357,6 +1364,12 @@ class QControlComponent(BaseComponent):
             song.view.selected_track = tracks_and_returns[index + 1]
 
     def _select_prev_next_track(self, value):
+        # reduce sensitivity to make it easier to select items
+        self.__sel_track_cnt = (self.__sel_track_cnt + 1)%5
+        if self.__sel_track_cnt != 0:
+            return
+        self.__sel_track_cnt = 1
+
         if value < 65:
             self._select_next_track()
         elif value > 65:
