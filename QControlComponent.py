@@ -55,7 +55,6 @@ class QControlComponent(BaseComponent):
         self.selected_scene_index = 0
 
         self._double_tap_time = 0.5
-        self._shift_color_mode = 1   # 0 = none, 1 = top row, 2 = all
         self.npads = 7               # number of pads used to play notes
 
         self._button_light_status = {i:'black' for i in xrange(16)}
@@ -169,7 +168,7 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'red'
 
-            used_buttons = [1, 6, 8, 9, 10, 11, 13, 14, 16]
+            used_buttons = [1, 8, 9, 10, 11, 13, 14, 16]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -186,13 +185,6 @@ class QControlComponent(BaseComponent):
             else:
                 bdict[10] = 'blue'
                 bdict[11] = 'blue'
-
-            if self._shift_color_mode == 0:
-                bdict[6] = 'black'
-            elif self._shift_color_mode == 1:
-                bdict[6] = 'magenta'
-            elif self._shift_color_mode == 2:
-                bdict[6] = 'red'
 
             if self._parent.song().metronome:
                 bdict[13] = 'red'
@@ -225,59 +217,39 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
 
-            if self._shift_color_mode == 0:
-                # turn off all lights
-                for i in range(1, 17):
-                    bdict[i] = 'black'
-            else:
-                # highlite track mute and arm status
+            # highlite track mute and arm status
+            for i, track in enumerate(self.use_tracks):
+                button_up = i + 1
+                button_down = i + 9
+                # if there is no track, turn the lights off
+                if track == None:
+                    bdict[button_up] = 'black'
+                    continue
+
+                # indicate armed tracks (red) and track-groups (blue)
+                if track.can_be_armed and track.arm:
+                    if (track.mute or track.muted_via_solo):
+                        bdict[button_up] = 'magenta'
+                    else:
+                        bdict[button_up] = 'red'
+                elif track.is_foldable:
+                    bdict[button_up] = 'blue'
+                else:
+                    bdict[button_up] = 'black'
+
                 for i, track in enumerate(self.use_tracks):
-                    button_up = i + 1
                     button_down = i + 9
-                    # if there is no track, turn the lights off
-                    if track == None:
-                        bdict[button_up] = 'black'
-                        continue
-
-                    if track.can_be_armed and track.arm:
-                        if (track.mute or track.muted_via_solo):
-                            bdict[button_up] = 'magenta'
-                        else:
-                            bdict[button_up] = 'red'
-                    elif track.is_foldable:
-                        bdict[button_up] = 'blue'
-                    else:
-                        bdict[button_up] = 'black'
-
-                if self._shift_color_mode == 1:
-
-                    if self.selected_track_index == None:
-                        for i in range(9, 17):
-                            bdict[i] = 'black'
-                    else:
-                        #for i in range(9, 17):
-                        for i, track in enumerate(self.use_tracks):
-                            button_down = i + 9
-                            if i == self.selected_track_index%self.npads:
-                                # indicate selected track
-                                if self.selected_track.has_audio_input:
-                                    bdict[button_down] = 'red'
-                                else:
-                                    bdict[button_down] = 'blue'
+                    if i == self.selected_track_index%self.npads:
+                        # indicate selected track
+                        if self.selected_track.has_audio_input:
+                            if self.selected_track in self._parent.song().return_tracks:
+                                bdict[button_down] = 'magenta'
                             else:
-                                bdict[button_down] = 'black'
-
-                # indicate control-buttons
-                if self._shift_color_mode == 2:
-                    bdict[8]  = 'black'
-                    bdict[9]  = 'magenta'
-                    bdict[10] = 'red'
-                    bdict[11] = 'black'
-                    bdict[12] = 'blue'
-                    bdict[13] = 'blue'
-                    bdict[14] = 'black'
-                    bdict[15] = 'red'
-                    bdict[16] = 'black'
+                                bdict[button_down] = 'red'
+                        else:
+                            bdict[button_down] = 'blue'
+                    else:
+                        bdict[button_down] = 'black'
 
         else:
             # turn off all lights on shift-release
@@ -641,7 +613,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_or_fold_track(5)
             elif self._control_layer_2:
-                self._toggle_shift_lights()
+                pass
             elif self._control_layer_3:
                 self._play_slot(5, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -1300,10 +1272,6 @@ class QControlComponent(BaseComponent):
             elif value > 65 :
                 if round(prev_value - .05, 2) >= -1:
                     track.mixer_device.panning.value = round(prev_value - .05, 2)
-
-    def _toggle_shift_lights(self):
-        self._shift_color_mode = (self._shift_color_mode + 1)%3
-        self._update_lights()
 
     def _select_next_scene(self, create_new_scenes=True):
         song = self._parent.song()
