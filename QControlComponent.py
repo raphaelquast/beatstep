@@ -10,7 +10,6 @@ VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detai
 class QControlComponent(BaseComponent):
     def __init__(self, parent):
         self.__selected_track = -99
-        self.__stop_clicked = -99
         self.__control_layer_1_clicked = -99
         self.__control_layer_2_clicked = -99
         self.__control_layer_3_clicked = -99
@@ -913,8 +912,7 @@ class QControlComponent(BaseComponent):
                     self._parent.song().session_record = False
             elif self.selected_clip_slot.is_playing:
                 self.selected_clip_slot.stop()
-            # set the time when stop was last clicked (in seconds)
-            self.__stop_clicked = time.clock()
+
 
     def _duplicate_clip(self):
         all_scenes = self._parent.song().scenes
