@@ -148,9 +148,10 @@ class QControlComponent(BaseComponent):
                     bdict[button_up] = 'red'
                 elif track.is_foldable:
                     bdict[button_up] = 'blue'
+                elif track in list(self._parent.song().return_tracks):
+                    bdict[button_up] = 'magenta'
                 else:
                     bdict[button_up] = 'black'
-
 
                 if track.solo and not track.mute:
                     bdict[button_down] = 'blue'
