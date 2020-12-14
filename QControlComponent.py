@@ -10,7 +10,6 @@ VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detai
 class QControlComponent(BaseComponent):
     def __init__(self, parent):
         self.__selected_track = -99
-        self.__stop_clicked = -99
         self.__control_layer_1_clicked = -99
         self.__control_layer_2_clicked = -99
         self.__control_layer_3_clicked = -99
@@ -28,6 +27,8 @@ class QControlComponent(BaseComponent):
         self.__drumpad_col_cnt = 1
         self.__sel_track_cnt = 1
         self.__sel_scene_cnt = 1
+
+        self.__stop_playing_clips = True
 
         self._shift_pressed = False
         self._shift_fixed = False
@@ -199,7 +200,10 @@ class QControlComponent(BaseComponent):
                 bdict[14] = 'black'
 
         elif self._control_layer_3:            # e.g. clip-launch
-            bdict['shift'] = 'black'
+            if self.__stop_playing_clips:
+                bdict['shift'] = 'red'
+            else:
+                bdict['shift'] = 'black'
             bdict['chan'] = 'black'
             bdict['store'] = 'red'
             bdict['recall'] = 'black'
@@ -347,8 +351,8 @@ class QControlComponent(BaseComponent):
         clip_slot = self.use_slots[trackid][slotid]
         if clip_slot == None: return
 
+        track = clip_slot.canonical_parent
         if self._shift_pressed and self.__control_layer_permanent:
-            track = clip_slot.canonical_parent
             if track.is_foldable:
                 if track.fold_state == True:
                     track.fold_state = False
@@ -359,10 +363,12 @@ class QControlComponent(BaseComponent):
                 self._parent.song().view.selected_track = track
         else:
             if clip_slot.has_clip or clip_slot.is_group_slot:
-                if clip_slot.is_playing:
+                if clip_slot.is_playing and self.__stop_playing_clips:
                     clip_slot.stop()
                 else:
                     clip_slot.fire()
+            else:
+                track.stop_all_clips()
 
         # if slotid == 1:
         #     # automatically select the next slot if the lower slot is
@@ -901,20 +907,22 @@ class QControlComponent(BaseComponent):
             self._toggle_device_on_off()
 
     def _stop_clip(self):
-        # if shift is pressed, stop all clips and stop playing
-        if self._shift_pressed:
-            self._parent.song().stop_all_clips()
-            self._parent.song().stop_playing()
-        else:
-            # in case the currently selected clip is recording, turn off overdub
-            # (to be able to stop overdubbing with the stop-button)
+        # in case the currently selected clip is recording, turn off overdub
+        # (to be able to stop overdubbing with the stop-button)
+        if self.selected_clip_slot != None:
             if self.selected_clip_slot.is_recording:
                 if self._parent.song().session_record == True:
                     self._parent.song().session_record = False
             elif self.selected_clip_slot.is_playing:
                 self.selected_clip_slot.stop()
-            # set the time when stop was last clicked (in seconds)
-            self.__stop_clicked = time.clock()
+
+    def _stop_clip_or_allclips(self):
+        # if shift is pressed, stop all clips and stop playing
+        if self._shift_pressed:
+            self._parent.song().stop_all_clips()
+            self._parent.song().stop_playing()
+        else:
+            self._stop_clip()
 
     def _duplicate_clip(self):
         all_scenes = self._parent.song().scenes
@@ -1290,12 +1298,6 @@ class QControlComponent(BaseComponent):
                 song.view.selected_scene = song.scenes[-1]
 
     def _select_prev_scene(self):
-        # reduce sensitivity to make it easier to select items
-        self.__sel_scene_cnt = (self.__sel_scene_cnt + 1)%5
-        if self.__sel_scene_cnt != 0:
-            return
-        self.__sel_scene_cnt = 1
-
         song = self._parent.song()
         selected_scene = song.view.selected_scene
         all_scenes = song.scenes
@@ -1306,6 +1308,12 @@ class QControlComponent(BaseComponent):
         self.on_selected_scene_changed()
 
     def _select_prev_next_scene(self, value):
+        # reduce sensitivity to make it easier to select items
+        self.__sel_scene_cnt = (self.__sel_scene_cnt + 1)%5
+        if self.__sel_scene_cnt != 0:
+            return
+        self.__sel_scene_cnt = 1
+
         if value < 65:
             self._select_next_scene(create_new_scenes=False)
         elif value > 65:
@@ -1476,9 +1484,16 @@ class QControlComponent(BaseComponent):
 
     def _stop_listener(self, value):
         if value > 0:
-            self._stop_clip()
+            if self._control_layer_3 and not self._shift_pressed:
+                # toggle if clips should be stopped or re-triggered
+                if self.__stop_playing_clips:
+                    self.__stop_playing_clips = False
+                else:
+                    self.__stop_playing_clips = True
+            else:
+                self._stop_clip_or_allclips()
+                self._sequencer_running = False
 
-        self._sequencer_running = False
         self._update_lights()
 
     def _shift_listener(self, value):

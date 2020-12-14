@@ -189,7 +189,8 @@ All encoders are assigned similar to the *"shift-layer"*.
 ### If "clip launch"  is active
 
 In this control-layer, both button-rows (e.g. `1-7` and `9-15`)  represent clip-slots.
-The lights indicate the status of the clip-slots, e.g.:
+NOTICE: the `stop` button has a special feature in this layer (see below).
+The button-lights indicate the status of the clip-slots, e.g.:
 
 - `blue` indicates a slot with a clip
   
@@ -201,7 +202,17 @@ The lights indicate the status of the clip-slots, e.g.:
 
 - `magenta` indicates a group-track (it will turn `red` if a clip of the group is playing)
 
+- the `shift` button indicates if *"re-trigger clips"* or *"stop clips"* mode is active
+
 #### The assignments are as follows:
+
+- the `stop-button` toggles the behaviour of the buttons (indicated by the `shift` button LED)
+  
+  - *"re-trigger clips"* mode (`shift` LED OFF) :  tapping on an already playing clip will **re-trigger** the clip
+  
+  - *"stop clips"* mode (`shift` LED ON) : tapping on an already playing clip will **stop** the clip
+  
+  (... the *"if shift-pressed"* behaviour is still similar to the other layers, e.g. *"stop all clips"*)
 
 - `button 1-7` : launch the clips present in the top-row of the selection.
   
