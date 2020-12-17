@@ -72,6 +72,7 @@ class QControlComponent(BaseComponent):
         self._parent.song().view.add_selected_scene_listener(self.on_selected_scene_changed)
         self._parent.song().add_tracks_listener(self.on_selected_track_changed)
         self._parent.song().add_scenes_listener(self.on_selected_scene_changed)
+        self._parent.song().add_is_playing_listener(self.on_is_playing_changed)
 
         # call this once to initialize "self.use_tracks"
         self.use_slots = [[None, None] for i in range(8)]
@@ -127,6 +128,11 @@ class QControlComponent(BaseComponent):
     def _update_button_light_status(self):
 
         bdict = dict()
+
+        if self._parent.song().is_playing:
+            bdict['play'] = 'red'
+        else:
+            bdict['play'] = 'black'
 
         if self._control_layer_1:           # e.g. track-control
             bdict['shift'] = 'black'
@@ -265,6 +271,12 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
         self._button_light_status = bdict
+
+    def on_is_playing_changed(self):
+        if self._parent.song().is_playing:
+            self._set_color('play', 'red')
+        else:
+            self._set_color('play', 'black')
 
     def on_selected_scene_changed(self):
         song = self._parent.song()
@@ -1477,6 +1489,7 @@ class QControlComponent(BaseComponent):
 
     def _play_listener(self, value):
         if value > 0:
+            self._parent.song().start_playing()
             if self._sequencer_running:
                 self._sequencer_running = False
             else:
@@ -1493,6 +1506,7 @@ class QControlComponent(BaseComponent):
                     self.__stop_playing_clips = True
             else:
                 self._stop_clip_or_allclips()
+                self._parent.song().stop_playing()
                 self._sequencer_running = False
 
         self._update_lights()
