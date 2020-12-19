@@ -11,7 +11,7 @@ class QSetup(object):
           mode:      set button mode
                      (0=off, 1=silent, 2=silent cc switch, 7=mmc, 8=cc, 9=note)
           channel:   set midi channel
-                     (0-15)
+                     (0-15)    (65 to follow the global channel)
           cc:        set midi CC
                      (0-127)
           off:       set midi off value
@@ -35,7 +35,7 @@ class QSetup(object):
           mode:      set encoder mode
                      (0=off, 1=Midi cc, 4=RPN/NRPN)
           channel:   set midi channel
-                     (0-15)
+                     (0-15)   (65 to follow the global channel)
           cc:        set midi CC
                      (0-127)
           off:       set lowest possible value [only if encoder is set to absolute]
@@ -74,6 +74,10 @@ class QSetup(object):
                          (0-15)
     set_S_note(ID, val): set note (val) for step (ID)
                          (0-15), (1-127)
+
+    #### GLOBAL
+    set_global_channel(c): set the global midi-channel
+                           (0-15)
     '''
 
     def __init__(self):
@@ -81,9 +85,9 @@ class QSetup(object):
         # a dict with the button IDS
         self._B = dict(play=88,   # white
                        stop=89,   # no light
-                       cntrl=90,    # red or blue
-                       sync=91,      # blue
-                       recall=92,  # blue
+                       cntrl=90,  # red or blue
+                       sync=91,   # blue
+                       recall=92, # blue
                        store=93,  # red
                        shift=94,  # blue
                        chan=95,   # blue
@@ -100,9 +104,8 @@ class QSetup(object):
 
         self._S_funcdict = dict(channel=1, transpose=2, scale=3, mode=4, stepsize=5, length=6, swing=7, gate=8, legato=9)
 
-        self._B_START_MSG =   (240, 0, 32, 107, 127, 66, 2, 0)   # F0 00 20 6B 7F 42 02 00 pp ss vv F7
-        self._B_REQUEST_MSG = (240, 0, 32, 107, 127, 66, 1, 0)   # F0 00 20 6B 7F 42 01 00 pp cc F7
-
+        self._B_START_MSG =   (240, 0, 32, 107, 127, 66, 2, 0)   # F0 00 20 6B 7F 42 02 00 c  ID val F7
+        self._B_REQUEST_MSG = (240, 0, 32, 107, 127, 66, 1, 0)   # F0 00 20 6B 7F 42 01 00 c  ID     F7
 
         # set button and encoder getters and setters
         for key, c in self._funcdict.items():
@@ -134,6 +137,17 @@ class QSetup(object):
         setattr(self, 'set_S_off', self._get_S_toggle_callback(0))
         setattr(self, 'get_S_onoff', self._get_S_toggle_get_callback())
 
+    def recall_preset(self, slot):
+        return (240, 0, 32, 107, 127, 66, 5, slot, 247)
+
+    def store_preset(self, slot):
+        return (240, 0, 32, 107, 127, 66, 6, slot, 247)
+
+    def set_global_channel(self, val):
+        return self._send_change(64, 6, val)
+
+    def get_global_channel(self):
+        return self._send_request(64, 6)
 
     def _send_change(self, c, ID, val):
         return self._B_START_MSG + (c, ID, val, 247)

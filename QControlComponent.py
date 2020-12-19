@@ -58,10 +58,10 @@ class QControlComponent(BaseComponent):
         self._double_tap_time = 0.5
         self.npads = 7               # number of pads used to play notes
 
-        self._button_light_status = {i:'black' for i in xrange(16)}
+        self._button_light_status = {i:'black' for i in range(16)}
 
-        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + \
-                      ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + \
+        buttonnames = ['_'+ str(i) for i in range(1,17)] + \
+                      ['_'+ str(i) + '_encoder' for i in range(1,17)] + \
                       ['_shift', '_stop', '_play', '_play_S', '_cntrl', '_chan', '_store', '_recall',
                        '_transpose_encoder']
         super(QControlComponent, self).__init__(parent, buttonnames)
@@ -72,6 +72,7 @@ class QControlComponent(BaseComponent):
         self._parent.song().view.add_selected_scene_listener(self.on_selected_scene_changed)
         self._parent.song().add_tracks_listener(self.on_selected_track_changed)
         self._parent.song().add_scenes_listener(self.on_selected_scene_changed)
+        self._parent.song().add_is_playing_listener(self.on_is_playing_changed)
 
         # call this once to initialize "self.use_tracks"
         self.use_slots = [[None, None] for i in range(8)]
@@ -128,6 +129,11 @@ class QControlComponent(BaseComponent):
 
         bdict = dict()
 
+        if self._parent.song().is_playing:
+            bdict['play'] = 'red'
+        else:
+            bdict['play'] = 'black'
+
         if self._control_layer_1:           # e.g. track-control
             bdict['shift'] = 'black'
             bdict['chan'] = 'red'
@@ -148,9 +154,10 @@ class QControlComponent(BaseComponent):
                     bdict[button_up] = 'red'
                 elif track.is_foldable:
                     bdict[button_up] = 'blue'
+                elif track in list(self._parent.song().return_tracks):
+                    bdict[button_up] = 'magenta'
                 else:
                     bdict[button_up] = 'black'
-
 
                 if track.solo and not track.mute:
                     bdict[button_down] = 'blue'
@@ -264,6 +271,12 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
         self._button_light_status = bdict
+
+    def on_is_playing_changed(self):
+        if self._parent.song().is_playing:
+            self._set_color('play', 'red')
+        else:
+            self._set_color('play', 'black')
 
     def on_selected_scene_changed(self):
         song = self._parent.song()
@@ -526,6 +539,7 @@ class QControlComponent(BaseComponent):
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
+            self._parent._activate_control_mode()
             # add value listeners to buttons in case shift is pressed
             self._add_handler()
 
@@ -1076,7 +1090,7 @@ class QControlComponent(BaseComponent):
             self._track_volume_master_or_current(value)
 
     def _8_encoder_listener(self, value):
-        if self._shift_pressed:
+        if self._shift_pressed and self.__control_layer_permanent:
             self._scroll_drum_pad_row(value)
         else:
             self._select_prev_next_track(value)
@@ -1125,7 +1139,7 @@ class QControlComponent(BaseComponent):
             self._track_pan_master_or_current(value)
 
     def _16_encoder_listener(self, value):
-        if self._shift_pressed:
+        if self._shift_pressed and self.__control_layer_permanent:
             self._scroll_drum_pad_col(value)
         else:
             self._select_prev_next_scene(value)
@@ -1476,6 +1490,7 @@ class QControlComponent(BaseComponent):
 
     def _play_listener(self, value):
         if value > 0:
+            self._parent.song().start_playing()
             if self._sequencer_running:
                 self._sequencer_running = False
             else:
@@ -1492,7 +1507,7 @@ class QControlComponent(BaseComponent):
                     self.__stop_playing_clips = True
             else:
                 self._stop_clip_or_allclips()
-                self._sequencer_running = False
+                self._parent.song().stop_playing()
 
         self._update_lights()
 
@@ -1503,6 +1518,7 @@ class QControlComponent(BaseComponent):
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
+            self._parent._activate_control_mode()
             # add value listeners to buttons in case shift is pressed
             self._add_handler()
         else:
@@ -1537,8 +1553,8 @@ class QControlComponent(BaseComponent):
                 self._parent._device.set_enabled(True)
                 self._remove_handler()
                 # transpose notes back to last set transpose-val
-                # take care of the transpose-interval!
                 self._set_notes(self.__transpose_val)
+                self._parent._deactivate_control_mode()
                 # always update lights on shift release
 
     def _chan_listener(self, value):
