@@ -539,6 +539,7 @@ class QControlComponent(BaseComponent):
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
+            self._parent._activate_control_mode()
             # add value listeners to buttons in case shift is pressed
             self._add_handler()
 
@@ -1089,7 +1090,7 @@ class QControlComponent(BaseComponent):
             self._track_volume_master_or_current(value)
 
     def _8_encoder_listener(self, value):
-        if self._shift_pressed:
+        if self._shift_pressed and self.__control_layer_permanent:
             self._scroll_drum_pad_row(value)
         else:
             self._select_prev_next_track(value)
@@ -1138,7 +1139,7 @@ class QControlComponent(BaseComponent):
             self._track_pan_master_or_current(value)
 
     def _16_encoder_listener(self, value):
-        if self._shift_pressed:
+        if self._shift_pressed and self.__control_layer_permanent:
             self._scroll_drum_pad_col(value)
         else:
             self._select_prev_next_scene(value)
@@ -1507,7 +1508,6 @@ class QControlComponent(BaseComponent):
             else:
                 self._stop_clip_or_allclips()
                 self._parent.song().stop_playing()
-                self._sequencer_running = False
 
         self._update_lights()
 
@@ -1518,6 +1518,7 @@ class QControlComponent(BaseComponent):
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
+            self._parent._activate_control_mode()
             # add value listeners to buttons in case shift is pressed
             self._add_handler()
         else:
@@ -1552,8 +1553,8 @@ class QControlComponent(BaseComponent):
                 self._parent._device.set_enabled(True)
                 self._remove_handler()
                 # transpose notes back to last set transpose-val
-                # take care of the transpose-interval!
                 self._set_notes(self.__transpose_val)
+                self._parent._deactivate_control_mode()
                 # always update lights on shift release
 
     def _chan_listener(self, value):
