@@ -15,9 +15,8 @@ from _Framework.DeviceComponent import DeviceComponent
 from .QControlComponent import QControlComponent
 from .QSetup import QSetup
 
-
 ENCODER_MSG_IDS = (10, 74, 71, 76, 77, 93, 73, 75, 114, 18, 19, 16, 17, 91, 79, 72)
-PAD_MSG_IDS = list(xrange(44, 52)) + list(xrange(36, 44))
+PAD_MSG_IDS = list(range(44, 52)) + list(range(36, 44))
 
 CHANNEL_SEQUENCER = 8
 CHANNEL = 9
@@ -33,8 +32,9 @@ class BeatStep_Q(ControlSurface):
         self.QS = QSetup()
 
         with self.component_guard():
-            self._setup_hardware_task = self._tasks.add(Task.sequence(Task.wait(SETUP_HARDWARE_DELAY),
-                                                                      Task.run(self._setup_hardware)))
+            self._setup_hardware_task = self._tasks.add(
+                Task.sequence(Task.wait(SETUP_HARDWARE_DELAY),
+                              Task.run(self._setup_hardware)))
             self._setup_hardware_task.kill()
             self._start_hardware_setup()
 
@@ -42,6 +42,8 @@ class BeatStep_Q(ControlSurface):
             self._create_Q_control()
 
             self._create_device()
+
+
 
     def receive_midi(self, midi_bytes):
         #self.show_message(str(midi_bytes))

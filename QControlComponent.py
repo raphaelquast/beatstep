@@ -58,10 +58,10 @@ class QControlComponent(BaseComponent):
         self._double_tap_time = 0.5
         self.npads = 7               # number of pads used to play notes
 
-        self._button_light_status = {i:'black' for i in xrange(16)}
+        self._button_light_status = {i:'black' for i in range(16)}
 
-        buttonnames = ['_'+ str(i) for i in xrange(1,17)] + \
-                      ['_'+ str(i) + '_encoder' for i in xrange(1,17)] + \
+        buttonnames = ['_'+ str(i) for i in range(1,17)] + \
+                      ['_'+ str(i) + '_encoder' for i in range(1,17)] + \
                       ['_shift', '_stop', '_play', '_play_S', '_cntrl', '_chan', '_store', '_recall',
                        '_transpose_encoder']
         super(QControlComponent, self).__init__(parent, buttonnames)
