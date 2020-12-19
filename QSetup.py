@@ -137,6 +137,12 @@ class QSetup(object):
         setattr(self, 'set_S_off', self._get_S_toggle_callback(0))
         setattr(self, 'get_S_onoff', self._get_S_toggle_get_callback())
 
+    def recall_preset(self, slot):
+        return (240, 0, 32, 107, 127, 66, 5, slot, 247)
+
+    def store_preset(self, slot):
+        return (240, 0, 32, 107, 127, 66, 6, slot, 247)
+
     def set_global_channel(self, val):
         return self._send_change(64, 6, val)
 
