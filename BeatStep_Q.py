@@ -11,14 +11,15 @@ from _Framework import Task
 from _Framework.ButtonMatrixElement import ButtonMatrixElement
 from _Framework.DeviceComponent import DeviceComponent
 
-
 from .QControlComponent import QControlComponent
 from .QSetup import QSetup
 
 ENCODER_MSG_IDS = (10, 74, 71, 76, 77, 93, 73, 75, 114, 18, 19, 16, 17, 91, 79, 72)
 PAD_MSG_IDS = list(range(44, 52)) + list(range(36, 44))
 
+# the midi-channel to use for buttons and encoders
 CHANNEL = 9
+# the used memory-slot to store the configurations
 MEMORY_SLOT = 8
 
 SETUP_HARDWARE_DELAY = 2.1
