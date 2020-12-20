@@ -1553,10 +1553,10 @@ class QControlComponent(BaseComponent):
                 # (so that we can play instruments if shift is not pressed)
                 self._parent._device.set_enabled(True)
                 self._remove_handler()
+                self._parent._deactivate_control_mode()
                 # transpose notes back to last set transpose-val
                 self._set_notes(self.__transpose_val)
-                self._parent._deactivate_control_mode()
-                # always update lights on shift release
+
 
     def _chan_listener(self, value):
         if value == 0:
