@@ -176,7 +176,7 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'red'
 
-            used_buttons = [1, 8, 9, 10, 11, 13, 14, 16]
+            used_buttons = [1, 3, 7, 9, 10, 11, 13, 14, 16]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -184,6 +184,8 @@ class QControlComponent(BaseComponent):
                 bdict[i] = 'black'
 
             bdict[1] = 'magenta'
+            bdict[3] = 'magenta'
+            bdict[7] = 'magenta'
             bdict[9] = 'magenta'
 
             if self._shift_pressed and self.__control_layer_permanent:
@@ -1507,7 +1509,6 @@ class QControlComponent(BaseComponent):
                     self.__stop_playing_clips = True
             else:
                 self._stop_clip_or_allclips()
-                self._parent.song().stop_playing()
 
         self._update_lights()
 
@@ -1552,10 +1553,10 @@ class QControlComponent(BaseComponent):
                 # (so that we can play instruments if shift is not pressed)
                 self._parent._device.set_enabled(True)
                 self._remove_handler()
+                self._parent._deactivate_control_mode()
                 # transpose notes back to last set transpose-val
                 self._set_notes(self.__transpose_val)
-                self._parent._deactivate_control_mode()
-                # always update lights on shift release
+
 
     def _chan_listener(self, value):
         if value == 0:
