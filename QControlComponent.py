@@ -176,7 +176,7 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'red'
 
-            used_buttons = [1, 8, 9, 10, 11, 13, 14, 16]
+            used_buttons = [1, 3, 7, 9, 10, 11, 13, 14, 16]
             # turn off all other lights
             for i in range(1,17):
                 if i in used_buttons:
@@ -184,6 +184,8 @@ class QControlComponent(BaseComponent):
                 bdict[i] = 'black'
 
             bdict[1] = 'magenta'
+            bdict[3] = 'magenta'
+            bdict[7] = 'magenta'
             bdict[9] = 'magenta'
 
             if self._shift_pressed and self.__control_layer_permanent:
@@ -1507,7 +1509,6 @@ class QControlComponent(BaseComponent):
                     self.__stop_playing_clips = True
             else:
                 self._stop_clip_or_allclips()
-                self._parent.song().stop_playing()
 
         self._update_lights()
 
