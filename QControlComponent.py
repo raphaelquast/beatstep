@@ -236,33 +236,31 @@ class QControlComponent(BaseComponent):
                 button_down = i + 9
                 # if there is no track, turn the lights off
                 if track == None:
-                    bdict[button_up] = 'black'
+                    bdict[button_down] = 'black'
                     continue
 
                 # indicate armed tracks (red) and track-groups (blue)
                 if track.can_be_armed and track.arm:
                     if (track.mute or track.muted_via_solo):
-                        bdict[button_up] = 'magenta'
+                        bdict[button_down] = 'magenta'
                     else:
-                        bdict[button_up] = 'red'
+                        bdict[button_down] = 'red'
                 elif track.is_foldable:
-                    bdict[button_up] = 'blue'
+                    bdict[button_down] = 'blue'
+                else:
+                    bdict[button_down] = 'black'
+
+                if i == self.selected_track_index%self.npads:
+                    # indicate selected track
+                    if self.selected_track.has_audio_input:
+                        if self.selected_track in self._parent.song().return_tracks:
+                            bdict[button_up] = 'magenta'
+                        else:
+                            bdict[button_up] = 'red'
+                    else:
+                        bdict[button_up] = 'blue'
                 else:
                     bdict[button_up] = 'black'
-
-                for i, track in enumerate(self.use_tracks):
-                    button_down = i + 9
-                    if i == self.selected_track_index%self.npads:
-                        # indicate selected track
-                        if self.selected_track.has_audio_input:
-                            if self.selected_track in self._parent.song().return_tracks:
-                                bdict[button_down] = 'magenta'
-                            else:
-                                bdict[button_down] = 'red'
-                        else:
-                            bdict[button_down] = 'blue'
-                    else:
-                        bdict[button_down] = 'black'
 
         else:
             # turn off all lights on shift-release
