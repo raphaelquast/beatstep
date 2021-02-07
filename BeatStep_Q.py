@@ -83,6 +83,10 @@ class BeatStep_Q(ControlSurface):
         self._setup_buttons_and_encoders()
 
     def _setup_control_buttons_and_encoders(self):
+        """
+        this function is only called once when the BeatStep is plugged in to
+        ensure correct assignments of function-buttons and transpose encoder
+        """
         # set shift button to note-mode
         self._send_midi(self.QS.set_B_mode('shift', 8))
         self._send_midi(self.QS.set_B_channel('shift', CHANNEL))
@@ -125,6 +129,10 @@ class BeatStep_Q(ControlSurface):
         # set encoder cc to something else than the shift-encoder cc
         # (4 is unused since it would represent the ext/sync button)
         self._send_midi(self.QS.set_E_cc('transpose', 4))
+
+        # set encoder acceleration to "slow"
+        self._send_midi(self.QS.set_E_acceleration(0))
+
 
     def _setup_buttons_and_encoders(self):
         # for all buttons and encoders
