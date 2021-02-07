@@ -531,6 +531,18 @@ class QControlComponent(BaseComponent):
 
 
     def _activate_control_layer(self, layer, permanent=False):
+
+
+        msgdict = {'_control_layer_1': (' '*30 +
+                                        ' "Track Control Layer" active.'),
+                   '_control_layer_2': (' '*30 +
+                                        ' "Clip Launch Layer" active.'),
+                   '_control_layer_3': (' '*30 +
+                                        ' "Song Control Layer" active.'),
+                   '_shift_fixed': (' '*30 +
+                                    ' "Shift Layer" active.')
+                   }
+
         if self.__control_layer_permanent and getattr(self, layer):
             # deactivate the layer if it was already permanently activated
             self.__control_layer_permanent = False
@@ -538,6 +550,8 @@ class QControlComponent(BaseComponent):
         else:
             if permanent:
                 self.__control_layer_permanent = True
+
+            self._parent.show_message(msgdict[layer])
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
