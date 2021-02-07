@@ -151,22 +151,22 @@ class QControlComponent(BaseComponent):
                     continue
 
                 if track.can_be_armed and track.arm:
-                    bdict[button_up] = 'red'
+                    bdict[button_down] = 'red'
                 elif track.is_foldable:
-                    bdict[button_up] = 'blue'
+                    bdict[button_down] = 'blue'
                 elif track in list(self._parent.song().return_tracks):
-                    bdict[button_up] = 'magenta'
+                    bdict[button_down] = 'magenta'
                 else:
-                    bdict[button_up] = 'black'
+                    bdict[button_down] = 'black'
 
                 if track.solo and not track.mute:
-                    bdict[button_down] = 'blue'
+                    bdict[button_up] = 'blue'
                 elif track.mute and track.solo:
-                    bdict[button_down] = 'red'
+                    bdict[button_up] = 'red'
                 elif track.mute:
-                    bdict[button_down] = 'black'
+                    bdict[button_up] = 'black'
                 else:
-                    bdict[button_down] = 'magenta'
+                    bdict[button_up] = 'magenta'
 
         elif self._control_layer_2:          # e.g. song-control
             # red = 1 which means "on" for the "chan button" light
@@ -580,7 +580,7 @@ class QControlComponent(BaseComponent):
     def _1_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(0)
+                self._mute_solo_track(0)
             elif self._control_layer_2:
                 self._redo()
             elif self._control_layer_3:
@@ -593,7 +593,7 @@ class QControlComponent(BaseComponent):
     def _2_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(1)
+                self._mute_solo_track(1)
             elif self._control_layer_2:
                 self._collapse_device()
             elif self._control_layer_3:
@@ -606,7 +606,7 @@ class QControlComponent(BaseComponent):
     def _3_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(2)
+                self._mute_solo_track(2)
             elif self._control_layer_2:
                 self._toggle_or_delete_device()
             elif self._control_layer_3:
@@ -619,7 +619,7 @@ class QControlComponent(BaseComponent):
     def _4_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(3)
+                self._mute_solo_track(3)
             elif self._control_layer_2:
                 pass
             elif self._control_layer_3:
@@ -632,7 +632,7 @@ class QControlComponent(BaseComponent):
     def _5_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(4)
+                self._mute_solo_track(4)
             elif self._control_layer_2:
                 pass
             elif self._control_layer_3:
@@ -645,7 +645,7 @@ class QControlComponent(BaseComponent):
     def _6_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(5)
+                self._mute_solo_track(5)
             elif self._control_layer_2:
                 pass
             elif self._control_layer_3:
@@ -658,7 +658,7 @@ class QControlComponent(BaseComponent):
     def _7_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(6)
+                self._mute_solo_track(6)
             elif self._control_layer_2:
                 if self.__control_layer_permanent and self._shift_pressed:
                     self._change_ableton_view(next(self._view_cycle))
@@ -689,7 +689,7 @@ class QControlComponent(BaseComponent):
     def _9_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(0)
+                self._arm_or_fold_track(0)
             elif self._control_layer_2:
                 self._undo()
             elif self._control_layer_3:
@@ -702,7 +702,7 @@ class QControlComponent(BaseComponent):
     def _10_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(1)
+                self._arm_or_fold_track(1)
             elif self._control_layer_2:
                 self._duplicate_or_delete_track()
             elif self._control_layer_3:
@@ -715,7 +715,7 @@ class QControlComponent(BaseComponent):
     def _11_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(2)
+                self._arm_or_fold_track(2)
             elif self._control_layer_2:
                 self._duplicate_or_delete_scene()
             elif self._control_layer_3:
@@ -726,7 +726,7 @@ class QControlComponent(BaseComponent):
     def _12_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(3)
+                self._arm_or_fold_track(3)
             elif self._control_layer_2:
                 self._tap_tempo()
             elif self._control_layer_3:
@@ -739,7 +739,7 @@ class QControlComponent(BaseComponent):
     def _13_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(4)
+                self._arm_or_fold_track(4)
             elif self._control_layer_2:
                 self._toggle_metronome()
             elif self._control_layer_3:
@@ -752,7 +752,7 @@ class QControlComponent(BaseComponent):
     def _14_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(5)
+                self._arm_or_fold_track(5)
             elif self._control_layer_2:
                 self._toggle_automation()
             elif self._control_layer_3:
@@ -765,7 +765,7 @@ class QControlComponent(BaseComponent):
     def _15_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(6)
+                self._arm_or_fold_track(6)
             elif self._control_layer_2:
                 pass
             elif self._control_layer_3:
