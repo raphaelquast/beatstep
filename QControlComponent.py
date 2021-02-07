@@ -979,7 +979,7 @@ class QControlComponent(BaseComponent):
                     if t == track:
                         self._arm_or_fold_track(track=t, toggle=False)
                     else:
-                        if t.can_be_armed:
+                        if t.can_be_armed and track.can_be_armed:
                             t.arm = False
 
             self.__select_track_clicked = time.clock()
