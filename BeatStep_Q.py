@@ -133,7 +133,6 @@ class BeatStep_Q(ControlSurface):
         # set encoder acceleration to "slow"
         self._send_midi(self.QS.set_E_acceleration(0))
 
-
     def _setup_buttons_and_encoders(self):
         # for all buttons and encoders
         for i in range(1, 17):

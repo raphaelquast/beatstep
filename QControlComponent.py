@@ -530,16 +530,10 @@ class QControlComponent(BaseComponent):
 
     def _activate_control_layer(self, layer, permanent=False):
 
-
-        msgdict = {'_control_layer_1': (' '*30 +
-                                        ' "Track Control Layer" active.'),
-                   '_control_layer_2': (' '*30 +
-                                        ' "Clip Launch Layer" active.'),
-                   '_control_layer_3': (' '*30 +
-                                        ' "Song Control Layer" active.'),
-                   '_shift_fixed': (' '*30 +
-                                    ' "Shift Layer" active.')
-                   }
+        # msgdict = {'_control_layer_1': '"Track Control Layer" active.',
+        #            '_control_layer_2': '"Clip Launch Layer" active.',
+        #            '_control_layer_3': '"Song Control Layer" active.',
+        #            '_shift_fixed':     '"Shift Layer" active.'}
 
         if self.__control_layer_permanent and getattr(self, layer):
             # deactivate the layer if it was already permanently activated
@@ -549,7 +543,7 @@ class QControlComponent(BaseComponent):
             if permanent:
                 self.__control_layer_permanent = True
 
-            self._parent.show_message(msgdict[layer])
+            # self._parent.show_message(' '*30 + msgdict[layer])
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
@@ -1598,3 +1592,41 @@ class QControlComponent(BaseComponent):
                 self._activate_control_layer('_control_layer_3', True)
 
 # -------------------------------------
+    # def _toggle_browser(self):
+    #     app = self._parent.application()
+
+    #     if app.view.is_view_visible(u'Browser'):
+    #         app.view.hide_view(u'Browser')
+    #     else:
+    #         app.view.show_view(u'Browser')
+    #         app.view.focus_view(u'Browser')
+    #         app.view.toggle_browse()
+
+    # def _browser_action(self):
+    #     app = self._parent.application()
+
+    #     app.view.show_view(u'Browser')
+    #     app.view.focus_view(u'Browser')
+
+    #     item = list(app.browser.instruments.children)[2]
+
+    #     app.browser.preview_item(item)
+
+    # def _scroll_browser(self, value):
+    #     app = self._parent.application()
+
+    #     if not app.view.is_view_visible(u'Browser'):
+    #         return
+
+    #     # increase notes only every 4 ticks of the transpose-slider
+    #     # (e.g. to make it a little less sensitive)
+    #     self.__transpose_cnt = (self.__transpose_cnt + 1)%4
+
+    #     if self.__transpose_cnt == 0:
+
+    #         if value > 65:
+    #             app.view.scroll_view(NavDirection.up, u'Browser', False)
+    #         else:
+    #             app.view.scroll_view(NavDirection.down, u'Browser', False)
+
+
