@@ -1248,10 +1248,10 @@ class QControlComponent(BaseComponent):
         if track != None:
             sends = track.mixer_device.sends
             if send_id < len(sends):
-                if value < 65:
-                        sends[send_id].value = max(sends[send_id].value + .005, 1.)
-                elif value > 65:
-                        sends[send_id].value = min(sends[send_id].value - .005, 0.)
+                if value < 64:
+                        sends[send_id].value = min(sends[send_id].value + .01, 1.)
+                elif value > 64:
+                        sends[send_id].value = max(sends[send_id].value - .01, 0.)
 
     def _track_send_x_or_y(self, value, track_id=0, send_id=1, send_id_shift=0):
         if self._shift_pressed and self.__control_layer_permanent:
@@ -1282,9 +1282,9 @@ class QControlComponent(BaseComponent):
         if track != None:
             prev_value = track.mixer_device.volume.value
 
-            if value < 65:
+            if value < 64:
                 new_value = min(prev_value + 0.01, 1.)
-            elif value > 65:
+            elif value > 64:
                 new_value = max(prev_value - 0.01, 0.)
 
             track.mixer_device.volume.value = new_value
