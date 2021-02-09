@@ -82,6 +82,12 @@ class BeatStep_Q(ControlSurface):
         self._setup_control_buttons_and_encoders()
         self._setup_buttons_and_encoders()
 
+        # set pad velocity to 0 (e.g. linear) on startup
+        self._send_midi(self.QS.set_B_velocity(0))
+        # set encoder acceleration to "slow" on startup
+        self._send_midi(self.QS.set_E_acceleration(0))
+
+
     def _setup_control_buttons_and_encoders(self):
         """
         this function is only called once when the BeatStep is plugged in to
@@ -129,13 +135,6 @@ class BeatStep_Q(ControlSurface):
         # set encoder cc to something else than the shift-encoder cc
         # (4 is unused since it would represent the ext/sync button)
         self._send_midi(self.QS.set_E_cc('transpose', 4))
-
-        # set encoder acceleration to "slow"
-        self._send_midi(self.QS.set_E_acceleration(0))
-
-        # set pad velocity to 0 (e.g. linear) on startup
-        self._send_midi(self.QS.set_B_velocity(0))
-
 
     def _setup_buttons_and_encoders(self):
         # for all buttons and encoders
