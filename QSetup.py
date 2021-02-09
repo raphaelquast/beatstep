@@ -122,7 +122,7 @@ class QSetup(object):
 
         B_velocity_set, B_velocity_get = self._get_velocity_callback()
         setattr(self, 'set_B_velocity', B_velocity_set)
-        setattr(self, 'set_B_velocity', B_velocity_get)
+        setattr(self, 'get_B_velocity', B_velocity_get)
 
         # set sequencer setters
         for key, c in self._S_funcdict.items():
