@@ -309,7 +309,7 @@ class QControlComponent(BaseComponent):
         song = self._parent.song()
         #all_tracks = song.tracks
         all_tracks = []
-        for track in list(song.tracks) + list(song.return_tracks):
+        for track in list(song.tracks) + list(song.return_tracks) + [song.master_track]:
             if track.is_grouped:
                 group = track.group_track
                 if group.fold_state is True:
