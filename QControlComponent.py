@@ -37,6 +37,13 @@ class QControlComponent(BaseComponent):
         self._control_layer_3 = False
 
         self.__control_layer_permanent = False
+
+
+        # set button velocity curve to 0 (e.g. "linear") on startup
+        self._pad_velocity = 0
+        self.velocity_colors = ['blue', 'magenta', 'red', 'black']
+
+
         self.layers = {'_shift_fixed', '_control_layer_1',
                        '_control_layer_2', '_control_layer_3'}
 
@@ -207,6 +214,8 @@ class QControlComponent(BaseComponent):
                 bdict[14] = 'red'
             else:
                 bdict[14] = 'black'
+
+            bdict[15] = self.velocity_colors[self._pad_velocity]
 
         elif self._control_layer_3:            # e.g. clip-launch
             if self.__stop_playing_clips:
@@ -761,7 +770,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_or_fold_track(6)
             elif self._control_layer_2:
-                pass
+                self._change_pad_velocity_response()
             elif self._control_layer_3:
                 self._play_slot(6, 1)
             elif self._shift_pressed or self._shift_fixed:
@@ -1591,6 +1600,18 @@ class QControlComponent(BaseComponent):
             else:
                 self._activate_control_layer('_control_layer_3', True)
 
+    def _change_pad_velocity_response(self):
+        #(0=linear, 1=logarithmic, 2=exponential, 3=full)
+
+
+        self._pad_velocity = (self._pad_velocity + 1)%4
+
+        self._parent._send_midi(
+            self._parent.QS.set_B_velocity(self._pad_velocity))
+
+        self._parent.show_message(str(self._pad_velocity) + '   ' +
+                                  str(self._parent.QS.set_B_velocity(self._pad_velocity))
+                                  )
 # -------------------------------------
     # def _toggle_browser(self):
     #     app = self._parent.application()
