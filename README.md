@@ -1,5 +1,4 @@
 This is a **MIDI Remote Script** for **Ableton Live 10** and the **Arturia BeatStep** controller.  
-
 It turns the BeatStep controller into a fully-fledged control-surface for Ableton Live !
 
 - select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ... 
@@ -19,7 +18,7 @@ Any comments / suggestions for improvements etc. are highly welcome!
 
 # Installation
 
-To use this script, simply copy the contents into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences.  (make sure to activate both `track`and `remote` for this device!)
+To use this script, simply copy the contents into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences.  (make sure to activate both `track` and `remote` for this device!)
 
 WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten! 
 
@@ -27,7 +26,11 @@ WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any c
 
 # More detailed explanations on the assignments:
 
-The script will set all encoders and buttons to send messages on the Midi-channel 10.  To indicate a successful setup, the top-row will light up red and blue (about 2 seconds after plugin).  It's best to plug the device after Ableton started to ensure that all settings are properly assigned.
+The script will set all encoders and buttons to send messages on the Midi-channel 10.  To indicate a successful setup, the top-row will light up red and blue (about 2 seconds after plugin).  
+
+- It's best to **connect the controller after Ableton started** to ensure that all settings are properly assigned.
+
+- To ensure that the script is automatically selected (instead of the default one), rename the default *"Beatstep"* folder to something like *"XBeatstep"*  so that it is alphabetically sorted **after** *"BeatStep_Q"* 
 
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work ! 
 
@@ -47,13 +50,13 @@ The buttons  `recall`, `store` ,`chan` and `shift`  are used to activate the con
 
 The `stop` button can be used as follows:
 
-- if the selected clip is recording, stop recording (but continue playing)
+- if the selected clip is currently recording: it stop recording (but continue playback)
 
-- if the selected clip is playing, trigger stop
+- if the selected clip is playing:  trigger stop
 
 - *"if shift pressed"* : stop ALL tracks
 
-## Encoder:
+## Encoders:
 
 The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
 (a red button-colour indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc. )
@@ -83,11 +86,14 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 
 --- 
 
-### If **shift** is active:
+### If "shift" is active:
 
 You can always **double-tap** `shift` to re-activate the shift-layer permanently!
 
-The lights in the first row indicate the track-arm status: 
+The lights in the first indicate the currently activated clip. 
+(`red` for midi, `blue` for audio and `magenta` for return tracks)
+
+The lights in the second row indicate the track-arm status: 
 
 - `red` if the track is **armed** and **not muted**
   
@@ -96,9 +102,6 @@ The lights in the first row indicate the track-arm status:
 - `blue` if the track represents a **track-group**
 
 - `off` if the track is muted and **not** armed
-
-The lights in the second indicate the currently activated clip. 
-(`red` for midi, `blue` for audio and `magenta` for return tracks)  
 
 #### The assignments are as follows:
 
@@ -133,7 +136,7 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 
 ---
 
-### If "song control" is active
+### If "control" is active
 
 Most lights are simply there to help remembering the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live 
@@ -182,6 +185,10 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
   
   - *"if shift-pressed"* and an automation has been overridden:  *"re-enable automation"*
 
+- `button 15` : change the assigned "pad velocity curve" (e.g. the midi velocity response of the pad)  
+  
+  - `blue` for linear, `magenta` for logarithmic, `red` for exponential and `off` for "always max. velocity"
+
 - `button 16` : select next scene (if at the end, create a new scene)
   
   - *"if shift-pressed"*: select next track
@@ -190,7 +197,7 @@ All encoders are assigned similar to the *"shift-layer"*.
 
 ---
 
-### If "clip launch"  is active
+### If "launch"  is active
 
 In this control-layer, both button-rows (e.g. `1-7` and `9-15`)  represent clip-slots.
 NOTICE: the `stop` button has a special feature in this layer (see below).
@@ -237,17 +244,9 @@ All encoders are assigned similar to the *"shift-layer"*.
 
 ---
 
-### If "track control" is active
+### If "mix" is active
 
-The lights in the top-row indicate the arm status of the corresponding track.
-
-- `red` if the track is armed
-
-- `blue` if the track represents a track-group
-
-- `off` if the track is unarmed (and no track-group)
-
-The lights in the bottom-row indicate the mute / solo status of the corresponding track.
+The lights in the top-row indicate the mute / solo status of the corresponding track.
 
 - `blue` for a track that is set to solo
 
@@ -257,23 +256,31 @@ The lights in the bottom-row indicate the mute / solo status of the correspondin
 
 - `off` if the track is muted and not solo
 
+The lights in the bottom-row indicate the arm status of the corresponding track.
+
+- `red` if the track is armed
+
+- `blue` if the track represents a track-group
+
+- `off` if the track is unarmed (and no track-group)
+
 #### The assignments are as follows:
 
-- `button 1-7` : set the **arm** status of the first 7 tracks in the red box
+- `button 1-7` : set the **mute** status of the first 6 tracks in the red box
+  
+  - *"if shift pressed"*: **solo** the corresponding track
+
+- `button 9-15` : set the **arm** status of the first 7 tracks in the red box
   
   - if the track represents a group, fold / unfold the corresponding group
-
-- `button 9-15` : set the **mute** status of the first 6 tracks in the red box
-  
-  - *"if shift pressed"*:  **solo** the corresponding track
 
 - `button 8` : select previous scene (e.g. go 1 scene up)
   
   - *"if shift pressed"*: select previous track
 
 - `button 16` : select next scene (if at the end, create a new scene)
-
-- - "if shift pressed" : select next track
+  
+  - "if shift pressed" : select next track
 
 - `encoder 1-7` : *"track volume"* of corresponding track
   
