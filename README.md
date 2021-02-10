@@ -12,15 +12,17 @@ Any comments / suggestions for improvements etc. are highly welcome!
 
 > Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues) and I'll see what I can do!
 
-# Summary of Assignments
 
-![](/assignment_01.png)
 
 # Installation
 
-To use this script, simply copy the contents into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences.  (make sure to activate both `track` and `remote` for this device!)
+To use this script, simply copy the contents into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track` and `remote` for this device!)
 
-WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten! 
+WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten!
+
+# Summary of Assignments
+
+![](/assignment_01.png)
 
 ---
 
