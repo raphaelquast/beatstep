@@ -23,8 +23,6 @@ class QSetup(object):
           color:     set button LED color [only works if button is set to note]
                      (0=black, 1=red, 16=blue, 17=magenta)
 
-    set_B_acceleration(value): set button acceleration (global)
-                               (0=slow, 1=medium, 2=fast)
     set_B_velocity(value):     set button velocity curve   (global)
                                (0=linear, 1=logarithmic, 2=exponential, 3=full)
 
@@ -44,6 +42,9 @@ class QSetup(object):
                      (0-127)
           behaviour  set encoder behaviour
                      (0=absolute, 1-3=relative mode 1-3)
+
+    set_E_acceleration(value): set encoder acceleration (global)
+                               (0=slow, 1=medium, 2=fast)
 
     ##### SEQUENCER
     set_S_...(val)
@@ -115,13 +116,13 @@ class QSetup(object):
             setattr(self, 'set_E_' + key, funcs[2])
             setattr(self, 'get_E_' + key, funcs[3])
 
-        B_acc_set, B_acc_get = self._get_acceleration_callback()
-        setattr(self, 'set_B_acceleration', B_acc_set)
-        setattr(self, 'get_B_acceleration', B_acc_get)
+        E_acc_set, E_acc_get = self._get_acceleration_callback()
+        setattr(self, 'set_E_acceleration', E_acc_set)
+        setattr(self, 'get_E_acceleration', E_acc_get)
 
         B_velocity_set, B_velocity_get = self._get_velocity_callback()
         setattr(self, 'set_B_velocity', B_velocity_set)
-        setattr(self, 'set_B_velocity', B_velocity_get)
+        setattr(self, 'get_B_velocity', B_velocity_get)
 
         # set sequencer setters
         for key, c in self._S_funcdict.items():
@@ -208,3 +209,32 @@ class QSetup(object):
         def get_callback(ID):
             return self._send_request(83, ID)
         return get_callback
+
+
+    def decode(self, b):
+        whatQ, control, val = None, None, None
+
+        if not b[:8] == self._B_START_MSG:
+            pass
+        else:
+            Q, ID, value = b[8:11]
+
+            for key, val in self._B.items():
+                if val == ID:
+                    control = 'button_' + str(key)
+                    break
+                else:
+                    continue
+            if control is None:
+                for key, val in self._E.items():
+                    if val == ID:
+                        control = 'encoder_' + str(key)
+                        break
+                    else:
+                        continue
+
+            for key, val in self._funcdict.items():
+                if val == Q:
+                    whatQ = key
+
+        return whatQ, control, value

@@ -32,11 +32,18 @@ class QControlComponent(BaseComponent):
 
         self._shift_pressed = False
         self._shift_fixed = False
-        self._control_layer_1 = False
-        self._control_layer_2 = False
-        self._control_layer_3 = False
+        self._control_layer_1 = False   # track control
+        self._control_layer_2 = False   # song control
+        self._control_layer_3 = False   # clip launch
 
         self.__control_layer_permanent = False
+
+
+        # set button velocity curve to 0 (e.g. "linear") on startup
+        self._pad_velocity = 0
+        self.velocity_colors = ['blue', 'magenta', 'red', 'black']
+
+
         self.layers = {'_shift_fixed', '_control_layer_1',
                        '_control_layer_2', '_control_layer_3'}
 
@@ -151,22 +158,22 @@ class QControlComponent(BaseComponent):
                     continue
 
                 if track.can_be_armed and track.arm:
-                    bdict[button_up] = 'red'
+                    bdict[button_down] = 'red'
                 elif track.is_foldable:
-                    bdict[button_up] = 'blue'
+                    bdict[button_down] = 'blue'
                 elif track in list(self._parent.song().return_tracks):
-                    bdict[button_up] = 'magenta'
+                    bdict[button_down] = 'magenta'
                 else:
-                    bdict[button_up] = 'black'
+                    bdict[button_down] = 'black'
 
                 if track.solo and not track.mute:
-                    bdict[button_down] = 'blue'
+                    bdict[button_up] = 'blue'
                 elif track.mute and track.solo:
-                    bdict[button_down] = 'red'
+                    bdict[button_up] = 'red'
                 elif track.mute:
-                    bdict[button_down] = 'black'
+                    bdict[button_up] = 'black'
                 else:
-                    bdict[button_down] = 'magenta'
+                    bdict[button_up] = 'magenta'
 
         elif self._control_layer_2:          # e.g. song-control
             # red = 1 which means "on" for the "chan button" light
@@ -208,6 +215,8 @@ class QControlComponent(BaseComponent):
             else:
                 bdict[14] = 'black'
 
+            bdict[15] = self.velocity_colors[self._pad_velocity]
+
         elif self._control_layer_3:            # e.g. clip-launch
             if self.__stop_playing_clips:
                 bdict['shift'] = 'red'
@@ -236,33 +245,31 @@ class QControlComponent(BaseComponent):
                 button_down = i + 9
                 # if there is no track, turn the lights off
                 if track == None:
-                    bdict[button_up] = 'black'
+                    bdict[button_down] = 'black'
                     continue
 
                 # indicate armed tracks (red) and track-groups (blue)
                 if track.can_be_armed and track.arm:
                     if (track.mute or track.muted_via_solo):
-                        bdict[button_up] = 'magenta'
+                        bdict[button_down] = 'magenta'
                     else:
-                        bdict[button_up] = 'red'
+                        bdict[button_down] = 'red'
                 elif track.is_foldable:
-                    bdict[button_up] = 'blue'
+                    bdict[button_down] = 'blue'
+                else:
+                    bdict[button_down] = 'black'
+
+                if i == self.selected_track_index%self.npads:
+                    # indicate selected track
+                    if self.selected_track.has_audio_input:
+                        if self.selected_track in self._parent.song().return_tracks:
+                            bdict[button_up] = 'magenta'
+                        else:
+                            bdict[button_up] = 'red'
+                    else:
+                        bdict[button_up] = 'blue'
                 else:
                     bdict[button_up] = 'black'
-
-                for i, track in enumerate(self.use_tracks):
-                    button_down = i + 9
-                    if i == self.selected_track_index%self.npads:
-                        # indicate selected track
-                        if self.selected_track.has_audio_input:
-                            if self.selected_track in self._parent.song().return_tracks:
-                                bdict[button_down] = 'magenta'
-                            else:
-                                bdict[button_down] = 'red'
-                        else:
-                            bdict[button_down] = 'blue'
-                    else:
-                        bdict[button_down] = 'black'
 
         else:
             # turn off all lights on shift-release
@@ -302,7 +309,7 @@ class QControlComponent(BaseComponent):
         song = self._parent.song()
         #all_tracks = song.tracks
         all_tracks = []
-        for track in list(song.tracks) + list(song.return_tracks):
+        for track in list(song.tracks) + list(song.return_tracks) + [song.master_track]:
             if track.is_grouped:
                 group = track.group_track
                 if group.fold_state is True:
@@ -531,6 +538,12 @@ class QControlComponent(BaseComponent):
 
 
     def _activate_control_layer(self, layer, permanent=False):
+
+        # msgdict = {'_control_layer_1': '"Track Control Layer" active.',
+        #            '_control_layer_2': '"Clip Launch Layer" active.',
+        #            '_control_layer_3': '"Song Control Layer" active.',
+        #            '_shift_fixed':     '"Shift Layer" active.'}
+
         if self.__control_layer_permanent and getattr(self, layer):
             # deactivate the layer if it was already permanently activated
             self.__control_layer_permanent = False
@@ -538,6 +551,8 @@ class QControlComponent(BaseComponent):
         else:
             if permanent:
                 self.__control_layer_permanent = True
+
+            # self._parent.show_message(' '*30 + msgdict[layer])
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
@@ -568,7 +583,7 @@ class QControlComponent(BaseComponent):
     def _1_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(0)
+                self._mute_solo_track(0)
             elif self._control_layer_2:
                 self._redo()
             elif self._control_layer_3:
@@ -581,7 +596,7 @@ class QControlComponent(BaseComponent):
     def _2_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(1)
+                self._mute_solo_track(1)
             elif self._control_layer_2:
                 self._collapse_device()
             elif self._control_layer_3:
@@ -594,7 +609,7 @@ class QControlComponent(BaseComponent):
     def _3_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(2)
+                self._mute_solo_track(2)
             elif self._control_layer_2:
                 self._toggle_or_delete_device()
             elif self._control_layer_3:
@@ -607,7 +622,7 @@ class QControlComponent(BaseComponent):
     def _4_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(3)
+                self._mute_solo_track(3)
             elif self._control_layer_2:
                 pass
             elif self._control_layer_3:
@@ -620,7 +635,7 @@ class QControlComponent(BaseComponent):
     def _5_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(4)
+                self._mute_solo_track(4)
             elif self._control_layer_2:
                 pass
             elif self._control_layer_3:
@@ -633,7 +648,7 @@ class QControlComponent(BaseComponent):
     def _6_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(5)
+                self._mute_solo_track(5)
             elif self._control_layer_2:
                 pass
             elif self._control_layer_3:
@@ -646,7 +661,7 @@ class QControlComponent(BaseComponent):
     def _7_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._arm_or_fold_track(6)
+                self._mute_solo_track(6)
             elif self._control_layer_2:
                 if self.__control_layer_permanent and self._shift_pressed:
                     self._change_ableton_view(next(self._view_cycle))
@@ -677,7 +692,7 @@ class QControlComponent(BaseComponent):
     def _9_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(0)
+                self._arm_or_fold_track(0)
             elif self._control_layer_2:
                 self._undo()
             elif self._control_layer_3:
@@ -690,7 +705,7 @@ class QControlComponent(BaseComponent):
     def _10_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(1)
+                self._arm_or_fold_track(1)
             elif self._control_layer_2:
                 self._duplicate_or_delete_track()
             elif self._control_layer_3:
@@ -703,7 +718,7 @@ class QControlComponent(BaseComponent):
     def _11_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(2)
+                self._arm_or_fold_track(2)
             elif self._control_layer_2:
                 self._duplicate_or_delete_scene()
             elif self._control_layer_3:
@@ -714,7 +729,7 @@ class QControlComponent(BaseComponent):
     def _12_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(3)
+                self._arm_or_fold_track(3)
             elif self._control_layer_2:
                 self._tap_tempo()
             elif self._control_layer_3:
@@ -727,7 +742,7 @@ class QControlComponent(BaseComponent):
     def _13_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(4)
+                self._arm_or_fold_track(4)
             elif self._control_layer_2:
                 self._toggle_metronome()
             elif self._control_layer_3:
@@ -740,7 +755,7 @@ class QControlComponent(BaseComponent):
     def _14_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(5)
+                self._arm_or_fold_track(5)
             elif self._control_layer_2:
                 self._toggle_automation()
             elif self._control_layer_3:
@@ -753,9 +768,9 @@ class QControlComponent(BaseComponent):
     def _15_listener(self, value):
         if value > 0:
             if self._control_layer_1:
-                self._mute_solo_track(6)
+                self._arm_or_fold_track(6)
             elif self._control_layer_2:
-                pass
+                self._change_pad_velocity_response()
             elif self._control_layer_3:
                 self._play_slot(6, 1)
             elif self._shift_pressed or self._shift_fixed:
@@ -967,7 +982,7 @@ class QControlComponent(BaseComponent):
                     if t == track:
                         self._arm_or_fold_track(track=t, toggle=False)
                     else:
-                        if t.can_be_armed:
+                        if t.can_be_armed and track.can_be_armed:
                             t.arm = False
 
             self.__select_track_clicked = time.clock()
@@ -1052,41 +1067,41 @@ class QControlComponent(BaseComponent):
 
     def _1_encoder_listener(self, value):
         trackid = 0
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_volume_or_send(value, trackid)
 
     def _2_encoder_listener(self, value):
         trackid = 1
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_volume_or_send(value, trackid)
 
     def _3_encoder_listener(self, value):
         trackid = 2
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_volume_or_send(value, trackid)
 
     def _4_encoder_listener(self, value):
         trackid = 3
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_volume_or_send(value, trackid)
 
     def _5_encoder_listener(self, value):
         trackid = 4
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_volume_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 0)
 
     def _6_encoder_listener(self, value):
         trackid = 5
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_volume_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 2)
 
     def _7_encoder_listener(self, value):
         trackid = 6
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_volume_or_send(value, trackid)
         else:
             self._track_volume_master_or_current(value)
@@ -1101,41 +1116,41 @@ class QControlComponent(BaseComponent):
 
     def _9_encoder_listener(self, value):
         trackid = 0
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_pan_or_send(value, trackid)
 
     def _10_encoder_listener(self, value):
         trackid = 1
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_pan_or_send(value, trackid)
 
     def _11_encoder_listener(self, value):
         trackid = 2
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_pan_or_send(value, trackid)
 
     def _12_encoder_listener(self, value):
         trackid = 3
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_pan_or_send(value, trackid)
 
     def _13_encoder_listener(self, value):
         trackid = 4
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_pan_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 1)
 
     def _14_encoder_listener(self, value):
         trackid = 5
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_pan_or_send(value, trackid)
         else:
             self._track_send_x(value, -1, 3)
 
     def _15_encoder_listener(self, value):
         trackid = 6
-        if self._control_layer_1:
+        if self._control_layer_1 or self._control_layer_3:
             self._track_pan_or_send(value, trackid)
         else:
             self._track_pan_master_or_current(value)
@@ -1151,7 +1166,7 @@ class QControlComponent(BaseComponent):
     def _transpose_encoder_listener(self, value):
         if not self.__control_layer_permanent and not self._shift_pressed:
             self._transpose(value)
-        elif self._control_layer_1:
+        elif self._control_layer_1 or self._control_layer_3:
             self._track_volume(value, -2)
         else:
             self._scroll_device_chain(value)
@@ -1203,8 +1218,27 @@ class QControlComponent(BaseComponent):
             self._parent._send_midi(self._parent.QS.set_B_cc(button, decval))
 
     def _track_send_x(self, value, track_id=0, send_id=0):
-        accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
-        last_access = abs(time.clock() - getattr(self, accessname, 0))
+        # accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
+        # last_access = abs(time.clock() - getattr(self, accessname, 0))
+        # if track_id == -1:
+        #     track = self._parent.song().view.selected_track
+        # else:
+        #     track = self.use_tracks[track_id]
+        # if track != None:
+        #     sends = track.mixer_device.sends
+        #     if send_id < len(sends):
+        #         prev_value = sends[send_id].value
+        #         if value < 65:
+        #             if last_access > 0.01:
+        #                 sends[send_id].value = max(prev_value + .01, 1.)
+        #             else:
+        #                 sends[send_id].value = max(prev_value + .05, 1.)
+        #         elif value > 65:
+        #             if last_access > 0.01:
+        #                 sends[send_id].value = min(prev_value - .01, 0.)
+        #             else:
+        #                 sends[send_id].value = min(prev_value - .05, 0.)
+        #     setattr(self, accessname, time.clock())
 
         if track_id == -1:
             track = self._parent.song().view.selected_track
@@ -1213,25 +1247,11 @@ class QControlComponent(BaseComponent):
 
         if track != None:
             sends = track.mixer_device.sends
-
             if send_id < len(sends):
-                prev_value = sends[send_id].value
-                if value < 65:
-                    if last_access > 0.01:
-                        if round(prev_value + .01, 2) <= 1:
-                            sends[send_id].value = round(prev_value + .01, 2)
-                    else:
-                        if round(prev_value + .05, 1) <= 1:
-                            sends[send_id].value = round(prev_value + .05, 1)
-                elif value > 65 and prev_value > 0:
-                    if last_access > 0.01:
-                        if round(prev_value - .01, 2) >= 0:
-                            sends[send_id].value = round(prev_value - .01, 2)
-                    else:
-                        if round(prev_value - .05, 1) >= 0:
-                            sends[send_id].value = round(prev_value - .05, 1)
-
-            setattr(self, accessname, time.clock())
+                if value < 64:
+                        sends[send_id].value = min(sends[send_id].value + .01, 1.)
+                elif value > 64:
+                        sends[send_id].value = max(sends[send_id].value - .01, 0.)
 
     def _track_send_x_or_y(self, value, track_id=0, send_id=1, send_id_shift=0):
         if self._shift_pressed and self.__control_layer_permanent:
@@ -1261,12 +1281,13 @@ class QControlComponent(BaseComponent):
 
         if track != None:
             prev_value = track.mixer_device.volume.value
-            if value < 65:
-                if round(prev_value + .01, 2) <= 1:
-                    track.mixer_device.volume.value = round(prev_value + .01, 2)
-            elif value > 65 :
-                if round(prev_value - .01, 2) >= 0:
-                    track.mixer_device.volume.value = round(prev_value - .01, 2)
+
+            if value < 64:
+                new_value = min(prev_value + 0.01, 1.)
+            elif value > 64:
+                new_value = max(prev_value - 0.01, 0.)
+
+            track.mixer_device.volume.value = new_value
 
     def _track_volume_master_or_current(self, value):
         if self._shift_pressed:
@@ -1579,4 +1600,54 @@ class QControlComponent(BaseComponent):
             else:
                 self._activate_control_layer('_control_layer_3', True)
 
+    def _change_pad_velocity_response(self):
+        #(0=linear, 1=logarithmic, 2=exponential, 3=full)
+
+
+        self._pad_velocity = (self._pad_velocity + 1)%4
+
+        self._parent._send_midi(
+            self._parent.QS.set_B_velocity(self._pad_velocity))
+
+        self._parent.show_message(str(self._pad_velocity) + '   ' +
+                                  str(self._parent.QS.set_B_velocity(self._pad_velocity))
+                                  )
 # -------------------------------------
+    # def _toggle_browser(self):
+    #     app = self._parent.application()
+
+    #     if app.view.is_view_visible(u'Browser'):
+    #         app.view.hide_view(u'Browser')
+    #     else:
+    #         app.view.show_view(u'Browser')
+    #         app.view.focus_view(u'Browser')
+    #         app.view.toggle_browse()
+
+    # def _browser_action(self):
+    #     app = self._parent.application()
+
+    #     app.view.show_view(u'Browser')
+    #     app.view.focus_view(u'Browser')
+
+    #     item = list(app.browser.instruments.children)[2]
+
+    #     app.browser.preview_item(item)
+
+    # def _scroll_browser(self, value):
+    #     app = self._parent.application()
+
+    #     if not app.view.is_view_visible(u'Browser'):
+    #         return
+
+    #     # increase notes only every 4 ticks of the transpose-slider
+    #     # (e.g. to make it a little less sensitive)
+    #     self.__transpose_cnt = (self.__transpose_cnt + 1)%4
+
+    #     if self.__transpose_cnt == 0:
+
+    #         if value > 65:
+    #             app.view.scroll_view(NavDirection.up, u'Browser', False)
+    #         else:
+    #             app.view.scroll_view(NavDirection.down, u'Browser', False)
+
+
