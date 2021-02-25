@@ -1,4 +1,4 @@
-from BaseComponent import BaseComponent
+from .BaseComponent import BaseComponent
 import time
 from itertools import cycle
 import Live
