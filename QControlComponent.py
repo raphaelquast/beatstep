@@ -337,7 +337,8 @@ class QControlComponent(BaseComponent):
 
         self.use_tracks = [None for i in range(self.npads)]
         ntrack = 0
-        for track in all_tracks[self.track_offset:]:
+        # don't use master track! that's why there's [:-1]
+        for track in all_tracks[:-1][self.track_offset:]:
             self.use_tracks[ntrack] = track
             ntrack += 1
 
