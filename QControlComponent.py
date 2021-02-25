@@ -337,7 +337,8 @@ class QControlComponent(BaseComponent):
 
         self.use_tracks = [None for i in range(self.npads)]
         ntrack = 0
-        for track in all_tracks[self.track_offset:]:
+        # don't use master track! that's why there's [:-1]
+        for track in all_tracks[:-1][self.track_offset:]:
             self.use_tracks[ntrack] = track
             ntrack += 1
 
@@ -976,7 +977,7 @@ class QControlComponent(BaseComponent):
             self._parent.song().view.selected_track = track
 
             # on arm the track on double-click
-            if abs(time.clock() - self.__select_track_clicked) <= self._double_tap_time and self.__last_selected == trackid:
+            if abs(time.process_time() - self.__select_track_clicked) <= self._double_tap_time and self.__last_selected == trackid:
 
                 for t in self._parent.song().tracks:
                     if t == track:
@@ -985,7 +986,7 @@ class QControlComponent(BaseComponent):
                         if t.can_be_armed and track.can_be_armed:
                             t.arm = False
 
-            self.__select_track_clicked = time.clock()
+            self.__select_track_clicked = time.process_time()
             self.__last_selected = trackid
 
     def _arm_or_fold_track(self, trackid=None, toggle=True, track=None):
@@ -1219,7 +1220,7 @@ class QControlComponent(BaseComponent):
 
     def _track_send_x(self, value, track_id=0, send_id=0):
         # accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
-        # last_access = abs(time.clock() - getattr(self, accessname, 0))
+        # last_access = abs(time.process_time() - getattr(self, accessname, 0))
         # if track_id == -1:
         #     track = self._parent.song().view.selected_track
         # else:
@@ -1238,7 +1239,7 @@ class QControlComponent(BaseComponent):
         #                 sends[send_id].value = min(prev_value - .01, 0.)
         #             else:
         #                 sends[send_id].value = min(prev_value - .05, 0.)
-        #     setattr(self, accessname, time.clock())
+        #     setattr(self, accessname, time.process_time())
 
         if track_id == -1:
             track = self._parent.song().view.selected_track
@@ -1546,7 +1547,7 @@ class QControlComponent(BaseComponent):
         else:
             self._shift_pressed = False
             # on release
-            if abs(time.clock() - self.__shift_clicked) <= self._double_tap_time * 0.5:
+            if abs(time.process_time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
                 self._activate_control_layer('_shift_fixed', True)
             else:
@@ -1557,7 +1558,7 @@ class QControlComponent(BaseComponent):
                 else:
                     self._unpress_shift()
 
-                self.__shift_clicked = time.clock()
+                self.__shift_clicked = time.process_time()
 
         self._update_lights()
 
