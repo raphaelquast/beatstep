@@ -1482,9 +1482,6 @@ class QControlComponent(BaseComponent):
             else:
                 newpadid = scrollpos*4 + (pos + 1)%16
 
-            self._parent.show_message(str([
-                selected_pad_id, row, pos, scrollpos, newpadid]))
-
             usedevice.view.selected_drum_pad = allpads[newpadid]
 
     def _scroll_drum_pad_col(self, value):
@@ -1642,17 +1639,17 @@ class QControlComponent(BaseComponent):
                 self._activate_control_layer('_control_layer_3', True)
 
     def _change_pad_velocity_response(self):
-        #(0=linear, 1=logarithmic, 2=exponential, 3=full)
-
-
+        msg = {0:'linear',
+               1:'logarithmic',
+               2:'exponential',
+               3:'always max. velocity'}
         self._pad_velocity = (self._pad_velocity + 1)%4
 
         self._parent._send_midi(
             self._parent.QS.set_B_velocity(self._pad_velocity))
 
-        self._parent.show_message(str(self._pad_velocity) + '   ' +
-                                  str(self._parent.QS.set_B_velocity(self._pad_velocity))
-                                  )
+        self._parent.show_message('Pad-velocity set to:  "' +
+                                  msg[self._pad_velocity] + '"')
 # -------------------------------------
     # def _toggle_browser(self):
     #     app = self._parent.application()
