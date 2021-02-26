@@ -1258,7 +1258,7 @@ class QControlComponent(BaseComponent):
 
         # set midi-notes of buttons to start + (0-15)
         for i in range(16):
-            decval = (start + i)%127
+            decval = (start + i)%128
             button = i + 1
 
             if button > 8:
