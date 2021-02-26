@@ -99,6 +99,7 @@ class QControlComponent(BaseComponent):
         self._parent.song().add_scenes_listener(self.on_selected_scene_changed)
         self._parent.song().add_is_playing_listener(self.on_is_playing_changed)
         self._parent.song().add_clip_trigger_quantization_listener(self.on_clip_trigger_quantization_changed)
+        self._parent.song().add_visible_tracks_listener(self.on_selected_track_changed)
 
 
         # call this once to initialize "self.use_tracks"
@@ -218,7 +219,7 @@ class QControlComponent(BaseComponent):
             if song.clip_trigger_quantization in [Live.Song.Quantization.q_no_q]:
                 bdict[6] = 'black'
             else:
-                bdict[6] = 'red'
+                bdict[6] = 'magenta'
 
             if self._shift_pressed and self.__control_layer_permanent:
                 bdict[3] = 'red'
