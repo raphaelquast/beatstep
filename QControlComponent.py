@@ -6,6 +6,20 @@ NavDirection = Live.Application.Application.View.NavDirection
 
 VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detail/DeviceChain')
 
+QUANTIZATIONS =  ['q_8_bars',
+                  'q_4_bars',
+                  'q_2_bars',
+                  'q_bar',
+                  'q_half',
+                  'q_half_triplet',
+                  'q_quarter',
+                  'q_quarter_triplet',
+                  'q_eight',
+                  'q_eight_triplet',
+                  'q_sixtenth',
+                  'q_sixtenth_triplet',
+                  'q_thirtytwoth']
+
 
 class QControlComponent(BaseComponent):
     def __init__(self, parent):
@@ -53,6 +67,10 @@ class QControlComponent(BaseComponent):
 
         self._sequencer_running = False
 
+        # get a list of all possible song-quantization-states
+        self.quants = [getattr(Live.Song.Quantization, key)
+                       for key in QUANTIZATIONS]
+
         self._detail_cycle = cycle((u'Detail/Clip', u'Detail/DeviceChain'))
         self._view_cycle = cycle((u'Arranger', u'Session'))
 
@@ -80,6 +98,8 @@ class QControlComponent(BaseComponent):
         self._parent.song().add_tracks_listener(self.on_selected_track_changed)
         self._parent.song().add_scenes_listener(self.on_selected_scene_changed)
         self._parent.song().add_is_playing_listener(self.on_is_playing_changed)
+        self._parent.song().add_clip_trigger_quantization_listener(self.on_clip_trigger_quantization_changed)
+
 
         # call this once to initialize "self.use_tracks"
         self.use_slots = [[None, None] for i in range(8)]
@@ -133,7 +153,7 @@ class QControlComponent(BaseComponent):
             self._set_color(key, val)
 
     def _update_button_light_status(self):
-
+        song = self._parent.song()
         bdict = dict()
 
         if self._parent.song().is_playing:
@@ -141,7 +161,7 @@ class QControlComponent(BaseComponent):
         else:
             bdict['play'] = 'black'
 
-        if self._control_layer_1:           # e.g. track-control
+        if self._control_layer_1:           # e.g. MIX
             bdict['shift'] = 'black'
             bdict['chan'] = 'red'
             bdict['store'] = 'black'
@@ -161,7 +181,7 @@ class QControlComponent(BaseComponent):
                     bdict[button_down] = 'red'
                 elif track.is_foldable:
                     bdict[button_down] = 'blue'
-                elif track in list(self._parent.song().return_tracks):
+                elif track in list(song.return_tracks):
                     bdict[button_down] = 'magenta'
                 else:
                     bdict[button_down] = 'black'
@@ -175,7 +195,7 @@ class QControlComponent(BaseComponent):
                 else:
                     bdict[button_up] = 'magenta'
 
-        elif self._control_layer_2:          # e.g. song-control
+        elif self._control_layer_2:          # e.g. CONTROL
             # red = 1 which means "on" for the "chan button" light
             # even though it's actually blue
             bdict['shift'] = 'black'
@@ -191,9 +211,14 @@ class QControlComponent(BaseComponent):
                 bdict[i] = 'black'
 
             bdict[1] = 'magenta'
-            bdict[3] = 'magenta'
             bdict[7] = 'magenta'
             bdict[9] = 'magenta'
+
+
+            if song.clip_trigger_quantization in [Live.Song.Quantization.q_no_q]:
+                bdict[6] = 'black'
+            else:
+                bdict[6] = 'red'
 
             if self._shift_pressed and self.__control_layer_permanent:
                 bdict[3] = 'red'
@@ -203,14 +228,15 @@ class QControlComponent(BaseComponent):
                 bdict[10] = 'blue'
                 bdict[11] = 'blue'
 
-            if self._parent.song().metronome:
+            if song.metronome:
                 bdict[13] = 'red'
             else:
                 bdict[13] = 'black'
 
-            if self._shift_pressed and self.__control_layer_permanent and self._parent.song().re_enable_automation_enabled:
+            if (self._shift_pressed and self.__control_layer_permanent and
+                song.re_enable_automation_enabled):
                 bdict[14] = 'blue'
-            elif self._parent.song().session_automation_record:
+            elif song.session_automation_record:
                 bdict[14] = 'red'
             else:
                 bdict[14] = 'black'
@@ -262,7 +288,7 @@ class QControlComponent(BaseComponent):
                 if i == self.selected_track_index%self.npads:
                     # indicate selected track
                     if self.selected_track.has_audio_input:
-                        if self.selected_track in self._parent.song().return_tracks:
+                        if self.selected_track in song.return_tracks:
                             bdict[button_up] = 'magenta'
                         else:
                             bdict[button_up] = 'red'
@@ -280,6 +306,10 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
         self._button_light_status = bdict
+
+    def on_clip_trigger_quantization_changed(self):
+        if self._control_layer_2:
+            self._update_lights()
 
     def on_is_playing_changed(self):
         if self._parent.song().is_playing:
@@ -651,7 +681,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._mute_solo_track(5)
             elif self._control_layer_2:
-                pass
+                self._change_quantization()
             elif self._control_layer_3:
                 self._play_slot(5, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -1063,6 +1093,25 @@ class QControlComponent(BaseComponent):
                 app_view.show_view(u'Detail')
         if not app_view.is_view_visible(view):
             app_view.focus_view(view)
+
+    def _change_quantization(self):
+        song = self._parent.song()
+
+        curr_q = song.clip_trigger_quantization
+        if curr_q not in [Live.Song.Quantization.q_no_q]:
+            if self._shift_pressed:
+                song.clip_trigger_quantization = Live.Song.Quantization.q_no_q
+            else:
+                # find currently active quantization index
+                qid = self.quants.index(curr_q)
+
+                song.clip_trigger_quantization = self.quants[
+                    (qid + 1)%len(self.quants)]
+        else:
+            # start with 1 bar if quantization was turned off
+            song.clip_trigger_quantization = Live.Song.Quantization.q_bar
+
+
 
     #########################################################
 
@@ -1548,7 +1597,6 @@ class QControlComponent(BaseComponent):
                 else:
                     self._unpress_shift()
 
-            self._parent.show_message(str(time.time() - self.__shift_clicked) + '  ||| ' + str(10*(time.time() - self.__shift_clicked)))
             self.__shift_clicked = time.time()
 
         self._update_lights()
