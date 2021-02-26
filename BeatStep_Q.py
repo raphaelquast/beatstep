@@ -150,6 +150,10 @@ class BeatStep_Q(ControlSurface):
             self._send_midi(self.QS.set_E_channel(i, CHANNEL))
             # set all encoders to relative-mode 2
             self._send_midi(self.QS.set_E_behaviour(i, 2))
+            # set all encoders to midi cc mode
+            self._send_midi(self.QS.set_E_mode(i, 1))
+            # set midi cc id's for all encoders
+            self._send_midi(self.QS.set_E_cc(i, ENCODER_MSG_IDS[i-1]))
 
     def _do_activate_control_mode(self):
         # for all buttons
@@ -165,6 +169,7 @@ class BeatStep_Q(ControlSurface):
             self._send_midi(self.QS.set_E_channel(i, CHANNEL))
             # set all encoders to relative-mode 2
             self._send_midi(self.QS.set_E_behaviour(i, 2))
+
 
         # set transpose encoder channel to follow global channel
         self._send_midi(self.QS.set_E_channel('transpose', CHANNEL))

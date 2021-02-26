@@ -12,8 +12,6 @@ Any comments / suggestions for improvements etc. are highly welcome!
 
 > Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues) and I'll see what I can do!
 
-
-
 # Installation
 
 To use this script, simply copy the contents into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track` and `remote` for this device!)
@@ -32,7 +30,7 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 
 - It's best to **connect the controller after Ableton started** to ensure that all settings are properly assigned.
 
-- To ensure that the script is automatically selected (instead of the default one), rename the default *"Beatstep"* folder to something like *"XBeatstep"*  so that it is alphabetically sorted **after** *"BeatStep_Q"*
+- To ensure that the script is automatically selected (instead of the default script), rename the already existing *"Beatstep"* folder to *"_Beatstep"* (or something that it is alphabetically sorted **after** *"BeatStep_Q"* )
 
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
@@ -68,21 +66,21 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 - `encoder 5, 6, 13, 14` : send A, B, C, D of selected track
 
 - `encoder 7` : volume of selected track
-
+  
   - *"if shift pressed"*: volume of master-track
 
 - `encoder 15` : pan of selected track
-
+  
   - *"if shift pressed"*: pan of master-track
 
 - `encoder 8` : track-selection (left-right)
-
+  
   - *"if shift pressed"* **and** a *"drum-rack"* is selected:
-
+    
     select drum-pad slot of the viewed 16 slots
 
 - `encoder 16` : scene selection (up-down)
-
+  
   - *"if shift pressed"* **and** a *"drum-rack"* is selected:
     select row of viewed drum-pads
 
@@ -98,7 +96,7 @@ The lights in the first indicate the currently activated clip.
 The lights in the second row indicate the track-arm status:
 
 - `red` if the track is **armed** and **not muted**
-
+  
   - `magenta` if the track is armed but muted
 
 - `blue` if the track represents a **track-group**
@@ -108,12 +106,12 @@ The lights in the second row indicate the track-arm status:
 #### The assignments are as follows:
 
 - `button 1-7`:  select track 1-7 of the currently focussed slots (red box)
-
+  
   - double tap an already selected track to arm/unarm it
     - if the selected track is a track-group, instead fold/unfold the group
 
 - `button 8`: select previous scene (e.g. go 1 scene up)
-
+  
   - if the control-layer is activated permanently, holding `shift` will switch to track-selection
 
 - `button 9` : undo last step
@@ -125,13 +123,13 @@ The lights in the second row indicate the track-arm status:
 - `button 13`: duplicate the currently selected loop
 
 - `button 15`: start recording
-
+  
   - if the currently selected slot is empty, start recording a new clip
-
+  
   - if a clip is already present, toggle overdubbing the clip
 
 - `button 16` : select next scene (if at the end, create a new scene)
-
+  
   - if the control-layer is activated permanently, holding `shift` will switch to track-selection
 
 All encoders are assigned as described above except for the `transpose-encoder`, which is now used to **select devices** in the device-chain of the selected track. (turning the `transpose-encoder` will automatically focus the view to the device-chain!)
@@ -146,7 +144,7 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 - `button 13` indicates the status of the metronome ( `red` for on)
 
 - `button 14` indicates the status of "automation arm" ( `red` for active)
-
+  
   - "if shift pressed" and an automation has been overridden, the button will turn `blue`
 
 - `button 3`, `10` and `11` will turn red if shift is pressed to highlight the alternative functionality
@@ -158,11 +156,15 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 - `button 2` : fold / unfold selected device
 
 - `button 3` : activate / deactivate selected device
-
+  
   - *"if shift pressed"* : delete selected device
 
-- `button 7` : toggle between showing the selected *"clip-details"* or the *"device-chain"* of the selected track
+- `button 6` : cycle through the *"launch-quantization"* times (e.g. 1 bar, 1/2 bar, 1/8 bar etc.)
+  
+  - *"if shift pressed"* : turn *"launch-quantization"* off
 
+- `button 7` : toggle between showing the selected *"clip-details"* or the *"device-chain"* of the selected track
+  
   - *"if shift pressed"* : toggle between Ableton's session-view and arrangement-view
 
 - `button 8` : select previous scene (e.g. go 1 scene up)
@@ -172,11 +174,11 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 - `button 9` : undo last step
 
 - `button 10` : duplicate selected track
-
+  
   - "if shift pressed" : delete selected track
 
 - `button 11` : duplicate selected scene
-
+  
   - *"if shift pressed"* : delete selected scene
 
 - `button 12` : tap tempo
@@ -184,15 +186,15 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 - `button 13` : toggle metronome
 
 - `button 14` : toggle *"session automation record"*
-
+  
   - *"if shift-pressed"* and an automation has been overridden:  *"re-enable automation"*
 
 - `button 15` : change the assigned "pad velocity curve" (e.g. the midi velocity response of the pad)
-
+  
   - `blue` for linear, `magenta` for logarithmic, `red` for exponential and `off` for "always max. velocity"
 
 - `button 16` : select next scene (if at the end, create a new scene)
-
+  
   - *"if shift-pressed"*: select next track
 
 All encoders are assigned similar to the *"shift-layer"*.
@@ -206,11 +208,11 @@ NOTICE: the `stop` button has a special feature in this layer (see below).
 The button-lights indicate the status of the clip-slots, e.g.:
 
 - `blue` indicates a slot with a clip
-
+  
   - a `blue blinking` slot indicates a clip that is triggered to **stop**
 
 - `red` indicates a clip that is playing
-
+  
   - a `red blinking` slot indicates a clip that is triggered to **play**
 
 - `magenta` indicates a group-track (it will turn `red` if a clip of the group is playing)
@@ -220,26 +222,26 @@ The button-lights indicate the status of the clip-slots, e.g.:
 #### The assignments are as follows:
 
 - the `stop-button` toggles the behaviour of the buttons (indicated by the `shift` button LED)
-
+  
   - *"re-trigger clips"* mode (`shift` LED OFF) :  tapping on an already playing clip will **re-trigger** the clip
-
+  
   - *"stop clips"* mode (`shift` LED ON) : tapping on an already playing clip will **stop** the clip
-
+  
   (... the *"if shift-pressed"* behaviour is still similar to the other layers, e.g. *"stop all clips"*)
 
 - `button 1-7` : launch the clips present in the top-row of the selection.
-
+  
   - *"if shift-pressed"* : select the track to which the clip-slot belongs to
     - if the slot is a "group-slot": fold/unfold the corresponding group
 
 - `button 8` : select previous scene (e.g. go 1 scene up)
-
+  
   - *"if shift-pressed"*: select previous track
 
 - `button 9-15` : same as `1-7` but for the bottom row of the selection.
 
 - `button 16` : select next scene (if at the end, add a new scene)
-
+  
   - *"if shift-pressed"*: select next track
 
 All encoders are assigned similar to the *"shift-layer"*.
@@ -269,27 +271,27 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 #### The assignments are as follows:
 
 - `button 1-7` : set the **mute** status of the first 6 tracks in the red box
-
+  
   - *"if shift pressed"*: **solo** the corresponding track
 
 - `button 9-15` : set the **arm** status of the first 7 tracks in the red box
-
+  
   - if the track represents a group, fold / unfold the corresponding group
 
 - `button 8` : select previous scene (e.g. go 1 scene up)
-
+  
   - *"if shift pressed"*: select previous track
 
 - `button 16` : select next scene (if at the end, create a new scene)
-
+  
   - "if shift pressed" : select next track
 
 - `encoder 1-7` : *"track volume"* of corresponding track
-
+  
   - *"if shift pressed"* : *"send A"* of corresponding track
 
 - `encoder 9-15` :  *"track pan"* of corresponding track
-
+  
   - *"if shift pressed"* : *"send B"* of corresponding track
 
 - `encoder 8` : track-selection (left-right)

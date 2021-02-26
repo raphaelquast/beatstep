@@ -6,6 +6,20 @@ NavDirection = Live.Application.Application.View.NavDirection
 
 VIEWS = (u'Browser', u'Arranger', u'Session', u'Detail', u'Detail/Clip', u'Detail/DeviceChain')
 
+QUANTIZATIONS =  ['q_8_bars',
+                  'q_4_bars',
+                  'q_2_bars',
+                  'q_bar',
+                  'q_half',
+                  'q_half_triplet',
+                  'q_quarter',
+                  'q_quarter_triplet',
+                  'q_eight',
+                  'q_eight_triplet',
+                  'q_sixtenth',
+                  'q_sixtenth_triplet',
+                  'q_thirtytwoth']
+
 
 class QControlComponent(BaseComponent):
     def __init__(self, parent):
@@ -53,6 +67,10 @@ class QControlComponent(BaseComponent):
 
         self._sequencer_running = False
 
+        # get a list of all possible song-quantization-states
+        self.quants = [getattr(Live.Song.Quantization, key)
+                       for key in QUANTIZATIONS]
+
         self._detail_cycle = cycle((u'Detail/Clip', u'Detail/DeviceChain'))
         self._view_cycle = cycle((u'Arranger', u'Session'))
 
@@ -80,6 +98,9 @@ class QControlComponent(BaseComponent):
         self._parent.song().add_tracks_listener(self.on_selected_track_changed)
         self._parent.song().add_scenes_listener(self.on_selected_scene_changed)
         self._parent.song().add_is_playing_listener(self.on_is_playing_changed)
+        self._parent.song().add_clip_trigger_quantization_listener(self.on_clip_trigger_quantization_changed)
+        self._parent.song().add_visible_tracks_listener(self.on_selected_track_changed)
+
 
         # call this once to initialize "self.use_tracks"
         self.use_slots = [[None, None] for i in range(8)]
@@ -133,7 +154,7 @@ class QControlComponent(BaseComponent):
             self._set_color(key, val)
 
     def _update_button_light_status(self):
-
+        song = self._parent.song()
         bdict = dict()
 
         if self._parent.song().is_playing:
@@ -141,7 +162,7 @@ class QControlComponent(BaseComponent):
         else:
             bdict['play'] = 'black'
 
-        if self._control_layer_1:           # e.g. track-control
+        if self._control_layer_1:           # e.g. MIX
             bdict['shift'] = 'black'
             bdict['chan'] = 'red'
             bdict['store'] = 'black'
@@ -161,7 +182,7 @@ class QControlComponent(BaseComponent):
                     bdict[button_down] = 'red'
                 elif track.is_foldable:
                     bdict[button_down] = 'blue'
-                elif track in list(self._parent.song().return_tracks):
+                elif track in list(song.return_tracks):
                     bdict[button_down] = 'magenta'
                 else:
                     bdict[button_down] = 'black'
@@ -175,7 +196,7 @@ class QControlComponent(BaseComponent):
                 else:
                     bdict[button_up] = 'magenta'
 
-        elif self._control_layer_2:          # e.g. song-control
+        elif self._control_layer_2:          # e.g. CONTROL
             # red = 1 which means "on" for the "chan button" light
             # even though it's actually blue
             bdict['shift'] = 'black'
@@ -191,9 +212,14 @@ class QControlComponent(BaseComponent):
                 bdict[i] = 'black'
 
             bdict[1] = 'magenta'
-            bdict[3] = 'magenta'
             bdict[7] = 'magenta'
             bdict[9] = 'magenta'
+
+
+            if song.clip_trigger_quantization in [Live.Song.Quantization.q_no_q]:
+                bdict[6] = 'black'
+            else:
+                bdict[6] = 'magenta'
 
             if self._shift_pressed and self.__control_layer_permanent:
                 bdict[3] = 'red'
@@ -203,14 +229,15 @@ class QControlComponent(BaseComponent):
                 bdict[10] = 'blue'
                 bdict[11] = 'blue'
 
-            if self._parent.song().metronome:
+            if song.metronome:
                 bdict[13] = 'red'
             else:
                 bdict[13] = 'black'
 
-            if self._shift_pressed and self.__control_layer_permanent and self._parent.song().re_enable_automation_enabled:
+            if (self._shift_pressed and self.__control_layer_permanent and
+                song.re_enable_automation_enabled):
                 bdict[14] = 'blue'
-            elif self._parent.song().session_automation_record:
+            elif song.session_automation_record:
                 bdict[14] = 'red'
             else:
                 bdict[14] = 'black'
@@ -262,7 +289,7 @@ class QControlComponent(BaseComponent):
                 if i == self.selected_track_index%self.npads:
                     # indicate selected track
                     if self.selected_track.has_audio_input:
-                        if self.selected_track in self._parent.song().return_tracks:
+                        if self.selected_track in song.return_tracks:
                             bdict[button_up] = 'magenta'
                         else:
                             bdict[button_up] = 'red'
@@ -280,6 +307,10 @@ class QControlComponent(BaseComponent):
             bdict['store'] = 'black'
             bdict['recall'] = 'black'
         self._button_light_status = bdict
+
+    def on_clip_trigger_quantization_changed(self):
+        if self._control_layer_2:
+            self._update_lights()
 
     def on_is_playing_changed(self):
         if self._parent.song().is_playing:
@@ -651,7 +682,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._mute_solo_track(5)
             elif self._control_layer_2:
-                pass
+                self._change_quantization()
             elif self._control_layer_3:
                 self._play_slot(5, 0)
             elif self._shift_pressed or self._shift_fixed:
@@ -977,7 +1008,7 @@ class QControlComponent(BaseComponent):
             self._parent.song().view.selected_track = track
 
             # on arm the track on double-click
-            if abs(time.process_time() - self.__select_track_clicked) <= self._double_tap_time and self.__last_selected == trackid:
+            if abs(time.time() - self.__select_track_clicked) <= self._double_tap_time and self.__last_selected == trackid:
 
                 for t in self._parent.song().tracks:
                     if t == track:
@@ -986,7 +1017,7 @@ class QControlComponent(BaseComponent):
                         if t.can_be_armed and track.can_be_armed:
                             t.arm = False
 
-            self.__select_track_clicked = time.process_time()
+            self.__select_track_clicked = time.time()
             self.__last_selected = trackid
 
     def _arm_or_fold_track(self, trackid=None, toggle=True, track=None):
@@ -1063,6 +1094,25 @@ class QControlComponent(BaseComponent):
                 app_view.show_view(u'Detail')
         if not app_view.is_view_visible(view):
             app_view.focus_view(view)
+
+    def _change_quantization(self):
+        song = self._parent.song()
+
+        curr_q = song.clip_trigger_quantization
+        if curr_q not in [Live.Song.Quantization.q_no_q]:
+            if self._shift_pressed:
+                song.clip_trigger_quantization = Live.Song.Quantization.q_no_q
+            else:
+                # find currently active quantization index
+                qid = self.quants.index(curr_q)
+
+                song.clip_trigger_quantization = self.quants[
+                    (qid + 1)%len(self.quants)]
+        else:
+            # start with 1 bar if quantization was turned off
+            song.clip_trigger_quantization = Live.Song.Quantization.q_bar
+
+
 
     #########################################################
 
@@ -1208,7 +1258,7 @@ class QControlComponent(BaseComponent):
 
         # set midi-notes of buttons to start + (0-15)
         for i in range(16):
-            decval = (start + i)%127
+            decval = (start + i)%128
             button = i + 1
 
             if button > 8:
@@ -1219,28 +1269,6 @@ class QControlComponent(BaseComponent):
             self._parent._send_midi(self._parent.QS.set_B_cc(button, decval))
 
     def _track_send_x(self, value, track_id=0, send_id=0):
-        # accessname = '__last_access_' + str(track_id) + '_' + str(send_id)
-        # last_access = abs(time.process_time() - getattr(self, accessname, 0))
-        # if track_id == -1:
-        #     track = self._parent.song().view.selected_track
-        # else:
-        #     track = self.use_tracks[track_id]
-        # if track != None:
-        #     sends = track.mixer_device.sends
-        #     if send_id < len(sends):
-        #         prev_value = sends[send_id].value
-        #         if value < 65:
-        #             if last_access > 0.01:
-        #                 sends[send_id].value = max(prev_value + .01, 1.)
-        #             else:
-        #                 sends[send_id].value = max(prev_value + .05, 1.)
-        #         elif value > 65:
-        #             if last_access > 0.01:
-        #                 sends[send_id].value = min(prev_value - .01, 0.)
-        #             else:
-        #                 sends[send_id].value = min(prev_value - .05, 0.)
-        #     setattr(self, accessname, time.process_time())
-
         if track_id == -1:
             track = self._parent.song().view.selected_track
         else:
@@ -1250,9 +1278,15 @@ class QControlComponent(BaseComponent):
             sends = track.mixer_device.sends
             if send_id < len(sends):
                 if value < 64:
-                        sends[send_id].value = min(sends[send_id].value + .01, 1.)
+                    newval = sends[send_id].value + .01
+                    if newval > 1:
+                        return
                 elif value > 64:
-                        sends[send_id].value = max(sends[send_id].value - .01, 0.)
+                    newval = sends[send_id].value - .01
+                    if newval < 0:
+                        return
+
+                sends[send_id].value = newval
 
     def _track_send_x_or_y(self, value, track_id=0, send_id=1, send_id_shift=0):
         if self._shift_pressed and self.__control_layer_permanent:
@@ -1281,14 +1315,16 @@ class QControlComponent(BaseComponent):
             track = self.use_tracks[track_id]
 
         if track != None:
-            prev_value = track.mixer_device.volume.value
+            if value < 65:
+                newval = track.mixer_device.volume.value + 0.005
+                if newval > 1:
+                    return
+            elif value > 65:
+                newval = track.mixer_device.volume.value - 0.005
+                if newval < 0:
+                    return
 
-            if value < 64:
-                new_value = min(prev_value + 0.01, 1.)
-            elif value > 64:
-                new_value = max(prev_value - 0.01, 0.)
-
-            track.mixer_device.volume.value = new_value
+            track.mixer_device.volume.value = newval
 
     def _track_volume_master_or_current(self, value):
         if self._shift_pressed:
@@ -1311,13 +1347,17 @@ class QControlComponent(BaseComponent):
             track = self.use_tracks[track_id]
 
         if track != None:
-            prev_value = track.mixer_device.panning.value
+
             if value < 65:
-                if round(prev_value + .05, 2) <= 1:
-                    track.mixer_device.panning.value = round(prev_value + .05, 2)
-            elif value > 65 :
-                if round(prev_value - .05, 2) >= -1:
-                    track.mixer_device.panning.value = round(prev_value - .05, 2)
+                newval = track.mixer_device.panning.value + 0.01
+                if newval > 1.:
+                    return
+            elif value > 65:
+                newval = track.mixer_device.panning.value - 0.01
+                if newval < -1:
+                    return
+
+            track.mixer_device.panning.value = newval
 
     def _select_next_scene(self, create_new_scenes=True):
         song = self._parent.song()
@@ -1442,9 +1482,6 @@ class QControlComponent(BaseComponent):
             else:
                 newpadid = scrollpos*4 + (pos + 1)%16
 
-            self._parent.show_message(str([
-                selected_pad_id, row, pos, scrollpos, newpadid]))
-
             usedevice.view.selected_drum_pad = allpads[newpadid]
 
     def _scroll_drum_pad_col(self, value):
@@ -1547,7 +1584,7 @@ class QControlComponent(BaseComponent):
         else:
             self._shift_pressed = False
             # on release
-            if abs(time.process_time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
+            if abs(time.time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
                 self._activate_control_layer('_shift_fixed', True)
             else:
@@ -1558,7 +1595,7 @@ class QControlComponent(BaseComponent):
                 else:
                     self._unpress_shift()
 
-                self.__shift_clicked = time.process_time()
+            self.__shift_clicked = time.time()
 
         self._update_lights()
 
@@ -1602,17 +1639,17 @@ class QControlComponent(BaseComponent):
                 self._activate_control_layer('_control_layer_3', True)
 
     def _change_pad_velocity_response(self):
-        #(0=linear, 1=logarithmic, 2=exponential, 3=full)
-
-
+        msg = {0:'linear',
+               1:'logarithmic',
+               2:'exponential',
+               3:'always max. velocity'}
         self._pad_velocity = (self._pad_velocity + 1)%4
 
         self._parent._send_midi(
             self._parent.QS.set_B_velocity(self._pad_velocity))
 
-        self._parent.show_message(str(self._pad_velocity) + '   ' +
-                                  str(self._parent.QS.set_B_velocity(self._pad_velocity))
-                                  )
+        self._parent.show_message('Pad-velocity set to:  "' +
+                                  msg[self._pad_velocity] + '"')
 # -------------------------------------
     # def _toggle_browser(self):
     #     app = self._parent.application()
