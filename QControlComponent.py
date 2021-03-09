@@ -49,6 +49,7 @@ class QControlComponent(BaseComponent):
         self._control_layer_1 = False   # track control
         self._control_layer_2 = False   # song control
         self._control_layer_3 = False   # clip launch
+        self._layer_onetrack = False   # clip launch
 
         self.__control_layer_permanent = False
 
@@ -58,11 +59,15 @@ class QControlComponent(BaseComponent):
         self.velocity_colors = ['blue', 'magenta', 'red', 'black']
 
 
-        self.layers = {'_shift_fixed', '_control_layer_1',
-                       '_control_layer_2', '_control_layer_3'}
+        self.layers = {'_shift_fixed',
+                       '_control_layer_1',
+                       '_control_layer_2',
+                       '_control_layer_3',
+                       '_layer_onetrack'}
 
         self.layer_listener = {'_control_layer_2': '_control_2_listeners',
-                               '_control_layer_3': '_control_3_listeners'}
+                               '_control_layer_3': '_control_3_listeners',
+                               '_layer_onetrack': '_layer_onetrack_listerners'}
 
 
         self._sequencer_running = False
@@ -100,7 +105,6 @@ class QControlComponent(BaseComponent):
         self._parent.song().add_is_playing_listener(self.on_is_playing_changed)
         self._parent.song().add_clip_trigger_quantization_listener(self.on_clip_trigger_quantization_changed)
         self._parent.song().add_visible_tracks_listener(self.on_selected_track_changed)
-
 
         # call this once to initialize "self.use_tracks"
         self.use_slots = [[None, None] for i in range(8)]
@@ -152,6 +156,41 @@ class QControlComponent(BaseComponent):
                 if val in ['blue']:
                     val = 'red'
             self._set_color(key, val)
+
+    # ----------------------------TODO--------------
+    # _layer_onetrack
+
+    def _get_onetrack_clipslots(self):
+        track = self.selected_track
+        if track != None:
+            slots = list(track.clip_slots)
+            nslots = len(slots)
+
+            use_slots = [None for i in range(14)]
+            nscenes = self.selected_scene_index//7
+
+            for i, scene_id in enumerate(range(self.selected_scene_index,
+                                               self.selected_scene_index + 14)):
+                if scene_id < nslots:
+                    use_slots[i] = slots[scene_id]
+
+        self.onetrack_slots = use_slots
+
+    def _play_onetrack_slot(self, slotid):
+        clip_slot = self.onetrack_slots[slotid]
+        if clip_slot == None: return
+
+        track = clip_slot.canonical_parent
+
+        if clip_slot.has_clip or clip_slot.is_group_slot:
+            if clip_slot.is_playing and self.__stop_playing_clips:
+                clip_slot.stop()
+            else:
+                clip_slot.fire()
+        else:
+            track.stop_all_clips()
+
+    # ------------------------------------------
 
     def _update_button_light_status(self):
         song = self._parent.song()
@@ -244,7 +283,7 @@ class QControlComponent(BaseComponent):
 
             bdict[15] = self.velocity_colors[self._pad_velocity]
 
-        elif self._control_layer_3:            # e.g. clip-launch
+        elif self._control_layer_3:            # e.g. LAUNCH
             if self.__stop_playing_clips:
                 bdict['shift'] = 'red'
             else:
@@ -257,6 +296,53 @@ class QControlComponent(BaseComponent):
             for cb in self._control_3_callbacks:
                 # call control-layer 3 callbacks to update lights
                 cb()
+
+        elif self._layer_onetrack:           # e.g. ONE-TRACK
+            self._get_onetrack_clipslots()
+
+            if self.__stop_playing_clips:
+                bdict['shift'] = 'red'
+            else:
+                bdict['shift'] = 'black'
+
+            bdict['chan'] = 'red'
+            bdict['store'] = 'red'
+            bdict['recall'] = 'red'
+
+            for i, slot in enumerate(self.onetrack_slots):
+                if i >= 7:
+                    i += 1
+                if slot is None:
+                    bdict[i+1] = 'black'
+                elif slot.has_clip:
+                    if slot.is_playing:
+                        bdict[i+1] = 'red'
+                    elif slot.is_triggered:
+                        bdict[i+1] = 'magenta'
+                    else:
+                        bdict[i+1] = 'blue'
+                elif (slot.is_group_slot and slot.controls_other_clips):
+                    # TODO FIX this properly!!
+                    # use the next track in case it is a group-track
+                    track = slot.canonical_parent
+                    slot_idx = list(track.clip_slots).index(slot)
+
+                    tracks = list(self._parent.song().tracks)
+                    track_idx = tracks.index(track)
+
+                    slot = tracks[track_idx + 1].clip_slots[slot_idx]
+
+
+                    if slot.is_playing:
+                        bdict[i+1] = 'red'
+                    elif slot.is_triggered:
+                        bdict[i+1] = 'magenta'
+                    else:
+                        bdict[i+1] = 'blue'
+                else:
+                    bdict[i+1] = 'black'
+
+
 
         elif self._shift_pressed or self._shift_fixed:
             # red = 1 which means "on" for the "shift button" light
@@ -353,7 +439,7 @@ class QControlComponent(BaseComponent):
         self.all_tracks = all_tracks
 
         selected_track = song.view.selected_track
-        current_index = (list(all_tracks) + list(song.return_tracks) + [song.master_track]).index(selected_track)
+        current_index = list(all_tracks).index(selected_track)
         self.track_offset = int(current_index / self.npads) * (self.npads)
 
         if selected_track in all_tracks:
@@ -386,6 +472,17 @@ class QControlComponent(BaseComponent):
         # update clip-slot listeners
         if self._control_layer_3:
             self._add_control_3_listeners()
+
+        # update listeners for _layer_onetrack
+        for track in list(song.tracks):
+            if track.fired_slot_index_has_listener(self._update_lights):
+                track.remove_fired_slot_index_listener(self._update_lights)
+            if track.playing_slot_index_has_listener(self._update_lights):
+                track.remove_playing_slot_index_listener(self._update_lights)
+
+        self._add_layer_onetrack_listerners()
+
+
         self._update_lights()
 
     def _get_used_clipslots(self):
@@ -435,11 +532,22 @@ class QControlComponent(BaseComponent):
         width = len(self.use_tracks)
         if self._control_layer_3:
             height = 2
+            offset = self.track_offset
+        elif self._layer_onetrack:
+            height = 14
+            width = 1
+
+            selected_track = self._parent.song().view.selected_track
+            offset = self.all_tracks.index(selected_track)
         else:
             height = 1
+            offset = self.track_offset
+
+
+
 
         include_returns = True
-        self._parent._c_instance.set_session_highlight(self.track_offset,
+        self._parent._c_instance.set_session_highlight(offset,
                                                        self.selected_scene_index,
                                                        width,
                                                        height,
@@ -491,6 +599,42 @@ class QControlComponent(BaseComponent):
             else:
                 self._set_color(buttonid, 'black')
         return callback
+
+    # TODO
+    def _add_layer_onetrack_listerners(self):
+        track = self.selected_track
+        # TODO FIX this properly!!
+        # use the next track in case it is a group-track
+        if track.is_foldable:
+            tracks = list(self._parent.song().tracks)
+            track_idx = tracks.index(track)
+            track = tracks[track_idx + 1]
+        try:
+            if not track.fired_slot_index_has_listener(self._update_lights):
+                track.add_fired_slot_index_listener(self._update_lights)
+            if not track.playing_slot_index_has_listener(self._update_lights):
+                track.add_playing_slot_index_listener(self._update_lights)
+        except Exception:
+            pass
+
+    def _remove_layer_onetrack_listerners(self):
+        track = self.selected_track
+        # TODO FIX this properly!!
+        # use the next track in case it is a group-track
+        if track.is_foldable:
+            tracks = list(self._parent.song().tracks)
+            track_idx = tracks.index(track)
+            track = tracks[track_idx + 1]
+
+        try:
+            if track.fired_slot_index_has_listener(self._update_lights):
+                track.remove_fired_slot_index_listener(self._update_lights)
+            if track.playing_slot_index_has_listener(self._update_lights):
+                track.remove_playing_slot_index_listener(self._update_lights)
+        except Exception:
+            pass
+
+
 
     def _add_control_3_listeners(self):
         cbs = iter(self._control_3_callbacks)
@@ -592,17 +736,21 @@ class QControlComponent(BaseComponent):
             # add value listeners to buttons in case shift is pressed
             self._add_handler()
 
+            # set layer
             for l in self.layers:
                 if l == layer:
                     setattr(self, l, True)
                 else:
                     setattr(self, l, False)
+
+            # add layer listener
             for key, val in self.layer_listener.items():
                 if key == layer:
                     getattr(self, '_add' + val)()
                 else:
                     getattr(self, '_remove' + val)()
 
+            # activate device controls for the layers (encoder 1-4 and 9-12)
             if layer in ['_control_layer_2', '_control_layer_3', '_shift_fixed']:
                 self._parent._device.set_enabled(True)
             else:
@@ -622,6 +770,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(0, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(0)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(0)
         else:
             self._update_lights()
 
@@ -635,6 +785,9 @@ class QControlComponent(BaseComponent):
                 self._play_slot(1, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(1)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(1)
+
         else:
             self._update_lights()
 
@@ -648,6 +801,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(2, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(2)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(2)
         else:
             self._update_lights()
 
@@ -661,6 +816,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(3, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(3)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(3)
         else:
             self._update_lights()
 
@@ -674,6 +831,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(4, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(4)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(4)
         else:
             self._update_lights()
 
@@ -687,6 +846,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(5, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(5)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(5)
         else:
             self._update_lights()
 
@@ -703,6 +864,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(6, 0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(6)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(6)
         else:
             self._update_lights()
 
@@ -731,6 +894,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(0, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._undo()
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(7)
         else:
             self._update_lights()
 
@@ -744,6 +909,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(1, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._delete_clip()
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(8)
         else:
             self._update_lights()
 
@@ -755,6 +922,8 @@ class QControlComponent(BaseComponent):
                 self._duplicate_or_delete_scene()
             elif self._control_layer_3:
                 self._play_slot(2, 1)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(9)
         else:
             self._update_lights()
 
@@ -768,6 +937,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(3, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._duplicate_clip()
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(10)
         else:
             self._update_lights()
 
@@ -781,6 +952,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(4, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._duplicate_loop()
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(11)
         else:
             self._update_lights()
 
@@ -794,6 +967,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(5, 1)
             elif self._shift_pressed or self._shift_fixed:
                 pass
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(12)
         else:
             self._update_lights()
 
@@ -807,6 +982,8 @@ class QControlComponent(BaseComponent):
                 self._play_slot(6, 1)
             elif self._shift_pressed or self._shift_fixed:
                 self._fire_record()
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(13)
         else:
             self._update_lights()
 
@@ -817,6 +994,9 @@ class QControlComponent(BaseComponent):
                     self._select_prev_track()
                 else:
                     self._select_next_scene()
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(14)
+
             else:
                 self._select_next_scene()
         else:
@@ -1474,7 +1654,7 @@ class QControlComponent(BaseComponent):
 
             scrollpos = usedevice.view.drum_pads_scroll_position
 
-            row = int(selected_pad_id / 4)
+            #row = int(selected_pad_id / 4)
             pos = (selected_pad_id - scrollpos*4)%16
 
             if value > 65:
@@ -1560,7 +1740,7 @@ class QControlComponent(BaseComponent):
 
     def _stop_listener(self, value):
         if value > 0:
-            if self._control_layer_3 and not self._shift_pressed:
+            if (self._control_layer_3 or self._layer_onetrack) and not self._shift_pressed:
                 # toggle if clips should be stopped or re-triggered
                 if self.__stop_playing_clips:
                     self.__stop_playing_clips = False
@@ -1616,7 +1796,6 @@ class QControlComponent(BaseComponent):
                 # transpose notes back to last set transpose-val
                 self._set_notes(self.__transpose_val)
 
-
     def _chan_listener(self, value):
         if value == 0:
             if self._shift_pressed:
@@ -1634,9 +1813,15 @@ class QControlComponent(BaseComponent):
     def _store_listener(self, value):
         if value == 0:
             if self._shift_pressed:
-                self._activate_control_layer('_control_layer_3', False)
+                self._activate_control_layer('_layer_onetrack', True)
             else:
-                self._activate_control_layer('_control_layer_3', True)
+                if self._layer_onetrack:
+                    self._layer_onetrack = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
+                else:
+                    self._activate_control_layer('_control_layer_3', True)
+        self._update_lights()
 
     def _change_pad_velocity_response(self):
         msg = {0:'linear',
@@ -1687,5 +1872,3 @@ class QControlComponent(BaseComponent):
     #             app.view.scroll_view(NavDirection.up, u'Browser', False)
     #         else:
     #             app.view.scroll_view(NavDirection.down, u'Browser', False)
-
-
