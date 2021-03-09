@@ -50,7 +50,7 @@ The buttons  `recall`, `store` ,`chan` and `shift`  are used to activate the con
 
 The `stop` button can be used as follows:
 
-- if the selected clip is currently recording: it stop recording (but continue playback)
+- if the selected clip is currently recording: stop recording (but continue playback)
 
 - if the selected clip is playing:  trigger stop
 
