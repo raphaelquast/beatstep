@@ -3,10 +3,13 @@ It turns the BeatStep controller into a fully-fledged control-surface for Ableto
 
 - select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
 
-- get indications on the status of tracks and scenes via button-lights
+- use pads to start/stop/trigger clips
 
-- ... and of course, at the same time ...
-  use the controller to play midi instruments with access to the **full range** of midi-notes!
+- get indications on the status of clips and tracks via button-LED's
+
+- play midi instruments with access to the **full range** of midi-notes!
+
+- ... and much more!
 
 Any comments / suggestions for improvements etc. are highly welcome!
 
