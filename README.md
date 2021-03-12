@@ -21,6 +21,14 @@ To use this script, simply copy the contents into a folder named **"Beatstep_Q"*
 
 WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten!
 
+# Overlay
+![](/BeatStep_Q_Overlay.png)
+This overlay-design provides indications for most of the assignments as well as the sequencer-functions.  
+<sup>
+<sup>
+(I've got mine from here: [Taktility](https://www.taktility.com/))
+</sup>
+</sup>
 # Summary of Assignments
 
 ![](/assignment_01.png)
