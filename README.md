@@ -26,7 +26,7 @@ WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any c
 This overlay-design provides indications for most of the assignments as well as the sequencer-functions.  
 <sup>
 <sup>
-(I've got mine from here: [Taktility](https://www.taktility.com/))
+(I got mine printed here: [Taktility](https://www.taktility.com/))
 </sup>
 </sup>
 # Summary of Assignments
