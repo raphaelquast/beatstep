@@ -11,9 +11,9 @@ It turns the BeatStep controller into a fully-fledged control-surface for Ableto
 
 - ... and much more!
 
-Any comments / suggestions for improvements etc. are highly welcome!
+Comments / suggestions / bugs?
 
-> Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues), and I'll see what I can do!
+> Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues), or start a [Discussion](https://github.com/raphaelquast/beatstep/discussions) and I'll see what I can do!
 
 # Installation
 
