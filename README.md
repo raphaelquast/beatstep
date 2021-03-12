@@ -3,21 +3,32 @@ It turns the BeatStep controller into a fully-fledged control-surface for Ableto
 
 - select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
 
-- get indications on the status of tracks and scenes via button-lights
+- use pads to start/stop/trigger clips
 
-- ... and of course, at the same time ...
-  use the controller to play midi instruments with access to the **full range** of midi-notes!
+- get indications on the status of clips and tracks via button-LED's
 
-Any comments / suggestions for improvements etc. are highly welcome!
+- play midi instruments with access to the **full range** of midi-notes!
 
-> Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues) and I'll see what I can do!
+- ... and much more!
+
+Comments / suggestions / bugs?
+
+> Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues), or start a [Discussion](https://github.com/raphaelquast/beatstep/discussions) and I'll see what I can do!
 
 # Installation
 
-To use this script, simply copy the contents into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track` and `remote` for this device!)
+To use this script, simply copy the files of the latest [release](https://github.com/raphaelquast/beatstep/releases) into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track` and `remote` for this device!)
 
 WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten!
 
+# Overlay
+![](/BeatStep_Q_Overlay.png)
+This overlay-design provides indications for most of the assignments as well as the sequencer-functions.  
+<sup>
+<sup>
+(I got mine printed here: [Taktility](https://www.taktility.com/))
+</sup>
+</sup>
 # Summary of Assignments
 
 ![](/assignment_01.png)
@@ -30,19 +41,19 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 
 - It's best to **connect the controller after Ableton started** to ensure that all settings are properly assigned.
 
-- To ensure that the script is automatically selected (instead of the default script), rename the already existing *"Beatstep"* folder to *"_Beatstep"* (or something that it is alphabetically sorted **after** *"BeatStep_Q"* )
+- To ensure that the script is automatically selected (instead of the default script), rename the already existing *"Beatstep"* folder to *"_Beatstep"* (or something that it is alphabetically sorted **after** *"BeatStep_Q"*)
 
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
 ## Buttons:
 
-The buttons  `recall`, `store` ,`chan` and `shift`  are used to activate the control-layers.
+The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
 - to maintain the initial functionality of the buttons, the layers are activated when the buttons are **released** !
 
 - all layers (except the *"shift-layer"*) remain activated until the corresponding button is pressed again
 
-- the *"shift-layer"* can be activated permanently by **double-tapping** the  `shift` button
+- the *"shift-layer"* can be activated permanently by **double-tapping** the `shift` button
 
 - holding `shift` while pressing one of the layer-buttons will activate the layer until `shift` is released
 
@@ -50,18 +61,18 @@ The buttons  `recall`, `store` ,`chan` and `shift`  are used to activate the con
 
 The `stop` button can be used as follows:
 
-- if the selected clip is currently recording: it stop recording (but continue playback)
+- if the selected clip is currently recording: stop recording (but continue playback)
 
-- if the selected clip is playing:  trigger stop
+- if the selected clip is playing: trigger stop
 
 - *"if shift pressed"* : stop ALL tracks
 
 ## Encoders:
 
 The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
-(a red button-colour indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc. )
+(a red button-color indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc.)
 
-- `encoder 1-4` and `9-12` : control the first 8 parameter of the selected device
+- `encoder 1-4` and `9-12` : control the first 8 parameters of the selected device
 
 - `encoder 5, 6, 13, 14` : send A, B, C, D of selected track
 
@@ -105,7 +116,7 @@ The lights in the second row indicate the track-arm status:
 
 #### The assignments are as follows:
 
-- `button 1-7`:  select track 1-7 of the currently focussed slots (red box)
+- `button 1-7`: select track 1-7 of the currently focussed slots (red box)
   
   - double tap an already selected track to arm/unarm it
     - if the selected track is a track-group, instead fold/unfold the group
@@ -138,12 +149,12 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 
 ### If "control" is active
 
-Most lights are simply there to help remembering the button-assignments.
-The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live
+Most lights are simply there to help remember the button-assignments.
+The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live.
 
-- `button 13` indicates the status of the metronome ( `red` for on)
+- `button 13` indicates the status of the metronome (`red` for on)
 
-- `button 14` indicates the status of "automation arm" ( `red` for active)
+- `button 14` indicates the status of "automation arm" (`red` for active)
   
   - "if shift pressed" and an automation has been overridden, the button will turn `blue`
 
@@ -187,7 +198,7 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 
 - `button 14` : toggle *"session automation record"*
   
-  - *"if shift-pressed"* and an automation has been overridden:  *"re-enable automation"*
+  - *"if shift-pressed"* and an automation has been overridden: *"re-enable automation"*
 
 - `button 15` : change the assigned "pad velocity curve" (e.g. the midi velocity response of the pad)
   
@@ -201,33 +212,39 @@ All encoders are assigned similar to the *"shift-layer"*.
 
 ---
 
-### If "launch"  is active
+### If "launch" is active
 
-In this control-layer, both button-rows (e.g. `1-7` and `9-15`)  represent clip-slots.
+In this control-layer, both button-rows (e.g. `1-7` and `9-15`) represent clip-slots.  
 NOTICE: the `stop` button has a special feature in this layer (see below).
+
+There are 2 possible ways to activate this layer:
+
+- tap `store` to control **2 clip-slots of 7 tracks**
+   - only the `store` button LED will be on
+- tap `shift + store` to control **14 clip-slots of 1 track**
+   - the LED's of `store`, `chan` and `recall` will be on
+
 The button-lights indicate the status of the clip-slots, e.g.:
 
 - `blue` indicates a slot with a clip
-  
   - a `blue blinking` slot indicates a clip that is triggered to **stop**
 
 - `red` indicates a clip that is playing
-  
   - a `red blinking` slot indicates a clip that is triggered to **play**
 
-- `magenta` indicates a group-track (it will turn `red` if a clip of the group is playing)
+- `magenta` indicates a group-track (it will turn `red` if a clip of the group is playing) [or indicate a triggered clip in `shift + store` mode]
 
 - the `shift` button indicates if *"re-trigger clips"* or *"stop clips"* mode is active
 
 #### The assignments are as follows:
 
-- the `stop-button` toggles the behaviour of the buttons (indicated by the `shift` button LED)
+- the `stop-button` toggles the behavior of the buttons (indicated by the `shift` button LED)
   
-  - *"re-trigger clips"* mode (`shift` LED OFF) :  tapping on an already playing clip will **re-trigger** the clip
+  - *"re-trigger clips"* mode (`shift` LED OFF) : tapping on an already playing clip will **re-trigger** the clip
   
   - *"stop clips"* mode (`shift` LED ON) : tapping on an already playing clip will **stop** the clip
   
-  (... the *"if shift-pressed"* behaviour is still similar to the other layers, e.g. *"stop all clips"*)
+  (... the *"if shift-pressed"* behavior is still similar to the other layers, e.g. *"stop all clips"*)
 
 - `button 1-7` : launch the clips present in the top-row of the selection.
   
@@ -254,7 +271,7 @@ The lights in the top-row indicate the mute / solo status of the corresponding t
 
 - `blue` for a track that is set to solo
 
-- `magenta` for a unmuted track
+- `magenta` for an unmuted track
 
 - `red` if the track is both solo and muted
 
@@ -290,7 +307,7 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
   
   - *"if shift pressed"* : *"send A"* of corresponding track
 
-- `encoder 9-15` :  *"track pan"* of corresponding track
+- `encoder 9-15` : *"track pan"* of corresponding track
   
   - *"if shift pressed"* : *"send B"* of corresponding track
 
