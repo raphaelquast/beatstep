@@ -167,7 +167,6 @@ class QControlComponent(BaseComponent):
             nslots = len(slots)
 
             use_slots = [None for i in range(14)]
-            nscenes = self.selected_scene_index//7
 
             for i, scene_id in enumerate(range(self.selected_scene_index,
                                                self.selected_scene_index + 14)):
@@ -462,7 +461,7 @@ class QControlComponent(BaseComponent):
             if ntrack >= self.npads:
                 break
 
-        for i, track in enumerate(self.use_tracks):
+        for track in self.use_tracks:
             if track != None and track.can_be_armed:
                 if not track.arm_has_listener(self._update_lights):
                     track.add_arm_listener(self._update_lights)
@@ -480,10 +479,13 @@ class QControlComponent(BaseComponent):
             if track.playing_slot_index_has_listener(self._update_lights):
                 track.remove_playing_slot_index_listener(self._update_lights)
 
-        self._add_layer_onetrack_listerners()
-
-
         self._update_lights()
+
+        # do this after update_lights to ensure that 
+        # _get_onetrack_clipslots() has been called
+        if self._layer_onetrack:
+            self._add_layer_onetrack_listerners()
+
 
     def _get_used_clipslots(self):
         use_slots = [[None, None] for i in range(8)]
@@ -645,8 +647,8 @@ class QControlComponent(BaseComponent):
         # get new clip slots
         self._get_used_clipslots()
         # attach new listeners
-        for i, slots in enumerate(self.use_slots):
-            for j, slot in enumerate(slots):
+        for slots in self.use_slots:
+            for slot in slots:
                 cb = next(cbs)
                 blinkcb = next(blinkcbs)
 
@@ -672,8 +674,8 @@ class QControlComponent(BaseComponent):
     def _remove_control_3_listeners(self):
         cbs = iter(self._control_3_callbacks)
         blinkcbs = iter(self._control_3_blink_callbacks)
-        for i, slots in enumerate(self.use_slots):
-            for j, slot in enumerate(slots):
+        for slots in self.use_slots:
+            for slot in slots:
                 cb = next(cbs)
                 blinkcb = next(blinkcbs)
 
