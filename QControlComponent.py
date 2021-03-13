@@ -479,10 +479,13 @@ class QControlComponent(BaseComponent):
             if track.playing_slot_index_has_listener(self._update_lights):
                 track.remove_playing_slot_index_listener(self._update_lights)
 
-        self._add_layer_onetrack_listerners()
-
-
         self._update_lights()
+
+        # do this after update_lights to ensure that 
+        # _get_onetrack_clipslots() has been called
+        if self._layer_onetrack:
+            self._add_layer_onetrack_listerners()
+
 
     def _get_used_clipslots(self):
         use_slots = [[None, None] for i in range(8)]
