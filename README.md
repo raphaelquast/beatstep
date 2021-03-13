@@ -22,17 +22,16 @@ To use this script, simply copy the files of the latest [release](https://github
 WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten!
 
 # Overlay
-![](/BeatStep_Q_Overlay.png)
-This overlay-design provides indications for most of the assignments as well as the sequencer-functions.  
-<sup>
+The overlay-design provides indications for most of the assignments as well as the original sequencer-functions.  
 <sup>
 (I got mine printed here: [Taktility](https://www.taktility.com/))
 </sup>
-</sup>
+
+![overlay-image](/BeatStep_Q_Overlay_with_image.png)
+
 # Summary of Assignments
 
-![](/assignment_01.png)
-
+![assignments-image](/assignment_01.png)
 ---
 
 # More detailed explanations on the assignments:
