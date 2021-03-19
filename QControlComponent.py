@@ -1,5 +1,6 @@
 # flake8: noqa
 from .BaseComponent import BaseComponent
+from .QSequencer import QSequencer
 import time
 from itertools import cycle
 import Live
@@ -740,7 +741,6 @@ class QControlComponent(BaseComponent):
             song.remove_metronome_listener(self._update_lights)
         if song.session_automation_record_has_listener(self._update_lights):
             song.remove_session_automation_record_listener(self._update_lights)
-
 
     def _activate_control_layer(self, layer, permanent=False):
 
@@ -1832,7 +1832,10 @@ class QControlComponent(BaseComponent):
             # on release
             if abs(time.time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
-                self._activate_control_layer("_shift_fixed", True)
+                # TODO decide on when to activate the sequencer
+                self._activate_sequencer()
+                self.QSequencer.init_sequence()
+                # self._activate_control_layer("_shift_fixed", True)
             else:
                 if self.__control_layer_permanent:
                     if self._shift_fixed:
@@ -1903,6 +1906,21 @@ class QControlComponent(BaseComponent):
         self._parent.show_message(
             'Pad-velocity set to:  "' + msg[self._pad_velocity] + '"'
         )
+
+    # TODO add proper activation function for sequencer
+    def _activate_sequencer(self):
+
+        # transpose notes to start-values
+        self._set_notes(self.__transpose_start)
+        self._parent._activate_control_mode()
+
+        # add layer listener
+        # self.QSequencer.add_listener()
+        # self.QSequencer.remove_listener
+        if not hasattr(self, "QSequencer"):
+            self.QSequencer = QSequencer(self)
+        self.QSequencer._add_handler()
+        self._update_lights()
 
 
 # -------------------------------------
