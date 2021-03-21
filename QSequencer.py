@@ -1,18 +1,12 @@
+import Live
+
+
 class QSequencer(object):
     def __init__(self, parent):
         self._parent = parent
-        self._notes = {i: None for i in range(16)}
 
-        for i in range(16):
-            setattr(self, "_" + str(i + 1) + "_listener", self.getcb(i))
-
-    def getcb(self, i):
-        def callback(value):
-            self.get_notes()
-            self.mute_note(i)
-            self._parent._parent.show_message(str(self._notes))
-
-        return callback
+        self._encoder_up_counter = {i: 0 for i in range(16)}
+        self._encoder_down_counter = {i: 0 for i in range(16)}
 
     @property
     def song(self):
@@ -29,36 +23,146 @@ class QSequencer(object):
         else:
             return None
 
-    @property
-    def notes(self):
-        if self.clip is not None:
-            self.clip.select_all_notes()
-            self._parent._parent.show_message(
-                str(self.clip.get_notes_extended(0, 128, 0, 16))
-            )
-            return self.clip.get_notes_extended(0, 128, 0, 16)
+    # -------------------------------------------
+
+    def button_callback(self, i):
+        """
+        the callback for button i (e.g. 1 - 16)
+        """
+
+        self.modify_note(
+            i=i,
+            mute=not self.get_note_specs(i, "mute"),
+        )
+
+    def encoder_callback(self, i, value):
+        sensitivity = 10
+        self._parent._parent.show_message(str(value))
+
+        if value < 64:
+            # do this to avoid jumping around
+            if self._encoder_down_counter[i] > 0:
+                self._encoder_up_counter[i] = 0
+                self._encoder_down_counter[i] = 0
+
+            # increase the counter
+            self._encoder_up_counter[i] += 1
+            if self._encoder_up_counter[i] > sensitivity:
+                self.modify_note(
+                    i=i,
+                    pitch=min(self.get_note_specs(i, "pitch") + 1, 128),
+                )
+                # reset the counter again
+                self._encoder_up_counter[i] = 0
+
+        else:
+            # do this to avoid jumping around
+            if self._encoder_up_counter[i] > 0:
+                self._encoder_up_counter[i] = 0
+                self._encoder_down_counter[i] = 0
+
+            # increase the counter
+            self._encoder_down_counter[i] += 1
+            if self._encoder_down_counter[i] > sensitivity:
+
+                self.modify_note(
+                    i=i,
+                    pitch=max(self.get_note_specs(i, "pitch") - 1, 0),
+                )
+                self._encoder_down_counter[i] = 0
+
+    def get_button_colors(self):
+        bdict = dict(
+            shift="red",
+            chan="red",
+            store="red",
+            recall="red",
+        )
+        for i in range(16):
+            bdict[i + 1] = "black"
+
+        notevector, notes = self.get_notes()
+
+        if notevector is not None:
+            for i, note in enumerate(notes):
+                if note.mute:
+                    bdict[i + 1] = "blue"
+                else:
+                    bdict[i + 1] = "red"
+
+        return bdict
 
     # -------------------------------------------
 
-    @property
-    def note_pitch(self):
-        return [i[0] for i in self.notes]
+    def add_note(
+        self,
+        pitch,
+        start_time,
+        duration,
+        velocity,
+        velocity_deviation,
+        probability,
+        mute,
+    ):
+        """
+        add new notes to the currently selected clip
+        """
+        note = Live.Clip.MidiNoteSpecification(
+            pitch=pitch,
+            start_time=start_time,
+            duration=duration,
+            velocity=velocity,
+            velocity_deviation=velocity_deviation,
+            probability=probability,
+            mute=mute,
+        )
 
-    @property
-    def note_start(self):
-        return [i[1] for i in self.notes]
+        if self.clip is not None:
+            self.clip.add_new_notes((note,))
 
-    @property
-    def note_duration(self):
-        return [i[2] for i in self.notes]
+    def get_notes(self):
+        """
+        get the notes of the first 16 beats of the current clip
+        """
+        if self.clip is not None:
+            notevector = self.clip.get_notes_extended(0, 128, 0, 9999)
+            if notevector is not None:
+                notes = list(notevector)
+                notes.sort(key=lambda x: x.start_time)
 
-    @property
-    def note_velocity(self):
-        return [i[3] for i in self.notes]
+            return notevector, notes[:16]
+        else:
+            return None, None
 
-    @property
-    def note_mute(self):
-        return [i[4] for i in self.notes]
+    def modify_note(self, i, **kwargs):
+
+        notevector, notes = self.get_notes()
+
+        if notevector is not None and len(notes) > i:
+            note = notes[i]
+            for key, val in kwargs.items():
+                setattr(note, key, val)
+
+            self.clip.apply_note_modifications(notevector)
+
+    def get_note_specs(self, i, name):
+
+        notevector, notes = self.get_notes()
+
+        if notevector is not None and len(notes) > i:
+            return getattr(notes[i], name)
+        else:
+            return None
+
+    def get_all_note_specs(self, note):
+        return dict(
+            pitch=note.pitch,
+            start_time=note.start_time,
+            duration=note.duration,
+            velocity=note.velocity,
+            velocity_deviation=note.velocity_deviation,
+            probability=note.probability,
+        )
 
     # -------------------------------------------
 
@@ -66,95 +170,34 @@ class QSequencer(object):
         # note = (pitch, time, duration, velocity, mute_state)
         if not self.clip_slot.has_clip:
             self.clip_slot.create_clip(16)
-
-        self._notes = {i: (i, i / 2, 1 / 4, 100, False) for i in range(16)}
-
-        self.clip.set_notes(tuple(self._notes.values()))
-
-        self.get_notes()
-
-    def set_notes(self):
-        # note = (pitch, time, duration, velocity, mute_state)
-
-        # ((67, 0.5, 0.21704181235431236, 100, False),
-        #  (69, 0.25, 0.13585216866466868, 100, False))
-
-        # self.clip.set_notes(tuple([i for i in self._notes.values() if i is not None]))
-        # self.clip.select_all_notes()
-
-        self.clip.remove_notes_extended(0, 128, 0, 16)
-        self.clip.set_notes(tuple([i for i in self._notes.values() if i is not None]))
-
-    def get_notes(self):
-        self._notes = {i: None for i in range(16)}
-
-        notes = self.notes
-        n_notes = len(notes)
-        for i, note in enumerate(self.notes):
-            if i < n_notes:
-                self._notes[i] = (
-                    note.pitch,
-                    note.start_time,
-                    note.duration,
-                    note.velocity,
-                    note.mute,
+            for i in range(16):
+                self.add_note(
+                    pitch=64,
+                    start_time=i,
+                    duration=1 / 2,
+                    velocity=50,
+                    velocity_deviation=0,
+                    probability=1,
+                    mute=False,
                 )
 
-        # self._notes = list(self.clip.get_notes(0, 0, 16, 128))
+    # TODO
+    # self.clip.apply_note_modifications()
+    # self.clip.get_notes_extended()
+    # self.clip.remove_notes_extended(0, 128, 0, 16)
 
-    def set_note(self, i, val):
-        if len(self._notes) < i:
-            self._notes[i][0] = val
-        self.set_notes()
+    # get_notes_extended( (int)from_pitch, (int)pitch_span, (float)from_time, (float)time_span) ->
+    # MidiNoteVector : Returns a list of MIDI notes from the given pitch and time range.
+    #                 Each note is represented by a Live.Clip.MidiNote object.
+    #                 The returned list can be modified freely, but modifications will not be
+    #                 reflected in the MIDI clip until apply_note_modifications is called.
 
-    def set_start(self, i, val):
-        if len(self._notes) < i:
-            self._notes[i][1] = val
-        self.set_notes()
-
-    def set_duration(self, i, val):
-        if len(self._notes) < i:
-            self._notes[i][2] = val
-        self.set_notes()
-
-    def set_velocity(self, i, val):
-        if len(self._notes) < i:
-            self._notes[i][3] = val
-        self.set_notes()
-
-    def mute_note(self, i):
-        self._notes[i] = None
-        # if len(self._notes) < i:
-        #    self._notes[i][4] = not self._notes[i][4]
-        self.set_notes()
-
-    def _add_handler(self):
-        for i in list(range(1, 17)):  # + ['chan', 'recall', 'store']:
-            try:
-                getattr(self._parent, "_" + str(i) + "_button").remove_value_listener(
-                    getattr(self, "_" + str(i) + "_listener")
-                )
-                getattr(self._parent, "_" + str(i) + "_button").add_value_listener(
-                    getattr(self, "_" + str(i) + "_listener")
-                )
-            except Exception:
-                self._parent._parent.log_message(
-                    "there was something wrong while trying to add button "
-                    + str(i)
-                    + " listeners!"
-                )
-                pass
-
-    def _remove_handler(self):
-        for i in list(range(1, 17)):  # + ['chan', 'recall', 'store']:
-            try:
-                getattr(self._parent, "_" + str(i) + "_button").remove_value_listener(
-                    getattr(self, "_" + str(i) + "_listener")
-                )
-            except Exception:
-                self._parent._parent.log_message(
-                    "there was something wrong during removal of button "
-                    + str(i)
-                    + " listeners!"
-                )
-                pass
+    # apply_note_modifications( (MidiNoteVector)arg2) ->
+    # None : Expects a list of notes as returned from get_notes_extended.
+    #        The content of the list will be used to modify existing notes in the clip,
+    #        based on matching note IDs. This function should be used when modifying
+    #        existing notes, e.g. changing the velocity or start time.
+    #        The function ensures that per-note events attached to the modified notes
+    #        are preserved. This is NOT the case when replacing notes via a combination
+    #        of remove_notes_extended and add_new_notes. The given list can be a subset of
+    #        the notes in the clip, but it must not contain any notes that are not present in the clip.
