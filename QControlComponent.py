@@ -65,6 +65,9 @@ class QControlComponent(BaseComponent):
         self._layer_onetrack = False  # clip launch
         self._sequencer = False  # sequencer
 
+        # do this before initializing the sequencer!
+        self._button_light_status = {i: "black" for i in range(16)}
+
         self.QSequencer = QSequencer(self)
 
         self.__control_layer_permanent = False
@@ -104,8 +107,6 @@ class QControlComponent(BaseComponent):
 
         self._double_tap_time = 0.5
         self.npads = 7  # number of pads used to play notes
-
-        self._button_light_status = {i: "black" for i in range(16)}
 
         buttonnames = (
             ["_" + str(i) for i in range(1, 17)]
@@ -421,7 +422,7 @@ class QControlComponent(BaseComponent):
                 else:
                     bdict[button_up] = "black"
         elif self._sequencer:
-            bdict = self.QSequencer.get_button_colors()
+            bdict = self.QSequencer.button_colors
         else:
             # turn off all lights on shift-release
             for i in range(1, 17):

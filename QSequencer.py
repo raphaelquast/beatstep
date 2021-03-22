@@ -1,6 +1,6 @@
 import Live
 from .QSetup import QSetup
-
+from itertools import cycle
 
 # class QSequencer(ControlSurface):
 class QSequencer(object):
@@ -16,6 +16,13 @@ class QSequencer(object):
         self.sensitivity = 10
         self.change_min = 0
         self.change_max = 128
+        self.button_colors = {}
+
+        self.blinkcolor = "blue"
+        self.mutecolor = "black"
+        self.notecolor = "magenta"
+
+        self._activeslot = 1
 
     @property
     def song(self):
@@ -34,13 +41,53 @@ class QSequencer(object):
 
             # -------------------------------------------
 
+    def _blink_playing(self):
+        def blinkcb():
+            def callback():
+                clip_slot = self.clip_slot
+                if clip_slot is None:
+                    self._parent._update_lights()
+                    return
+
+                i = 1 + (int(self.clip.playing_position) % 16)
+
+                if self._activeslot == i:
+                    self._parent._parent.schedule_message(
+                        480 / (self.song.tempo * 4), callback
+                    )
+                    return
+                else:
+                    if clip_slot.has_clip and clip_slot.is_playing:
+                        self._parent._update_lights()
+
+                        self.get_button_colors()
+                        c = cycle([self.blinkcolor, self.button_colors[i]])
+
+                        # blink only if slot has changed
+                        self._parent._set_color(i, next(c))
+                        self._parent._parent.schedule_message(
+                            480 / (self.song.tempo * 4), callback
+                        )
+
+                    else:
+                        # update lights in case the callback is released while the
+                        # control-layer has already been changed
+                        self._parent._update_lights()
+
+                self._activeslot = i
+
+            callback()
+
+        return blinkcb
+
     def set_change_properties(self, i):
         if i == 0:
+            self._blink_playing()()
             self.change_property = "pitch"
             self.change_interval = 1
             self.change_min = 0
             self.change_max = 128
-            self.sensitivity = 10
+            self.sensitivity = 8
         elif i == 1:
             self.change_property = "velocity"
             self.change_interval = 1
@@ -84,6 +131,7 @@ class QSequencer(object):
                 i=i,
                 mute=not self.get_note_specs(i, "mute"),
             )
+        self.get_button_colors()
 
     def change_note_property(self, i, up_down):
         kwargs = {"i": i}
@@ -125,25 +173,23 @@ class QSequencer(object):
                 self._encoder_up_counter[key] = 0
 
     def get_button_colors(self):
-        bdict = dict(
+        self.button_colors = dict(
             shift="red",
             chan="red",
             store="red",
             recall="red",
         )
         for i in range(16):
-            bdict[i + 1] = "black"
+            self.button_colors[i + 1] = "black"
 
         notevector, notes = self.get_notes()
 
         if notevector is not None:
             for i, note in enumerate(notes):
                 if note.mute:
-                    bdict[i + 1] = "blue"
+                    self.button_colors[i + 1] = self.mutecolor
                 else:
-                    bdict[i + 1] = "magenta"
-
-        return bdict
+                    self.button_colors[i + 1] = self.notecolor
 
     # -------------------------------------------
 
@@ -237,6 +283,9 @@ class QSequencer(object):
         app = self._parent._parent.application()
 
         app.view.show_view("Detail/Clip")
+
+        self.get_button_colors()
+        self._parent._update_lights()
 
     # TODO
     # self.clip.apply_note_modifications()
