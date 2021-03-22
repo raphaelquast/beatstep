@@ -1,12 +1,21 @@
 import Live
+from .QSetup import QSetup
 
 
+# class QSequencer(ControlSurface):
 class QSequencer(object):
     def __init__(self, parent):
         self._parent = parent
 
         self._encoder_up_counter = {i: 0 for i in range(16)}
         self._encoder_down_counter = {i: 0 for i in range(16)}
+        self.QS = QSetup()
+        self.change_property = "pitch"
+        self.up_down = True
+        self.change_interval = 1
+        self.sensitivity = 10
+        self.change_min = 0
+        self.change_max = 128
 
     @property
     def song(self):
@@ -23,53 +32,97 @@ class QSequencer(object):
         else:
             return None
 
-    # -------------------------------------------
+            # -------------------------------------------
+
+    def set_change_properties(self, i):
+        if i == 0:
+            self.change_property = "pitch"
+            self.change_interval = 1
+            self.change_min = 0
+            self.change_max = 128
+            self.sensitivity = 10
+        elif i == 1:
+            self.change_property = "velocity"
+            self.change_interval = 1
+            self.sensitivity = 1
+            self.change_min = 0
+            self.change_max = 128
+        elif i == 2:
+            self.change_property = "start_time"
+            self.change_interval = 0.05
+            self.sensitivity = 5
+            self.change_min = 0
+            self.change_max = 9999
+        elif i == 3:
+            self.change_property = "duration"
+            self.change_interval = 0.05
+            self.sensitivity = 5
+            self.change_min = 0
+            self.change_max = 128
+        elif i == 4:
+            self.change_property = "velocity_deviation"
+            self.change_interval = 1
+            self.sensitivity = 1
+            self.change_min = -128
+            self.change_max = 128
+        elif i == 5:
+            self.change_property = "probability"
+            self.change_interval = 0.05
+            self.sensitivity = 5
+            self.change_min = 0
+            self.change_max = 100
 
     def button_callback(self, i):
         """
         the callback for button i (e.g. 1 - 16)
         """
+        self.set_change_properties(i)
 
-        self.modify_note(
-            i=i,
-            mute=not self.get_note_specs(i, "mute"),
-        )
+        if self.clip is not None:
+            self.clip.select_all_notes()
+            self.modify_note(
+                i=i,
+                mute=not self.get_note_specs(i, "mute"),
+            )
+
+    def change_note_property(self, i, up_down):
+        kwargs = {"i": i}
+
+        if up_down:
+            kwargs[self.change_property] = min(
+                self.get_note_specs(i, self.change_property) + self.change_interval,
+                self.change_max,
+            )
+        else:
+            kwargs[self.change_property] = max(
+                self.get_note_specs(i, self.change_property) - self.change_interval,
+                self.change_min,
+            )
+
+        self.modify_note(**kwargs)
 
     def encoder_callback(self, i, value):
-        sensitivity = 10
-        self._parent._parent.show_message(str(value))
+        up_down = value < 64
 
-        if value < 64:
-            # do this to avoid jumping around
-            if self._encoder_down_counter[i] > 0:
-                self._encoder_up_counter[i] = 0
-                self._encoder_down_counter[i] = 0
-
-            # increase the counter
-            self._encoder_up_counter[i] += 1
-            if self._encoder_up_counter[i] > sensitivity:
-                self.modify_note(
-                    i=i,
-                    pitch=min(self.get_note_specs(i, "pitch") + 1, 128),
-                )
-                # reset the counter again
-                self._encoder_up_counter[i] = 0
-
+        # do this to avoid jumping around
+        if up_down:
+            for key in self._encoder_down_counter.keys():
+                self._encoder_down_counter[key] = 0
+            self._counter = self._encoder_up_counter
         else:
-            # do this to avoid jumping around
-            if self._encoder_up_counter[i] > 0:
-                self._encoder_up_counter[i] = 0
-                self._encoder_down_counter[i] = 0
+            for key in self._encoder_up_counter.keys():
+                self._encoder_up_counter[key] = 0
+            self._counter = self._encoder_down_counter
 
-            # increase the counter
-            self._encoder_down_counter[i] += 1
-            if self._encoder_down_counter[i] > sensitivity:
+        # increase the counter
+        self._counter[i] = self._counter[i] + 1
 
-                self.modify_note(
-                    i=i,
-                    pitch=max(self.get_note_specs(i, "pitch") - 1, 0),
-                )
-                self._encoder_down_counter[i] = 0
+        if self._counter[i] > self.sensitivity:
+            self.change_note_property(i, up_down)
+            # set all counters to zero
+            for key in self._encoder_down_counter.keys():
+                self._encoder_down_counter[key] = 0
+                self._encoder_up_counter[key] = 0
 
     def get_button_colors(self):
         bdict = dict(
@@ -88,7 +141,7 @@ class QSequencer(object):
                 if note.mute:
                     bdict[i + 1] = "blue"
                 else:
-                    bdict[i + 1] = "red"
+                    bdict[i + 1] = "magenta"
 
         return bdict
 
@@ -180,6 +233,10 @@ class QSequencer(object):
                     probability=1,
                     mute=False,
                 )
+
+        app = self._parent._parent.application()
+
+        app.view.show_view("Detail/Clip")
 
     # TODO
     # self.clip.apply_note_modifications()
