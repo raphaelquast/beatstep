@@ -137,7 +137,8 @@ class QSequencer(object):
             self.change_interval = 0.05
             self.sensitivity = 5
             self.change_min = 0
-            self.change_max = 100
+            self.change_max = 1
+            # TODO invalid note probability  > 1
 
     def button_callback(self, i):
         """

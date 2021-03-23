@@ -382,7 +382,11 @@ class QControlComponent(BaseComponent):
                 else:
                     bdict[i + 1] = "black"
 
+        elif self._sequencer:
+            bdict = self.QSequencer.button_colors
+
         elif self._shift_pressed or self._shift_fixed:
+
             # red = 1 which means "on" for the "shift button" light
             # even though it's actually blue
             bdict["shift"] = "red"
@@ -421,8 +425,6 @@ class QControlComponent(BaseComponent):
                         bdict[button_up] = "blue"
                 else:
                     bdict[button_up] = "black"
-        elif self._sequencer:
-            bdict = self.QSequencer.button_colors
         else:
             # turn off all lights on shift-release
             for i in range(1, 17):
@@ -445,7 +447,6 @@ class QControlComponent(BaseComponent):
 
     def on_selected_scene_changed(self):
         song = self._parent.song()
-
         selected_scene = song.view.selected_scene
         all_scenes = song.scenes
         current_index = list(all_scenes).index(selected_scene)
@@ -453,6 +454,10 @@ class QControlComponent(BaseComponent):
         self.selected_scene = selected_scene
         self.selected_scene_index = current_index
         self.selected_clip_slot = song.view.highlighted_clip_slot
+
+        if self._sequencer:
+            self.QSequencer.blinkit()
+
         # update clip-slot listeners
         if self._control_layer_3:
             self._add_control_3_listeners()
@@ -785,6 +790,9 @@ class QControlComponent(BaseComponent):
                 else:
                     getattr(self, "_remove" + val)()
 
+            if not self._sequencer:
+                self.QSequencer.remove_handler()
+
             # activate device controls for the layers (encoder 1-4 and 9-12)
             if layer in ["_control_layer_2", "_control_layer_3", "_shift_fixed"]:
                 self._parent._device.set_enabled(True)
@@ -816,12 +824,12 @@ class QControlComponent(BaseComponent):
                 self._redo()
             elif self._control_layer_3:
                 self._play_slot(0, 0)
+            elif self._sequencer:
+                self.QSequencer.button_callback(0)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(0)
             elif self._layer_onetrack:
                 self._play_onetrack_slot(0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(0)
         else:
             self._update_lights()
 
@@ -833,12 +841,12 @@ class QControlComponent(BaseComponent):
                 self._collapse_device()
             elif self._control_layer_3:
                 self._play_slot(1, 0)
+            elif self._sequencer:
+                self.QSequencer.button_callback(1)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(1)
             elif self._layer_onetrack:
                 self._play_onetrack_slot(1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(1)
         else:
             self._update_lights()
 
@@ -850,12 +858,12 @@ class QControlComponent(BaseComponent):
                 self._toggle_or_delete_device()
             elif self._control_layer_3:
                 self._play_slot(2, 0)
+            elif self._sequencer:
+                self.QSequencer.button_callback(2)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(2)
             elif self._layer_onetrack:
                 self._play_onetrack_slot(2)
-            elif self._sequencer:
-                self.QSequencer.button_callback(2)
         else:
             self._update_lights()
 
@@ -867,12 +875,12 @@ class QControlComponent(BaseComponent):
                 pass
             elif self._control_layer_3:
                 self._play_slot(3, 0)
+            elif self._sequencer:
+                self.QSequencer.button_callback(3)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(3)
             elif self._layer_onetrack:
                 self._play_onetrack_slot(3)
-            elif self._sequencer:
-                self.QSequencer.button_callback(3)
 
         else:
             self._update_lights()
@@ -885,12 +893,12 @@ class QControlComponent(BaseComponent):
                 pass
             elif self._control_layer_3:
                 self._play_slot(4, 0)
+            elif self._sequencer:
+                self.QSequencer.button_callback(4)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(4)
             elif self._layer_onetrack:
                 self._play_onetrack_slot(4)
-            elif self._sequencer:
-                self.QSequencer.button_callback(4)
         else:
             self._update_lights()
 
@@ -902,12 +910,12 @@ class QControlComponent(BaseComponent):
                 self._change_quantization()
             elif self._control_layer_3:
                 self._play_slot(5, 0)
+            elif self._sequencer:
+                self.QSequencer.button_callback(5)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(5)
             elif self._layer_onetrack:
                 self._play_onetrack_slot(5)
-            elif self._sequencer:
-                self.QSequencer.button_callback(5)
         else:
             self._update_lights()
 
@@ -922,12 +930,12 @@ class QControlComponent(BaseComponent):
                     self._change_ableton_view(next(self._detail_cycle))
             elif self._control_layer_3:
                 self._play_slot(6, 0)
+            elif self._sequencer:
+                self.QSequencer.button_callback(6)
             elif self._shift_pressed or self._shift_fixed:
                 self._select_track(6)
             elif self._layer_onetrack:
                 self._play_onetrack_slot(6)
-            elif self._sequencer:
-                self.QSequencer.button_callback(6)
         else:
             self._update_lights()
 
@@ -956,12 +964,12 @@ class QControlComponent(BaseComponent):
                 self._undo()
             elif self._control_layer_3:
                 self._play_slot(0, 1)
+            elif self._sequencer:
+                self.QSequencer.button_callback(8)
             elif self._shift_pressed or self._shift_fixed:
                 self._undo()
             elif self._layer_onetrack:
                 self._play_onetrack_slot(7)
-            elif self._sequencer:
-                self.QSequencer.button_callback(8)
         else:
             self._update_lights()
 
@@ -973,12 +981,12 @@ class QControlComponent(BaseComponent):
                 self._duplicate_or_delete_track()
             elif self._control_layer_3:
                 self._play_slot(1, 1)
+            elif self._sequencer:
+                self.QSequencer.button_callback(9)
             elif self._shift_pressed or self._shift_fixed:
                 self._delete_clip()
             elif self._layer_onetrack:
                 self._play_onetrack_slot(8)
-            elif self._sequencer:
-                self.QSequencer.button_callback(9)
         else:
             self._update_lights()
 
@@ -990,10 +998,10 @@ class QControlComponent(BaseComponent):
                 self._duplicate_or_delete_scene()
             elif self._control_layer_3:
                 self._play_slot(2, 1)
-            elif self._layer_onetrack:
-                self._play_onetrack_slot(9)
             elif self._sequencer:
                 self.QSequencer.button_callback(10)
+            elif self._layer_onetrack:
+                self._play_onetrack_slot(9)
         else:
             self._update_lights()
 
@@ -1005,12 +1013,12 @@ class QControlComponent(BaseComponent):
                 self._tap_tempo()
             elif self._control_layer_3:
                 self._play_slot(3, 1)
+            elif self._sequencer:
+                self.QSequencer.button_callback(11)
             elif self._shift_pressed or self._shift_fixed:
                 self._duplicate_clip()
             elif self._layer_onetrack:
                 self._play_onetrack_slot(10)
-            elif self._sequencer:
-                self.QSequencer.button_callback(11)
         else:
             self._update_lights()
 
@@ -1022,6 +1030,8 @@ class QControlComponent(BaseComponent):
                 self._toggle_metronome()
             elif self._control_layer_3:
                 self._play_slot(4, 1)
+            elif self._sequencer:
+                self.QSequencer.button_callback(12)
             elif self._shift_pressed or self._shift_fixed:
                 self._duplicate_loop()
             elif self._layer_onetrack:
@@ -1039,12 +1049,12 @@ class QControlComponent(BaseComponent):
                 self._toggle_automation()
             elif self._control_layer_3:
                 self._play_slot(5, 1)
+            elif self._sequencer:
+                self.QSequencer.button_callback(13)
             elif self._shift_pressed or self._shift_fixed:
                 pass
             elif self._layer_onetrack:
                 self._play_onetrack_slot(12)
-            elif self._sequencer:
-                self.QSequencer.button_callback(13)
         else:
             self._update_lights()
 
@@ -1056,12 +1066,12 @@ class QControlComponent(BaseComponent):
                 self._change_pad_velocity_response()
             elif self._control_layer_3:
                 self._play_slot(6, 1)
+            elif self._sequencer:
+                self.QSequencer.button_callback(14)
             elif self._shift_pressed or self._shift_fixed:
                 self._fire_record()
             elif self._layer_onetrack:
                 self._play_onetrack_slot(13)
-            elif self._sequencer:
-                self.QSequencer.button_callback(14)
         else:
             self._update_lights()
 
@@ -1916,11 +1926,13 @@ class QControlComponent(BaseComponent):
             if abs(time.time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
                 # TODO decide on when to activate the sequencer
-                self._activate_control_layer("_sequencer", True)
-
-                self.QSequencer.init_sequence()
-
-                self._parent.show_message(f"sequencer active {self._sequencer}")
+                if not self.selected_track.has_audio_input:
+                    self._activate_control_layer("_sequencer", True)
+                    self.QSequencer.init_sequence()
+                else:
+                    self._parent.show_message(
+                        "The Sequencer works only on a MIDI track!"
+                    )
 
                 # self._activate_control_layer("_shift_fixed", True)
             else:
