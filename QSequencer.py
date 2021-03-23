@@ -36,53 +36,73 @@ class QSequencer(object):
     def clip(self):
         if self.clip_slot.has_clip:
             return self.clip_slot.clip
+
         else:
             return None
 
             # -------------------------------------------
 
-    def _blink_playing(self):
-        def blinkcb():
-            def callback():
-                clip_slot = self.clip_slot
-                if clip_slot is None:
-                    self._parent._update_lights()
-                    return
+    # def _blink_playing(self):
+    #     def blinkcb():
+    #         def callback():
+    #             clip_slot = self.clip_slot
+    #             if clip_slot is None or not clip_slot.has_clip:
+    #                 self._parent._update_lights()
+    #                 return
 
-                i = 1 + (int(self.clip.playing_position) % 16)
+    #             i = 1 + (int(self.clip.playing_position) % 16)
 
-                if self._activeslot == i:
-                    self._parent._parent.schedule_message(
-                        480 / (self.song.tempo * 4), callback
-                    )
-                    return
-                else:
-                    if clip_slot.has_clip and clip_slot.is_playing:
-                        self._parent._update_lights()
+    #             if self._activeslot == i:
+    #                 self._parent._parent.schedule_message(
+    #                     480 / (self.song.tempo * 4), callback
+    #                 )
+    #                 return
+    #             else:
+    #                 if clip_slot.has_clip and clip_slot.is_playing:
+    #                     self._parent._update_lights()
 
-                        self.get_button_colors()
-                        c = cycle([self.blinkcolor, self.button_colors[i]])
+    #                     self.get_button_colors()
 
-                        # blink only if slot has changed
-                        self._parent._set_color(i, next(c))
-                        self._parent._parent.schedule_message(
-                            480 / (self.song.tempo * 4), callback
-                        )
+    #                     # blink only if slot has changed
+    #                     self._parent._set_color(i, self.blinkcolor)
+    #                     self._parent._parent.schedule_message(
+    #                         480 / (self.song.tempo * 4), callback
+    #                     )
 
-                    else:
-                        # update lights in case the callback is released while the
-                        # control-layer has already been changed
-                        self._parent._update_lights()
+    #                 else:
+    #                     # update lights in case the callback is released while the
+    #                     # control-layer has already been changed
+    #                     self._parent._update_lights()
 
-                self._activeslot = i
+    #             self._activeslot = i
 
-            callback()
+    #         callback()
 
-        return blinkcb
+    #     return blinkcb
+
+    def dotheblink(self):
+        i = 1 + (int(self.clip.playing_position) % 16)
+        if self._activeslot == i:
+            return
+        else:
+            self._parent._update_lights()
+            # blink only if slot has changed
+            self._parent._set_color(i, self.blinkcolor)
+
+        self._activeslot = i
+
+    def blinkit(self):
+        if self.clip is not None:
+            if not self.clip.playing_position_has_listener(self.dotheblink):
+                self.clip.add_playing_position_listener(self.dotheblink)
+
+    def remove_handler(self):
+        if self.clip is not None:
+            if self.clip.playing_position_has_listener(self.dotheblink):
+                self.clip.remove_playing_position_listener(self.dotheblink)
 
     def set_change_properties(self, i):
         if i == 0:
-            self._blink_playing()()
             self.change_property = "pitch"
             self.change_interval = 1
             self.change_min = 0
@@ -123,14 +143,17 @@ class QSequencer(object):
         """
         the callback for button i (e.g. 1 - 16)
         """
-        self.set_change_properties(i)
 
         if self.clip is not None:
-            self.clip.select_all_notes()
-            self.modify_note(
-                i=i,
-                mute=not self.get_note_specs(i, "mute"),
-            )
+            if self._parent._shift_pressed:
+                self.clip.scrub(i)
+                self.clip.stop_scrub()
+            else:
+                self.clip.select_all_notes()
+                self.modify_note(
+                    i=i,
+                    mute=not self.get_note_specs(i, "mute"),
+                )
         self.get_button_colors()
 
     def change_note_property(self, i, up_down):
@@ -150,6 +173,13 @@ class QSequencer(object):
         self.modify_note(**kwargs)
 
     def encoder_callback(self, i, value):
+        if self._parent._shift_pressed:
+            self.set_change_properties(i)
+            self._parent._parent.show_message(
+                "Encoders set to:     " + self.change_property
+            )
+            return
+
         up_down = value < 64
 
         # do this to avoid jumping around
@@ -285,6 +315,7 @@ class QSequencer(object):
         app.view.show_view("Detail/Clip")
 
         self.get_button_colors()
+        self.blinkit()
         self._parent._update_lights()
 
     # TODO
