@@ -23,6 +23,7 @@ class QSequencer(object):
         self.notecolor = "magenta"
 
         self._activeslot = 1
+        self.noterange = "all"
 
     @property
     def song(self):
@@ -101,7 +102,7 @@ class QSequencer(object):
             if self.clip.playing_position_has_listener(self.dotheblink):
                 self.clip.remove_playing_position_listener(self.dotheblink)
 
-    def set_change_properties(self, i):
+    def set_change_properties(self, i, up_down):
         if i == 0:
             self.change_property = "pitch"
             self.change_interval = 1
@@ -138,7 +139,50 @@ class QSequencer(object):
             self.sensitivity = 5
             self.change_min = 0
             self.change_max = 1
-            # TODO invalid note probability  > 1
+        elif i == 8:
+            self.change_interval = 0.5
+            self.set_loop_property(up_down, "loop_start")
+        elif i == 9:
+            self.change_interval = 0.1
+            self.set_loop_property(up_down, "loop_start")
+        elif i == 10:
+            self.change_interval = 0.1
+            self.set_loop_property(up_down, "position")
+        elif i == 11:
+            self.change_interval = 0.1
+            self.set_loop_property(up_down, "loop_end")
+        elif i == 12:
+            self.change_interval = 0.5
+            self.set_loop_property(up_down, "loop_end")
+        elif i == 7:
+            self.change_property = "pitch"
+            self.change_interval = 1
+            self.change_min = 0
+            self.change_max = 128
+            self.sensitivity = 8
+            self.noterange = "loop"
+            self.irene_transposers(up_down)
+
+            # TODO this does not work... why?
+
+    def irene_transposers(self, up_down):
+        self.clip.select_all_notes()
+        for i in range(16):
+            self.change_note_property(i, up_down)
+
+    def set_loop_property(self, up_down, prop):
+        if up_down:
+            setattr(
+                self.clip,
+                prop,
+                getattr(self.clip, prop) + self.change_interval,
+            )
+        else:
+            setattr(
+                self.clip,
+                prop,
+                getattr(self.clip, prop) - self.change_interval,
+            )
 
     def button_callback(self, i):
         """
@@ -174,14 +218,16 @@ class QSequencer(object):
         self.modify_note(**kwargs)
 
     def encoder_callback(self, i, value):
+        up_down = value < 64
+
         if self._parent._shift_pressed:
-            self.set_change_properties(i)
+            self.set_change_properties(i, up_down)
             self._parent._parent.show_message(
                 "Encoders set to:     " + self.change_property
             )
             return
 
-        up_down = value < 64
+        self.noterange = "all"
 
         # do this to avoid jumping around
         if up_down:
@@ -255,7 +301,17 @@ class QSequencer(object):
         get the notes of the first 16 beats of the current clip
         """
         if self.clip is not None:
-            notevector = self.clip.get_notes_extended(0, 128, 0, 9999)
+            # TODO select only notes in loop
+            if self.noterange == "loop":
+                notevector = self.clip.get_notes_extended(
+                    0,
+                    128,
+                    self.clip.loop_start,
+                    self.clip.loop_end - self.clip.loop_start,
+                )
+            elif self.noterange == "all":
+                notevector = self.clip.get_notes_extended(0, 128, 0, 9999)
+
             if notevector is not None:
                 notes = list(notevector)
                 notes.sort(key=lambda x: x.start_time)
@@ -265,7 +321,6 @@ class QSequencer(object):
             return None, None
 
     def modify_note(self, i, **kwargs):
-
         notevector, notes = self.get_notes()
 
         if notevector is not None and len(notes) > i:

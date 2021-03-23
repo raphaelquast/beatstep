@@ -1461,10 +1461,10 @@ class QControlComponent(BaseComponent):
             self._track_volume_master_or_current(value)
 
     def _8_encoder_listener(self, value):
-        if self._shift_pressed and self.__control_layer_permanent:
-            self._scroll_drum_pad_row(value)
-        elif self._sequencer:
+        if self._sequencer:
             self.QSequencer.encoder_callback(7, value)
+        elif self._shift_pressed and self.__control_layer_permanent:
+            self._scroll_drum_pad_row(value)
         else:
             self._select_prev_next_track(value)
 
