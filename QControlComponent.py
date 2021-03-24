@@ -456,7 +456,10 @@ class QControlComponent(BaseComponent):
         self.selected_clip_slot = song.view.highlighted_clip_slot
 
         if self._sequencer:
+            self.QSequencer.remove_handler()
             self.QSequencer.blinkit()
+            self.QSequencer.loophandler()
+
 
         # update clip-slot listeners
         if self._control_layer_3:
@@ -1526,10 +1529,10 @@ class QControlComponent(BaseComponent):
             self._track_pan_master_or_current(value)
 
     def _16_encoder_listener(self, value):
-        if self._shift_pressed and self.__control_layer_permanent:
-            self._scroll_drum_pad_col(value)
-        elif self._sequencer:
+        if self._sequencer:
             self.QSequencer.encoder_callback(15, value)
+        elif self._shift_pressed and self.__control_layer_permanent:
+            self._scroll_drum_pad_col(value)
         else:
             self._select_prev_next_scene(value)
 
