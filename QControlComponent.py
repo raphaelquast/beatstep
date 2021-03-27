@@ -1943,8 +1943,12 @@ class QControlComponent(BaseComponent):
                 version = self._parent.application().get_major_version()
                 if version >= 11:
                     if not self.selected_track.has_audio_input:
-                        self._activate_control_layer("_sequencer", True)
-                        self.QSequencer.init_sequence()
+                        if self._sequencer:
+                            self.QSequencer.init_sequence()
+                        else:
+                            self._activate_control_layer("_sequencer", True)
+                            self.QSequencer.init_sequence()
+
                     else:
                         self._parent.show_message(
                             "The SEQUENCER/NOTE EDITOR works only on MIDI tracks!"
