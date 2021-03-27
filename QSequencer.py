@@ -354,10 +354,6 @@ class QSequencer(object):
         the current loop (depending on self.noterange)
         """
 
-        self._parent._parent.show_message(
-            str([self.clip.loop_start, self.clip.loop_end - self.clip.loop_start])
-        )
-
         if self.clip is not None:
             if self.noterange == "loop":
                 notevector = self.clip.get_notes_extended(
@@ -372,8 +368,6 @@ class QSequencer(object):
             if notevector is not None:
                 notes = list(notevector)
                 notes.sort(key=lambda x: x.start_time)
-
-            self._parent._parent.show_message(f"transposing {len(notes)} notes")
 
             return notevector, notes[:16]
         else:

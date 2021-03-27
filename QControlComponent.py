@@ -1929,15 +1929,22 @@ class QControlComponent(BaseComponent):
             if abs(time.time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
                 # TODO decide on when to activate the sequencer
-                if not self.selected_track.has_audio_input:
-                    self._activate_control_layer("_sequencer", True)
-                    self.QSequencer.init_sequence()
+                # activate the sequencer only if Ableton 11 or later is running
+                version = self._parent.application().get_major_version()
+                if version >= 11:
+                    if not self.selected_track.has_audio_input:
+                        self._activate_control_layer("_sequencer", True)
+                        self.QSequencer.init_sequence()
+                    else:
+                        self._parent.show_message(
+                            "The SEQUENCER/NOTE EDITOR works only on MIDI tracks!"
+                        )
                 else:
                     self._parent.show_message(
-                        "The Sequencer works only on a MIDI track!"
+                        "The SEQUENCER/NOTE EDITOR works only with Ableton 11 or later!"
                     )
 
-                # self._activate_control_layer("_shift_fixed", True)
+                    #self._activate_control_layer("_shift_fixed", True)
             else:
                 if self.__control_layer_permanent:
                     if self._shift_fixed:
