@@ -30,6 +30,10 @@ class QSequencer(object):
 
         self.sequence_length = 8
 
+        self.adjust_fine = 0.05
+        self.adjust_coarse = 0.5
+
+
     @property
     def song(self):
         return self._parent._parent.song()
@@ -40,62 +44,25 @@ class QSequencer(object):
 
     @property
     def clip(self):
-        if self.clip_slot.has_clip:
-            return self.clip_slot.clip
-
+        if self.clip_slot is not None:
+            if self.clip_slot.has_clip:
+                return self.clip_slot.clip
+            else:
+                return None
         else:
             return None
 
-            # -------------------------------------------
-
-    # def _blink_playing(self):
-    #     def blinkcb():
-    #         def callback():
-    #             clip_slot = self.clip_slot
-    #             if clip_slot is None or not clip_slot.has_clip:
-    #                 self._parent._update_lights()
-    #                 return
-
-    #             i = 1 + (int(self.clip.playing_position) % 16)
-
-    #             if self._activeslot == i:
-    #                 self._parent._parent.schedule_message(
-    #                     480 / (self.song.tempo * 4), callback
-    #                 )
-    #                 return
-    #             else:
-    #                 if clip_slot.has_clip and clip_slot.is_playing:
-    #                     self._parent._update_lights()
-
-    #                     self.get_button_colors()
-
-    #                     # blink only if slot has changed
-    #                     self._parent._set_color(i, self.blinkcolor)
-    #                     self._parent._parent.schedule_message(
-    #                         480 / (self.song.tempo * 4), callback
-    #                     )
-
-    #                 else:
-    #                     # update lights in case the callback is released while the
-    #                     # control-layer has already been changed
-    #                     self._parent._update_lights()
-
-    #             self._activeslot = i
-
-    #         callback()
-
-    #     return blinkcb
-
     def dotheblink(self):
-        i = 1 + (int(self.clip.playing_position * 16 / self.sequence_length) % 16)
-        if self._activeslot == i:
-            return
-        else:
-            self._parent._update_lights()
-            # blink only if slot has changed
-            self._parent._set_color(i, self.blinkcolor)
+        if self.clip is not None:
+            i = 1 + (int(self.clip.playing_position * 16 / self.sequence_length) % 16)
+            if self._activeslot == i:
+                return
+            else:
+                self._parent._update_lights()
+                # blink only if slot has changed
+                self._parent._set_color(i, self.blinkcolor)
 
-        self._activeslot = i
+            self._activeslot = i
 
     def blinkit(self):
         if self.clip is not None:
@@ -145,14 +112,14 @@ class QSequencer(object):
             msg = "Encoders set to:     " + self.change_property
         elif i == 2:
             self.change_property = "start_time"
-            self.change_interval = 0.05
+            self.change_interval = 0.01
             self.sensitivity = 5
             self.change_min = 0
             self.change_max = 9999
             msg = "Encoders set to:     " + self.change_property
         elif i == 3:
             self.change_property = "duration"
-            self.change_interval = 0.05
+            self.change_interval = 0.01
             self.sensitivity = 5
             self.change_min = 0
             self.change_max = 128
@@ -179,17 +146,17 @@ class QSequencer(object):
         elif i == 9:
             self.sensitivity = 4
             self.set_loop_property(
-                up_down, "loop_start", self.sequence_length / 16 * 0.1
+                up_down, "loop_start", self.sequence_length / 16 * self.adjust_fine
             )
         elif i == 10:
             self.sensitivity = 4
-            self.set_loop_property(up_down, "position", self.sequence_length / 16 * 0.1)
+            self.set_loop_property(up_down, "position", self.sequence_length / 16 * self.adjust_fine)
         elif i == 11:
             self.sensitivity = 4
-            self.set_loop_property(up_down, "loop_end", self.sequence_length / 16 * 0.1)
+            self.set_loop_property(up_down, "loop_end", self.sequence_length / 16 * self.adjust_fine)
         elif i == 12:
             self.sensitivity = 4
-            self.set_loop_property(up_down, "loop_end", self.sequence_length / 16 * 0.5)
+            self.set_loop_property(up_down, "loop_end", self.sequence_length / 16 * self.adjust_coarse)
         elif i == 14:
             msg = "transposing loop notes"
             # transpose only notes inside current loop
@@ -317,20 +284,22 @@ class QSequencer(object):
         for i in range(16):
             self.button_colors[i + 1] = "black"
 
-        notevector, notes = self.get_notes()
+        if self.clip is not None:
 
-        if notevector is not None:
-            for i, note in enumerate(notes):
-                if note.mute:
-                    self.button_colors[i + 1] = self.mutecolor
-                else:
-                    if (
-                        note.start_time >= self.clip.loop_start
-                        and note.start_time < self.clip.loop_end
-                    ):
-                        self.button_colors[i + 1] = self.loopcolor
+            notevector, notes = self.get_notes()
+
+            if notevector is not None:
+                for i, note in enumerate(notes):
+                    if note.mute:
+                        self.button_colors[i + 1] = self.mutecolor
                     else:
-                        self.button_colors[i + 1] = self.notecolor
+                        if (
+                            note.start_time >= self.clip.loop_start
+                            and note.start_time < self.clip.loop_end
+                        ):
+                            self.button_colors[i + 1] = self.loopcolor
+                        else:
+                            self.button_colors[i + 1] = self.notecolor
 
     # -------------------------------------------
 
@@ -422,7 +391,7 @@ class QSequencer(object):
             self.clip_slot.create_clip(self.sequence_length)
             for i in range(16):
                 self.add_note(
-                    pitch=64,
+                    pitch=self._parent._transpose_val,
                     start_time=self.sequence_length / 16 * i,
                     duration=self.sequence_length / 16 * 0.5,
                     velocity=75,

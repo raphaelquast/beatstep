@@ -44,7 +44,7 @@ class QControlComponent(BaseComponent):
         self.__select_track_clicked = -99
         self.__shift_clicked = -99
         self.__last_selected = -1
-        self.__transpose_val = 36
+        self._transpose_val = 36
 
         self.__transpose_start = 36
         self.__transpose_interval = 4
@@ -383,6 +383,7 @@ class QControlComponent(BaseComponent):
                     bdict[i + 1] = "black"
 
         elif self._sequencer:
+            self.QSequencer.get_button_colors()
             bdict = self.QSequencer.button_colors
 
         elif self._shift_pressed or self._shift_fixed:
@@ -526,12 +527,19 @@ class QControlComponent(BaseComponent):
             if track.playing_slot_index_has_listener(self._update_lights):
                 track.remove_playing_slot_index_listener(self._update_lights)
 
-        self._update_lights()
 
         # do this after update_lights to ensure that
         # _get_onetrack_clipslots() has been called
         if self._layer_onetrack:
             self._add_layer_onetrack_listerners()
+
+        if self._sequencer:
+            self.QSequencer.remove_handler()
+            self.QSequencer.blinkit()
+            self.QSequencer.loophandler()
+        
+        self._update_lights()
+
 
     def _get_used_clipslots(self):
         use_slots = [[None, None] for i in range(8)]
@@ -1556,20 +1564,20 @@ class QControlComponent(BaseComponent):
         if self.__transpose_cnt == 0:
 
             if value < 64:
-                if self.__transpose_val <= 126 - 15:
-                    self.__transpose_val = (
-                        self.__transpose_val + self.__transpose_interval
+                if self._transpose_val <= 126 - 15:
+                    self._transpose_val = (
+                        self._transpose_val + self.__transpose_interval
                     )
             else:
-                if self.__transpose_val > 0:
-                    self.__transpose_val = (
-                        self.__transpose_val - self.__transpose_interval
+                if self._transpose_val > 0:
+                    self._transpose_val = (
+                        self._transpose_val - self.__transpose_interval
                     )
 
-            self._set_notes(self.__transpose_val)
+            self._set_notes(self._transpose_val)
             # ---------------
             # indicate the transposed note via button lights
-            buttonid = int(self.__transpose_val / self.__transpose_interval)
+            buttonid = int(self._transpose_val / self.__transpose_interval)
             usebuttons = [1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14]
             b = usebuttons[int(buttonid % len(usebuttons))]
             if buttonid % 3 == 0:
@@ -1974,7 +1982,7 @@ class QControlComponent(BaseComponent):
                 self._remove_handler()
                 self._parent._deactivate_control_mode()
                 # transpose notes back to last set transpose-val
-                self._set_notes(self.__transpose_val)
+                self._set_notes(self._transpose_val)
 
     def _chan_listener(self, value):
         if value == 0:
