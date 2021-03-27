@@ -1,14 +1,13 @@
 import Live
 from .QSetup import QSetup
-from itertools import cycle
 
 # class QSequencer(ControlSurface):
 class QSequencer(object):
     def __init__(self, parent):
         self._parent = parent
 
-        self._encoder_up_counter = {i: 0 for i in range(16)}
-        self._encoder_down_counter = {i: 0 for i in range(16)}
+        self._encoder_up_counter = {**{i: 0 for i in range(16)}, 'transpose': 0}
+        self._encoder_down_counter = {**{i: 0 for i in range(16)}, 'transpose': 0}
         self.QS = QSetup()
 
         self.up_down = True
@@ -172,32 +171,26 @@ class QSequencer(object):
             self.change_min = 0
             self.change_max = 1
             msg = "Encoders set to:     " + self.change_property
-        elif i == 7:
-            msg = "transposing all notes"
-
-            # transpose all notes
-            self.change_property = "pitch"
-            self.change_interval = 1
-            self.change_min = 0
-            self.change_max = 128
-            self.sensitivity = 8
-            self.irene_transposers(up_down)
         elif i == 8:
-
+            self.sensitivity = 4
             self.set_loop_property(
                 up_down, "loop_start", self.sequence_length / 16 * 0.5
             )
         elif i == 9:
+            self.sensitivity = 4
             self.set_loop_property(
                 up_down, "loop_start", self.sequence_length / 16 * 0.1
             )
         elif i == 10:
+            self.sensitivity = 4
             self.set_loop_property(up_down, "position", self.sequence_length / 16 * 0.1)
         elif i == 11:
+            self.sensitivity = 4
             self.set_loop_property(up_down, "loop_end", self.sequence_length / 16 * 0.1)
         elif i == 12:
+            self.sensitivity = 4
             self.set_loop_property(up_down, "loop_end", self.sequence_length / 16 * 0.5)
-        elif i == 15:
+        elif i == 14:
             msg = "transposing loop notes"
             # transpose only notes inside current loop
             self.noterange = "loop"
@@ -206,6 +199,15 @@ class QSequencer(object):
             self.change_min = 0
             self.change_max = 128
             self.sensitivity = 8
+            self.irene_transposers(up_down)
+        elif i == 'transpose':
+            msg = "transposing all notes"
+            # transpose all notes
+            self.change_property = "pitch"
+            self.change_interval = 1
+            self.change_min = 0
+            self.change_max = 128
+            self.sensitivity = 4
             self.irene_transposers(up_down)
 
         if msg is not None:
@@ -238,7 +240,7 @@ class QSequencer(object):
 
         if self.clip is not None:
             if self._parent._shift_pressed:
-                self.clip.scrub(i)
+                self.clip.scrub(self.sequence_length / 16 * i)
                 self.clip.stop_scrub()
             else:
                 self.clip.select_all_notes()
@@ -268,10 +270,17 @@ class QSequencer(object):
                 self.modify_note(**kwargs)
 
     def encoder_callback(self, i, value):
+        if i == 15 and self._parent._shift_pressed:
+            self._parent._select_prev_next_scene(value)
+            return
+        elif i == 7 and self._parent._shift_pressed:
+            self._parent._select_prev_next_track(value)
+            return
+
         up_down = value < 64
         self.noterange = "all"
 
-        if self._parent._shift_pressed:
+        if self._parent._shift_pressed and i in [0, 1, 2, 3, 4, 5]:
             self.set_change_properties(i, up_down)
             return
 
@@ -289,7 +298,10 @@ class QSequencer(object):
         self._counter[i] = self._counter[i] + 1
 
         if self._counter[i] > self.sensitivity:
-            self.change_note_property(i, up_down)
+            if i == 'transpose' or self._parent._shift_pressed:
+                self.set_change_properties(i, up_down)
+            else:
+                self.change_note_property(i, up_down)
             # set all counters to zero
             for key in self._encoder_down_counter.keys():
                 self._encoder_down_counter[key] = 0
