@@ -144,6 +144,11 @@ class QSequencer(object):
             self.change_min = 0
             self.change_max = 1
             msg = "Encoders set to:     " + self.change_property
+        elif i == 6:
+            self.set_sequence_length(up_down)
+        elif i == 7:
+            # use QControlComponent functionality
+            pass
         elif i == 8:
             self.sensitivity = 4
             self.set_loop_property(
@@ -391,6 +396,16 @@ class QSequencer(object):
         )
 
     # -------------------------------------------
+
+    def set_sequence_length(self, up_down):
+        lengths = [1, 2, 4, 8, 16, 32]
+
+        if up_down:
+            self.sequence_length = lengths[(lengths.index(self.sequence_length) + 1)%len(lengths)]
+            self._parent._parent.show_message(f"sequence length set to {self.sequence_length}")
+        else:
+            self.sequence_length = lengths[lengths.index(self.sequence_length) - 1]
+            self._parent._parent.show_message(f"sequence length set to {self.sequence_length}")
 
     def init_sequence(self):
         # note = (pitch, time, duration, velocity, mute_state)
