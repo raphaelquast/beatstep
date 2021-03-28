@@ -1938,7 +1938,6 @@ class QControlComponent(BaseComponent):
             # on release
             if abs(time.time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
-                # TODO decide on when to activate the sequencer
                 # activate the sequencer only if Ableton 11 or later is running
                 version = self._parent.application().get_major_version()
                 if version >= 11:
