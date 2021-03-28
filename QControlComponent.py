@@ -1926,7 +1926,6 @@ class QControlComponent(BaseComponent):
     def _shift_listener(self, value):
         if value == 127:
             self._shift_pressed = True
-            self._parent._device.set_enabled(True)
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
