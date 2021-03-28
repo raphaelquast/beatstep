@@ -1756,7 +1756,6 @@ class QControlComponent(BaseComponent):
     def _shift_listener(self, value):
         if value == 127:
             self._shift_pressed = True
-            self._parent._device.set_enabled(True)
 
             # transpose notes to start-values
             self._set_notes(self.__transpose_start)
@@ -1792,7 +1791,7 @@ class QControlComponent(BaseComponent):
             if not self._shift_pressed:
                 # remove value listeners from buttons in case shift is released
                 # (so that we can play instruments if shift is not pressed)
-                self._parent._device.set_enabled(True)
+                self._parent._device.set_enabled(False)
                 self._remove_handler()
                 self._parent._deactivate_control_mode()
                 # transpose notes back to last set transpose-val
