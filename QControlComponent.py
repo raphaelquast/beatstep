@@ -458,8 +458,7 @@ class QControlComponent(BaseComponent):
 
         if self._sequencer:
             self.QSequencer.remove_handler()
-            self.QSequencer.blinkit()
-            self.QSequencer.loophandler()
+            self.QSequencer.add_handler()
 
 
         # update clip-slot listeners
@@ -535,8 +534,7 @@ class QControlComponent(BaseComponent):
 
         if self._sequencer:
             self.QSequencer.remove_handler()
-            self.QSequencer.blinkit()
-            self.QSequencer.loophandler()
+            self.QSequencer.add_handler()
         
         self._update_lights()
 
@@ -801,7 +799,9 @@ class QControlComponent(BaseComponent):
                 else:
                     getattr(self, "_remove" + val)()
 
-            if not self._sequencer:
+            if self._sequencer:
+                self.QSequencer.add_handler()
+            else:
                 self.QSequencer.remove_handler()
 
             # activate device controls for the layers (encoder 1-4 and 9-12)
@@ -1947,11 +1947,11 @@ class QControlComponent(BaseComponent):
                             self.QSequencer.init_sequence()
                         else:
                             self._activate_control_layer("_sequencer", True)
-                            self.QSequencer.init_sequence()
-
+                            self._parent.show_message("Sequencer / MIDI Note Editor activated")
                     else:
+                        self._activate_control_layer("_sequencer", True)
                         self._parent.show_message(
-                            "The SEQUENCER/NOTE EDITOR works only on MIDI tracks!"
+                            "A MIDI Sequence can only be created on a MIDI track!"
                         )
                 else:
                     self._parent.show_message(
@@ -1982,7 +1982,7 @@ class QControlComponent(BaseComponent):
             if not self._shift_pressed:
                 # remove value listeners from buttons in case shift is released
                 # (so that we can play instruments if shift is not pressed)
-                self._parent._device.set_enabled(True)
+                self._parent._device.set_enabled(False)
                 self._remove_handler()
                 self._parent._deactivate_control_mode()
                 # transpose notes back to last set transpose-val

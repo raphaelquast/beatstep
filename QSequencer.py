@@ -53,7 +53,7 @@ class QSequencer(object):
             return None
 
     def dotheblink(self):
-        if self.clip is not None:
+        if self.clip is not None and self._parent._sequencer:
             i = 1 + (int(self.clip.playing_position * 16 / self.sequence_length) % 16)
             if self._activeslot == i:
                 return
@@ -64,23 +64,29 @@ class QSequencer(object):
 
             self._activeslot = i
 
-    def blinkit(self):
-        if self.clip is not None:
-            if not self.clip.playing_position_has_listener(self.dotheblink):
-                self.clip.add_playing_position_listener(self.dotheblink)
-
     def _highlite_loop(self):
         self.get_button_colors()
         self._parent._update_lights()
+           
+    def add_handler(self):
+        self.get_button_colors()
+        self._parent._update_lights()
 
-    def loophandler(self):
         if self.clip is not None:
+            # Loop listener
             if not self.clip.loop_start_has_listener(self._highlite_loop):
                 self.clip.add_loop_start_listener(self._highlite_loop)
             if not self.clip.loop_end_has_listener(self._highlite_loop):
                 self.clip.add_loop_end_listener(self._highlite_loop)
             if not self.clip.position_has_listener(self._highlite_loop):
                 self.clip.add_position_listener(self._highlite_loop)
+            # Notes listener
+            if not self.clip.notes_has_listener(self._highlite_loop):
+                self.clip.add_notes_listener(self._parent._update_lights)
+            # Playing position listener
+            if not self.clip.playing_position_has_listener(self.dotheblink):
+                self.clip.add_playing_position_listener(self.dotheblink)
+
 
     def remove_handler(self):
         if self.clip is not None:
@@ -300,7 +306,8 @@ class QSequencer(object):
                             self.button_colors[i + 1] = self.loopcolor
                         else:
                             self.button_colors[i + 1] = self.notecolor
-
+                if i < 15:
+                    self.button_colors[i + 2] = self.notecolor
     # -------------------------------------------
 
     def add_note(
@@ -403,12 +410,10 @@ class QSequencer(object):
         app = self._parent._parent.application()
 
         app.view.show_view("Detail/Clip")
+        self.add_handler()
+            
 
-        self.get_button_colors()
-        self.blinkit()
-        self.loophandler()
-        self._parent._update_lights()
-
+            
     # TODO
     # self.clip.apply_note_modifications()
     # self.clip.get_notes_extended()
