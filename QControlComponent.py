@@ -815,19 +815,6 @@ class QControlComponent(BaseComponent):
     ###################################################
 
     def _1_listener(self, value):
-        self._parent.show_message(
-            str(
-                [
-                    self._control_layer_1,
-                    self._control_layer_2,
-                    self._control_layer_3,
-                    self._shift_pressed,
-                    self._shift_fixed,
-                    self._sequencer,
-                ]
-            )
-        )
-
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(0)
