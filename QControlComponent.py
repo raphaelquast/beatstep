@@ -1564,7 +1564,7 @@ class QControlComponent(BaseComponent):
         else:
             self._scroll_device_chain(value)
 
-    def _transpose(self, value):
+    def _transpose(self, value, set_values=True):
         # increase notes only every 4 ticks of the transpose-slider
         # (e.g. to make it a little less sensitive)
         self.__transpose_cnt = (self.__transpose_cnt + 1) % 4
@@ -1581,8 +1581,8 @@ class QControlComponent(BaseComponent):
                     self._transpose_val = (
                         self._transpose_val - self.__transpose_interval
                     )
-
-            self._set_notes(self._transpose_val)
+            if set_values:
+                self._set_notes(self._transpose_val)
             self._parent.show_message(get_midi_note_name(self._transpose_val))
 
             # ---------------
