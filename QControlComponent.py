@@ -38,6 +38,12 @@ QUANTIZATIONS = [
 ]
 
 
+def get_midi_note_name(value):
+    octave = int(value / 12) - 2
+    note = "C C#D D#E F F#G G#A A#B "[(value % 12) * 2 : (value % 12) * 2 + 2]
+    return note.strip() + str(octave)
+
+
 class QControlComponent(BaseComponent):
     def __init__(self, parent):
 
@@ -1577,6 +1583,8 @@ class QControlComponent(BaseComponent):
                     )
 
             self._set_notes(self._transpose_val)
+            self._parent.show_message(get_midi_note_name(self._transpose_val))
+
             # ---------------
             # indicate the transposed note via button lights
             buttonid = int(self._transpose_val / self.__transpose_interval)
