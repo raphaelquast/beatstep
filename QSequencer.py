@@ -313,6 +313,11 @@ class QSequencer(object):
             self._parent._select_prev_next_track(value)
             return
 
+        if self.clip is None:
+            if i == "transpose":
+                self._parent._transpose(value, set_values=False)
+                return
+
         up_down = value < 64
         self.noterange = "all"
 
