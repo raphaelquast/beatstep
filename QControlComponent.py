@@ -1594,7 +1594,10 @@ class QControlComponent(BaseComponent):
 
                 return callback
 
-            self._parent.schedule_message(2, turnofflight_callback(b, "black"))
+            self._parent.schedule_message(
+                2, turnofflight_callback(b, self._button_light_status[b])
+            )
+
             # -------------
 
     def _set_notes(self, start):
