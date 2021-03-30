@@ -1,6 +1,11 @@
 # flake8: noqa
 from .BaseComponent import BaseComponent
-from .QSequencer import QSequencer
+
+try:
+    # try importing the sequencer (will fail on ableton < 11)
+    from .QSequencer import QSequencer
+except:
+    pass
 import time
 from itertools import cycle
 import Live
@@ -68,7 +73,10 @@ class QControlComponent(BaseComponent):
         # do this before initializing the sequencer!
         self._button_light_status = {i: "black" for i in range(16)}
 
-        self.QSequencer = QSequencer(self)
+        try:
+            self.QSequencer = QSequencer(self)
+        except:
+            pass
 
         self.__control_layer_permanent = False
 
@@ -460,7 +468,6 @@ class QControlComponent(BaseComponent):
             self.QSequencer.remove_handler()
             self.QSequencer.add_handler()
 
-
         # update clip-slot listeners
         if self._control_layer_3:
             self._add_control_3_listeners()
@@ -526,7 +533,6 @@ class QControlComponent(BaseComponent):
             if track.playing_slot_index_has_listener(self._update_lights):
                 track.remove_playing_slot_index_listener(self._update_lights)
 
-
         # do this after update_lights to ensure that
         # _get_onetrack_clipslots() has been called
         if self._layer_onetrack:
@@ -535,9 +541,8 @@ class QControlComponent(BaseComponent):
         if self._sequencer:
             self.QSequencer.remove_handler()
             self.QSequencer.add_handler()
-        
-        self._update_lights()
 
+        self._update_lights()
 
     def _get_used_clipslots(self):
         use_slots = [[None, None] for i in range(8)]
@@ -585,23 +590,32 @@ class QControlComponent(BaseComponent):
 
     def update_red_box(self):
         width = len(self.use_tracks)
-        if self._control_layer_3:
-            height = 2
-            offset = self.track_offset
-        elif self._layer_onetrack:
-            height = 14
-            width = 1
-
-            selected_track = self._parent.song().view.selected_track
-            offset = self.all_tracks.index(selected_track)
+        if self._control_layer_2:
+            self._parent._c_instance.set_session_highlight(1, 1, 0, 0, False)
         else:
-            height = 1
-            offset = self.track_offset
+            if self._control_layer_3:
+                height = 2
+                offset = self.track_offset
+            elif self._layer_onetrack:
+                height = 14
+                width = 1
 
-        include_returns = True
-        self._parent._c_instance.set_session_highlight(
-            offset, self.selected_scene_index, width, height, include_returns
-        )
+                selected_track = self._parent.song().view.selected_track
+                offset = self.all_tracks.index(selected_track)
+            elif self._sequencer:
+                height = 1
+                width = 1
+
+                selected_track = self._parent.song().view.selected_track
+                offset = self.all_tracks.index(selected_track)
+            else:
+                height = 1
+                offset = self.track_offset
+
+            include_returns = True
+            self._parent._c_instance.set_session_highlight(
+                offset, self.selected_scene_index, width, height, include_returns
+            )
 
     def _blink_clip_triggered_playing(self, track_id, slot_id, buttonid=1):
         def blinkcb():
@@ -802,7 +816,8 @@ class QControlComponent(BaseComponent):
             if self._sequencer:
                 self.QSequencer.add_handler()
             else:
-                self.QSequencer.remove_handler()
+                if hasattr(self, "QSequencer"):
+                    self.QSequencer.remove_handler()
 
             # activate device controls for the layers (encoder 1-4 and 9-12)
             if layer in ["_control_layer_2", "_control_layer_3", "_shift_fixed"]:
@@ -1535,7 +1550,7 @@ class QControlComponent(BaseComponent):
 
     def _transpose_encoder_listener(self, value):
         if self._sequencer:
-            self.QSequencer.encoder_callback('transpose', value)
+            self.QSequencer.encoder_callback("transpose", value)
         elif not self.__control_layer_permanent and not self._shift_pressed:
             self._transpose(value)
         elif self._control_layer_1 or self._control_layer_3:
@@ -1932,7 +1947,6 @@ class QControlComponent(BaseComponent):
                             self.QSequencer.init_sequence()
                         else:
                             self._activate_control_layer("_sequencer", True)
-                            self._parent.show_message("Sequencer / MIDI Note Editor activated")
                     else:
                         self._activate_control_layer("_sequencer", True)
                         self._parent.show_message(
@@ -1940,10 +1954,10 @@ class QControlComponent(BaseComponent):
                         )
                 else:
                     self._parent.show_message(
-                        "The SEQUENCER/NOTE EDITOR works only with Ableton 11 or later!"
+                        "The MIDI SEQUENCER EDITOR works only with Ableton 11 or later!"
                     )
 
-                    #self._activate_control_layer("_shift_fixed", True)
+                    # self._activate_control_layer("_shift_fixed", True)
             else:
                 if self.__control_layer_permanent:
                     if self._shift_fixed:
