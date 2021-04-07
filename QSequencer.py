@@ -81,6 +81,9 @@ class QSequencer(object):
             (v, k) for k, v in self.sequence_names.items()
         )
 
+        self.sequence_up = 0
+        self.sequence_n = 4
+
     @property
     def song(self):
         return self._parent._parent.song()
@@ -256,6 +259,37 @@ class QSequencer(object):
             for i in range(16):
                 self.change_note_property(i, up_down)
 
+    def set_sequence_up(self, up_down):
+        if up_down:
+
+            if (
+                self._parent._transpose_val
+                + 16 / max(self.sequence_n, 2) * (self.sequence_up)
+                < 127
+            ):
+                self.sequence_up = self.sequence_up + 1
+        else:
+            if (
+                self._parent._transpose_val
+                + 16 / max(self.sequence_n, 2) * (self.sequence_up)
+                > 0
+            ):
+                self.sequence_up = self.sequence_up - 1
+
+        self._parent._parent.show_message(
+            f"note pitch: {self.sequence_up}, note step: {self.sequence_n}"
+        )
+
+    def set_sequence_n(self, up_down):
+        if up_down:
+            self.sequence_n = min(self.sequence_n + 2, 8)
+        else:
+            self.sequence_n = max(self.sequence_n - 2, 0)
+
+        self._parent._parent.show_message(
+            f"note pitch: {self.sequence_up}, note step: {self.sequence_n}"
+        )
+
     def set_loop_property(self, up_down, prop, interval):
         if up_down:
             setattr(
@@ -306,20 +340,28 @@ class QSequencer(object):
                 self.modify_note(**kwargs)
 
     def encoder_callback(self, i, value):
-        if i == 15 and self._parent._shift_pressed:
+        if i == 15 and (self._parent._shift_pressed or self.clip is None):
             self._parent._select_prev_next_scene(value)
             return
-        elif i == 7 and self._parent._shift_pressed:
+        elif i == 7 and (self._parent._shift_pressed or self.clip is None):
             self._parent._select_prev_next_track(value)
             return
+
+        up_down = value < 64
+        self.noterange = "all"
 
         if self.clip is None:
             if i == "transpose":
                 self._parent._transpose(value, set_values=False)
-                return
+            elif i in [0, 1, 2, 3, 4, 5]:
+                self.set_change_properties(i, up_down)
 
-        up_down = value < 64
-        self.noterange = "all"
+            elif i == 8:
+                self.set_sequence_up(up_down)
+            elif i == 9:
+                self.set_sequence_n(up_down)
+
+            return
 
         if self._parent._shift_pressed and i in [0, 1, 2, 3, 4, 5]:
             self.set_change_properties(i, up_down)
@@ -541,9 +583,12 @@ class QSequencer(object):
         # note = (pitch, time, duration, velocity, mute_state)
         if not self.clip_slot.has_clip:
             self.clip_slot.create_clip(self.sequence_length)
+
+            sequence = self.set_sequence()
+
             for i in range(16):
                 self.add_note(
-                    pitch=self._parent._transpose_val,
+                    pitch=sequence[i],
                     start_time=self.sequence_length / 16 * i,
                     duration=self.sequence_length / 16 * self.note_duration,
                     velocity=int(127 * self.note_velocity),
@@ -558,6 +603,18 @@ class QSequencer(object):
 
         app.view.show_view("Detail/Clip")
         self.add_handler()
+
+    def set_sequence(self):
+        notes = [self._parent._transpose_val for i in range(16)]
+
+        if self.sequence_n > 0:
+            for i in range(0, 16, self.sequence_n):
+                for j in range(self.sequence_n):
+                    if i + j < len(notes):
+                        notes[i + j] = (
+                            notes[i + j] + i // self.sequence_n * self.sequence_up
+                        )
+        return notes
 
     # TODO
     # self.clip.apply_note_modifications()
