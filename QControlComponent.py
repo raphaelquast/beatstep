@@ -1,11 +1,13 @@
 # flake8: noqa
 from .BaseComponent import BaseComponent
 
-try:
-    # try importing the sequencer (will fail on ableton < 11)
+import sys
+
+# import the sequencer only if python-version is >= 3 (e.g. only for ableton > 11)
+if sys.version_info.major >= 3:
     from .QSequencer import QSequencer
-except:
-    pass
+
+
 import time
 from itertools import cycle
 import Live
@@ -79,10 +81,8 @@ class QControlComponent(BaseComponent):
         # do this before initializing the sequencer!
         self._button_light_status = {i: "black" for i in range(16)}
 
-        try:
+        if parent.application().get_major_version() >= 11:
             self.QSequencer = QSequencer(self)
-        except:
-            pass
 
         self.__control_layer_permanent = False
 
@@ -473,6 +473,8 @@ class QControlComponent(BaseComponent):
         if self._sequencer:
             self.QSequencer.remove_handler()
             self.QSequencer.add_handler()
+            if self.QSequencer.clip is None:
+                self.QSequencer.show_sequence_info()
 
         # update clip-slot listeners
         if self._control_layer_3:
@@ -547,6 +549,8 @@ class QControlComponent(BaseComponent):
         if self._sequencer:
             self.QSequencer.remove_handler()
             self.QSequencer.add_handler()
+            if self.QSequencer.clip is None:
+                self.QSequencer.show_sequence_info()
 
         self._update_lights()
 
@@ -1958,6 +1962,7 @@ class QControlComponent(BaseComponent):
                             self.QSequencer.init_sequence()
                         else:
                             self._activate_control_layer("_sequencer", True)
+                            self.QSequencer.show_sequence_info()
                     else:
                         self._activate_control_layer("_sequencer", True)
                         self._parent.show_message(
