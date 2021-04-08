@@ -6,8 +6,8 @@ from .QSetup import QSetup
 def gcd(a, b):
     """Calculate the Greatest Common Divisor of a and b.
 
-        Unless b==0, the result will have the same sign as b (so that when
-        b is divided by it, the result comes out positive).
+    Unless b==0, the result will have the same sign as b (so that when
+    b is divided by it, the result comes out positive).
     """
     while b:
         a, b = b, a % b
@@ -65,16 +65,18 @@ class QSequencer(object):
 
         self.n_notes = 16
         self.note_duration = 0.5
+        self.note_offset = 0
         self.note_velocity = 0.75
 
-        self.sequence_lengths = [0.5, 1, 2, 4, 8, 16, 32, 64]
-        #                       [1/16, 1/8, 1/4, 1/2, 1, 2, 4]
+        self.sequence_lengths = [1, 2, 4, 8, 16, 32, 64, 128]
+        #                       [2,1,1/2,1/4,1/8,1/16,1/32]
 
-        self.note_durations = [0.25, 0.5, 0.75, 1]
+        self.note_offset_duration = [True, True, False, False]
+
         self.note_velocities = [0.25, 0.5, 0.75, 1]
 
         self.sequence_names = {
-            i: f"{simplify_fraction(i, 16)}".ljust(4, "_") + "_Q"
+            i: f"{simplify_fraction(i, 16 * 4)}".ljust(4, "_") + "_Q"
             for i in self.sequence_lengths
         }
         self.sequence_names_inverted = dict(
@@ -201,7 +203,7 @@ class QSequencer(object):
             self.change_max = 1
             msg = "Encoders set to:     " + self.change_property
         elif i == 6:
-            self.set_sequence_length(up_down)
+            pass
         elif i == 7:
             # use QControlComponent functionality
             pass
@@ -293,11 +295,15 @@ class QSequencer(object):
     def set_loop_property(self, up_down, prop, interval):
         if up_down:
             setattr(
-                self.clip, prop, getattr(self.clip, prop) + interval,
+                self.clip,
+                prop,
+                getattr(self.clip, prop) + interval,
             )
         else:
             setattr(
-                self.clip, prop, getattr(self.clip, prop) - interval,
+                self.clip,
+                prop,
+                getattr(self.clip, prop) - interval,
             )
 
     def button_callback(self, i):
@@ -312,7 +318,8 @@ class QSequencer(object):
             else:
                 self.clip.select_all_notes()
                 self.modify_note(
-                    i=i, mute=not self.get_note_specs(i, "mute"),
+                    i=i,
+                    mute=not self.get_note_specs(i, "mute"),
                 )
         else:
             self.set_sequence_length_button(i)
@@ -330,11 +337,13 @@ class QSequencer(object):
             if curr_val is not None:
                 if up_down:
                     kwargs[self.change_property] = min(
-                        curr_val + self.change_interval, self.change_max,
+                        curr_val + self.change_interval,
+                        self.change_max,
                     )
                 else:
                     kwargs[self.change_property] = max(
-                        curr_val - self.change_interval, self.change_min,
+                        curr_val - self.change_interval,
+                        self.change_min,
                     )
 
                 self.modify_note(**kwargs)
@@ -391,7 +400,12 @@ class QSequencer(object):
                 self._encoder_up_counter[key] = 0
 
     def get_button_colors(self):
-        self.button_colors = dict(shift="red", chan="red", store="red", recall="red",)
+        self.button_colors = dict(
+            shift="red",
+            chan="red",
+            store="red",
+            recall="red",
+        )
         for i in range(16):
             self.button_colors[i + 1] = "black"
 
@@ -418,13 +432,16 @@ class QSequencer(object):
                 self.sequence_lengths.index(self.sequence_length) + 1
             ] = "red"
 
-            self.button_colors[
-                self.note_durations.index(self.note_duration) + 8 + 1
-            ] = "magenta"
+            for i, offset_Q in enumerate(self.note_offset_duration):
+                if offset_Q:
+                    self.button_colors[i + 8 + 1] = "magenta"
 
-            self.button_colors[
-                self.note_velocities.index(self.note_velocity) + 12 + 1
-            ] = "blue"
+            for i in range(13, self.note_velocities.index(self.note_velocity) + 14):
+                self.button_colors[i] = "blue"
+
+            # self.button_colors[
+            #     self.note_velocities.index(self.note_velocity) + 12 + 1
+            # ] = "blue"
 
             # self.button_colors[self.n_notes / 2 + 7 + 1] = "magenta"
 
@@ -513,17 +530,25 @@ class QSequencer(object):
     # -------------------------------------------
 
     def show_sequence_info(self):
+        empty_square = "\u2591"
+        v_bars = ["\u2582", "\u2584", "\u2586", "\u2588"]
+
+        n_velocity = self.note_velocities.index(self.note_velocity)
+        v_symb = v_bars[n_velocity]
+
+        msg = ""
+        for i in self.note_offset_duration:
+            if i:
+                msg += v_symb
+            else:
+                msg += empty_square
+
         self._parent._parent.show_message(
-            ' '*15 +
-            f"{simplify_fraction(100*self.note_duration, 100)} NOTE "
-            + ' '*15 + "every" + ' '*15 +
-            f"{simplify_fraction(self.sequence_length , self.n_notes)} BEAT "
-            + ' '*15 + "with" + ' '*15 +
-            f"{self.note_velocity} velocity"
+            " " * 15
+            + msg
+            + " " * 15
+            + f"{simplify_fraction(self.sequence_length, self.n_notes * 4)} BARS "
         )
-
-
-''
 
     def set_sequence_length_button(self, i):
         if i < len(self.sequence_lengths):
@@ -539,7 +564,36 @@ class QSequencer(object):
 
     def set_note_duration_button(self, i):
         if i > 7 and i < 12:
-            self.note_duration = self.note_durations[i - 8]
+            j = i - 8
+
+            if j - 1 >= 0:
+                prev = self.note_offset_duration[j - 1]
+            else:
+                prev = False
+
+            currval = self.note_offset_duration[j]
+
+            if j + 1 < 4:
+                nex = self.note_offset_duration[j + 1]
+            else:
+                nex = False
+
+            if currval:
+                # only turn ON if NOT both neighbouring are ON and at least one is on
+                if not (prev and nex) and sum(self.note_offset_duration) > 1:
+                    self.note_offset_duration[j] = False
+            else:
+                # only turn ON if one neighbouring is ON
+                if prev or nex:
+                    self.note_offset_duration[j] = True
+
+            offset = self.note_offset_duration.index(True)
+            self.note_duration = 0
+            for i in self.note_offset_duration[offset:]:
+                if i:
+                    self.note_duration += 0.25
+
+            self.note_offset = offset * 0.25
 
             self.show_sequence_info()
 
@@ -553,26 +607,6 @@ class QSequencer(object):
         if self.clip is not None:
             notes, notevector = self.get_notes()
             self.n_notes = len(notes)
-
-    def set_sequence_length(self, up_down):
-
-        if up_down:
-            self.sequence_length = self.sequence_lengths[
-                (self.sequence_lengths.index(self.sequence_length) + 1)
-                % len(self.sequence_lengths)
-            ]
-            self._parent._parent.show_message(
-                f"sequence tempo set to {simplify_fraction(self.sequence_length , 16)} beats"
-            )
-        else:
-            self.sequence_length = self.sequence_lengths[
-                self.sequence_lengths.index(self.sequence_length) - 1
-            ]
-            self._parent._parent.show_message(
-                f"sequence tempo set to {simplify_fraction(self.sequence_length , 16)} beats"
-            )
-
-        self._parent._update_lights()
 
     def get_sequence_length(self):
         if self.clip is not None:
@@ -595,7 +629,7 @@ class QSequencer(object):
             for i in range(16):
                 self.add_note(
                     pitch=sequence[i],
-                    start_time=self.sequence_length / 16 * i,
+                    start_time=self.sequence_length / 16 * (i + self.note_offset),
                     duration=self.sequence_length / 16 * self.note_duration,
                     velocity=int(127 * self.note_velocity),
                     velocity_deviation=0,
