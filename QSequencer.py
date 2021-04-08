@@ -514,10 +514,16 @@ class QSequencer(object):
 
     def show_sequence_info(self):
         self._parent._parent.show_message(
-            f"{simplify_fraction(100*self.note_duration, 100)} note "
-            + f"every {simplify_fraction(self.sequence_length , self.n_notes)} beats "
-            + f"with {self.note_velocity} velocity"
+            ' '*15 +
+            f"{simplify_fraction(100*self.note_duration, 100)} NOTE "
+            + ' '*15 + "every" + ' '*15 +
+            f"{simplify_fraction(self.sequence_length , self.n_notes)} BEAT "
+            + ' '*15 + "with" + ' '*15 +
+            f"{self.note_velocity} velocity"
         )
+
+
+''
 
     def set_sequence_length_button(self, i):
         if i < len(self.sequence_lengths):
