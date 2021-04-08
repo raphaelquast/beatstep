@@ -603,7 +603,7 @@ class QSequencer(object):
                     mute=False,
                 )
 
-        self.clip.name = self.sequence_names[self.sequence_length]
+            self.clip.name = self.sequence_names[self.sequence_length]
 
         app = self._parent._parent.application()
 
