@@ -1304,13 +1304,17 @@ class QControlComponent(BaseComponent):
             self.selected_scene_index
         )
         duplicated_slot = all_scenes[duplicated_id]
-        # move to the duplicated clip_slot
-        self._parent.song().view.selected_scene = duplicated_slot
 
-        if not self._parent.song().view.highlighted_clip_slot.is_playing:
-            # force legato ensures that the playing-position of the duplicated
-            # loop is continued from the previous clip
-            self._parent.song().view.highlighted_clip_slot.fire(force_legato=True)
+        if self._parent.song().view.highlighted_clip_slot.is_playing:
+            # move to the duplicated clip_slot
+            self._parent.song().view.selected_scene = duplicated_slot
+
+            if not self._parent.song().view.highlighted_clip_slot.is_playing:
+                # force legato ensures that the playing-position of the duplicated
+                # loop is continued from the previous clip
+                self._parent.song().view.highlighted_clip_slot.fire(force_legato=True)
+        else:
+            self._parent.song().view.selected_scene = duplicated_slot
 
     def _select_track(self, trackid):
         track = self.use_tracks[trackid]
