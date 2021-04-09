@@ -278,19 +278,15 @@ class QSequencer(object):
             ):
                 self.sequence_up = self.sequence_up - 1
 
-        self._parent._parent.show_message(
-            f"note pitch: {self.sequence_up}, note step: {self.sequence_n}"
-        )
+        self.show_sequence_info()
 
     def set_sequence_n(self, up_down):
         if up_down:
-            self.sequence_n = min(self.sequence_n + 2, 8)
+            self.sequence_n = min(self.sequence_n + 1, 8)
         else:
-            self.sequence_n = max(self.sequence_n - 2, 0)
+            self.sequence_n = max(self.sequence_n - 1, 0)
 
-        self._parent._parent.show_message(
-            f"note pitch: {self.sequence_up}, note step: {self.sequence_n}"
-        )
+        self.show_sequence_info()
 
     def set_loop_property(self, up_down, prop, interval):
         if up_down:
