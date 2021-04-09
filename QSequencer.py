@@ -307,6 +307,25 @@ class QSequencer(object):
         the callback for button i (e.g. 1 - 16)
         """
 
+        if self._parent._shift_pressed:
+            if i in range(7):
+                self._parent._select_track(i)
+            elif i == 7:
+                self._parent._select_prev_scene()
+            elif i == 8:
+                self._parent._undo()
+            elif i == 9:
+                self._parent._delete_clip()
+            elif i == 11:
+                self._parent._duplicate_clip()
+            elif i == 12:
+                self._parent._duplicate_loop()
+            elif i == 14:
+                self._parent._fire_record()
+            elif i == 15:
+                self._parent._select_next_scene()
+            return
+
         if self.clip is not None:
             if self._parent._shift_pressed:
                 self.clip.scrub(self.sequence_length / 16 * i)
@@ -345,31 +364,14 @@ class QSequencer(object):
                 self.modify_note(**kwargs)
 
     def encoder_callback(self, i, value):
+        up_down = value < 64
+        self.noterange = "all"
+
         if i == 15 and (self._parent._shift_pressed or self.clip is None):
             self._parent._select_prev_next_scene(value)
             return
         elif i == 7 and (self._parent._shift_pressed or self.clip is None):
             self._parent._select_prev_next_track(value)
-            return
-
-        up_down = value < 64
-        self.noterange = "all"
-
-        if self.clip is None:
-            if i == "transpose":
-                self._parent._transpose(value, set_values=False)
-            elif i in [0, 1, 2, 3, 4, 5]:
-                self.set_change_properties(i, up_down)
-
-            elif i == 8:
-                self.set_sequence_up(up_down)
-            elif i == 9:
-                self.set_sequence_n(up_down)
-
-            return
-
-        if self._parent._shift_pressed and i in [0, 1, 2, 3, 4, 5]:
-            self.set_change_properties(i, up_down)
             return
 
         # do this to avoid jumping around
@@ -384,6 +386,35 @@ class QSequencer(object):
 
         # increase the counter
         self._counter[i] = self._counter[i] + 1
+
+        if self.clip is None:
+            if i == "transpose":
+                self._parent._transpose(value, set_values=False)
+            elif i in [0, 1, 2, 3, 4, 5]:
+                self.set_change_properties(i, up_down)
+
+            elif i == 8:
+                if self._counter[i] > self.sensitivity:
+                    self.set_sequence_up(up_down)
+
+                    # set all counters to zero
+                    for key in self._encoder_down_counter.keys():
+                        self._encoder_down_counter[key] = 0
+                        self._encoder_up_counter[key] = 0
+
+            elif i == 9:
+                if self._counter[i] > self.sensitivity:
+                    self.set_sequence_n(up_down)
+
+                    # set all counters to zero
+                    for key in self._encoder_down_counter.keys():
+                        self._encoder_down_counter[key] = 0
+                        self._encoder_up_counter[key] = 0
+            return
+
+        if self._parent._shift_pressed and i in [0, 1, 2, 3, 4, 5]:
+            self.set_change_properties(i, up_down)
+            return
 
         if self._counter[i] > self.sensitivity:
             if i == "transpose" or self._parent._shift_pressed:
@@ -435,12 +466,6 @@ class QSequencer(object):
             for i in range(13, self.note_velocities.index(self.note_velocity) + 14):
                 self.button_colors[i] = "blue"
 
-            # self.button_colors[
-            #     self.note_velocities.index(self.note_velocity) + 12 + 1
-            # ] = "blue"
-
-            # self.button_colors[self.n_notes / 2 + 7 + 1] = "magenta"
-
     # -------------------------------------------
 
     def add_note(
@@ -456,6 +481,9 @@ class QSequencer(object):
         """
         add new notes to the currently selected clip
         """
+        if pitch > 127 or velocity > 127 or probability > 1:
+            return
+
         note = Live.Clip.MidiNoteSpecification(
             pitch=pitch,
             start_time=start_time,
@@ -539,11 +567,15 @@ class QSequencer(object):
             else:
                 msg += empty_square
 
+        pitchmsg = f"(pitch {self.sequence_up} every {self.sequence_n} notes)"
+
         self._parent._parent.show_message(
             " " * 15
             + msg
             + " " * 15
             + f"{simplify_fraction(self.sequence_length, self.n_notes * 4)} BARS "
+            + " " * 15
+            + pitchmsg
         )
 
     def set_sequence_length_button(self, i):
