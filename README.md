@@ -48,7 +48,7 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
 
-<details><summary><span>:black_square_button: <strong>BUTTONS</strong> (click to expand)</span></summary>
+<details><summary><span style="width: 100%;text-align: center">:black_square_button: <strong>BUTTONS</strong> (click to expand)</span></summary>
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
