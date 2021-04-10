@@ -1,2 +1,6 @@
 theme: jekyll-theme-slate
 title: BeatStep + Ableton Live
+
+markdown: kramdown
+kramdown:
+  parse_block_html: true

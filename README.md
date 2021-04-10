@@ -50,8 +50,6 @@ After initialization, you can recall any saved MIDI configuration and the contro
 
 
 
-{::options parse_block_html="true" /}
-
 <details>
 <summary>:black_square_button: BUTTONS (click to expand)</summary>  
 
@@ -76,8 +74,6 @@ The `stop` button can be used as follows:
 - *"if shift pressed"* : stop ALL tracks
 
 </details>
-
-{::options parse_block_html="false" /}
 
 ---
 
