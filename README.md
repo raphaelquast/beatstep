@@ -47,7 +47,12 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
-## Buttons:
+
+
+
+
+<details>
+<summary>:black_square_button: BUTTONS (click to expand)</summary>  
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
@@ -69,7 +74,12 @@ The `stop` button can be used as follows:
 
 - *"if shift pressed"* : stop ALL tracks
 
-## Encoders:
+</details>
+
+---
+
+<details>
+<summary>:white_circle: ENCODERS (click to expand)</summary>  
 
 The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
 (a red button-color indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc.)
@@ -97,7 +107,11 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
   - *"if shift pressed"* **and** a *"drum-rack"* is selected:
     select row of viewed drum-pads
 
+</details>
+
 ---
+
+## Layers:
 
 
 <details>
@@ -349,8 +363,9 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 </details>
 
+---  
 
-# Thanks to
+## Thanks to
 
 - [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
 
