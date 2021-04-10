@@ -49,7 +49,6 @@ After initialization, you can recall any saved MIDI configuration and the contro
 
 
 
-<p>
 <details><summary>:black_square_button: <strong>BUTTONS</strong> (click to expand)</summary>
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
@@ -73,7 +72,7 @@ The `stop` button can be used as follows:
 - *"if shift pressed"* : stop ALL tracks
 
 </details>
-</p>
+
 ---
 
 <details><summary>:white_circle: <strong>ENCODERS</strong> (click to expand)</summary>  
