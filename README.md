@@ -50,7 +50,7 @@ After initialization, you can recall any saved MIDI configuration and the contro
 
 ## General (click to expand)
 
-<details><summary>:black_square_button:<strong>BUTTONS</strong></summary>
+<details><summary>:black_square_button: <strong>BUTTONS</strong></summary>
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
@@ -113,7 +113,7 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 
 
 <details>
-<summary>:trumpet: SHIFT layer (click to expand)</summary>  
+<summary>:trumpet: <strong>SHIFT</strong> layer</summary>  
 
 ## If the "shift" is active:
 
@@ -170,7 +170,7 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 ---
 
 <details>
-<summary>:violin: CONTROL layer (click to expand)</summary>  
+<summary>:violin: <strong>CONTROL</strong> layer</summary>  
 
 ### If "control" is active
 
@@ -240,7 +240,7 @@ All encoders are assigned similar to the *"shift-layer"*.
 ---
 
 <details>
-<summary>:guitar: LAUNCH layer (click to expand)</summary>  
+<summary>:guitar: <strong>LAUNCH</strong> layer</summary>  
 
 ### If "launch" is active
 
@@ -298,7 +298,7 @@ All encoders are assigned similar to the *"shift-layer"*.
 ---
 
 <details>
-<summary>:saxophone: MIX layer (click to expand)</summary>  
+<summary>:saxophone: <strong>MIX</strong> layer</summary>  
 
 ### If "mix" is active
 
@@ -357,7 +357,9 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 ---
 
 <details>
-<summary>:musical_score: SEQUENCER layer (click to expand)</summary>  
+<summary>:musical_score: <strong>SEQUENCER</strong> layer</summary>  
+
+- ... coming soon
 
 </details>
 ---  
