@@ -48,7 +48,7 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
 
-
+<div>
 <details><summary>:black_square_button: <strong>BUTTONS</strong> (click to expand)</summary>
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
@@ -72,7 +72,7 @@ The `stop` button can be used as follows:
 - *"if shift pressed"* : stop ALL tracks
 
 </details>
-
+</div>
 ---
 
 <details><summary>:white_circle: <strong>ENCODERS</strong> (click to expand)</summary>  
