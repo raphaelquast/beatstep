@@ -1,5 +1,5 @@
 theme: jekyll-theme-slate
 title: BeatStep + Ableton Live
 markdown: CommonMarkGhPages
-plugins:
+gems:
   - jemoji
