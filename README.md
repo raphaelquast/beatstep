@@ -50,8 +50,7 @@ After initialization, you can recall any saved MIDI configuration and the contro
 
 
 
-<details>
-<summary>:black_square_button: BUTTONS (click to expand)</summary>  
+<details><summary>:black_square_button: <strong>BUTTONS</strong> (click to expand)</summary>  
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
@@ -77,8 +76,7 @@ The `stop` button can be used as follows:
 
 ---
 
-<details>
-<summary>:white_circle: ENCODERS (click to expand)</summary>  
+<details><summary>:white_circle: <strong>ENCODERS</strong> (click to expand)</summary>  
 
 The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
 (a red button-color indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc.)
