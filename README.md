@@ -99,7 +99,11 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 
 ---
 
-### If "shift" is active:
+
+<details>
+<summary>:trumpet: SHIFT layer (click to expand)</summary>  
+
+## If the "shift" is active:
 
 You can always **double-tap** `shift` to re-activate the shift-layer permanently!
 
@@ -115,6 +119,8 @@ The lights in the second row indicate the track-arm status:
 - `blue` if the track represents a **track-group**
 
 - `off` if the track is muted and **not** armed
+
+
 
 #### The assignments are as follows:
 
@@ -147,7 +153,12 @@ The lights in the second row indicate the track-arm status:
 
 All encoders are assigned as described above except for the `transpose-encoder`, which is now used to **select devices** in the device-chain of the selected track. (turning the `transpose-encoder` will automatically focus the view to the device-chain!)
 
+</details>
+
 ---
+
+<details>
+<summary>:violin: CONTROL layer (click to expand)</summary>  
 
 ### If "control" is active
 
@@ -212,7 +223,12 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 
 All encoders are assigned similar to the *"shift-layer"*.
 
+</details>
+
 ---
+
+<details>
+<summary>:guitar: LAUNCH layer (click to expand)</summary>  
 
 ### If "launch" is active
 
@@ -265,7 +281,12 @@ The button-lights indicate the status of the clip-slots, e.g.:
 
 All encoders are assigned similar to the *"shift-layer"*.
 
+</details>
+
 ---
+
+<details>
+<summary>:saxophone: MIX layer (click to expand)</summary>  
 
 ### If "mix" is active
 
@@ -319,7 +340,15 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 - `transpose encoder` : set volume of master-track
 
+</details>
+
 ---
+
+<details>
+<summary>:saxophone: SEQUENCER layer (click to expand)</summary>  
+
+</details>
+
 
 # Thanks to
 
@@ -330,3 +359,4 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 - Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
 
 ---
+
