@@ -50,7 +50,7 @@ After initialization, you can recall any saved MIDI configuration and the contro
 
 
 
-<details><summary><p>:black_square_button: </p> <strong>BUTTONS</strong> (click to expand)</summary>  
+<details><summary><h2>:black_square_button: <strong>BUTTONS</strong> (click to expand)</h2></summary>  
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
