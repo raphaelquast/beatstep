@@ -292,7 +292,7 @@ All encoders are assigned similar to the *"shift-layer"*.
 ---
 
 <details>
-<summary>:saxophone: <strong>MIX</strong></summary>  
+<summary>:headphones: <strong>MIX</strong></summary>  
 
 The lights in the top-row indicate the mute / solo status of the corresponding track.
 
