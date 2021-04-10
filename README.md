@@ -115,8 +115,6 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 <details>
 <summary>:trumpet: <strong>SHIFT</strong> layer</summary>  
 
-## If the "shift" is active:
-
 You can always **double-tap** `shift` to re-activate the shift-layer permanently!
 
 The lights in the first indicate the currently activated clip.
@@ -171,8 +169,6 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 
 <details>
 <summary>:violin: <strong>CONTROL</strong> layer</summary>  
-
-### If "control" is active
 
 Most lights are simply there to help remember the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live.
@@ -242,8 +238,6 @@ All encoders are assigned similar to the *"shift-layer"*.
 <details>
 <summary>:guitar: <strong>LAUNCH</strong> layer</summary>  
 
-### If "launch" is active
-
 In this control-layer, both button-rows (e.g. `1-7` and `9-15`) represent clip-slots.  
 NOTICE: the `stop` button has a special feature in this layer (see below).
 
@@ -299,8 +293,6 @@ All encoders are assigned similar to the *"shift-layer"*.
 
 <details>
 <summary>:saxophone: <strong>MIX</strong> layer</summary>  
-
-### If "mix" is active
 
 The lights in the top-row indicate the mute / solo status of the corresponding track.
 
