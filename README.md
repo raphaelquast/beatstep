@@ -47,7 +47,10 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
-## Buttons:
+
+## General (click to expand)
+
+<details><summary>:black_square_button: <strong>BUTTONS</strong></summary>
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
@@ -69,7 +72,12 @@ The `stop` button can be used as follows:
 
 - *"if shift pressed"* : stop ALL tracks
 
-## Encoders:
+</details>
+
+
+---
+
+<details><summary>:white_circle: <strong>ENCODERS</strong></summary>  
 
 The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
 (a red button-color indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc.)
@@ -97,9 +105,15 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
   - *"if shift pressed"* **and** a *"drum-rack"* is selected:
     select row of viewed drum-pads
 
+</details>
+
 ---
 
-### If "shift" is active:
+## Layers (click to expand)
+
+
+<details>
+<summary>:trumpet: <strong>SHIFT</strong></summary>  
 
 You can always **double-tap** `shift` to re-activate the shift-layer permanently!
 
@@ -115,6 +129,8 @@ The lights in the second row indicate the track-arm status:
 - `blue` if the track represents a **track-group**
 
 - `off` if the track is muted and **not** armed
+
+
 
 #### The assignments are as follows:
 
@@ -147,9 +163,12 @@ The lights in the second row indicate the track-arm status:
 
 All encoders are assigned as described above except for the `transpose-encoder`, which is now used to **select devices** in the device-chain of the selected track. (turning the `transpose-encoder` will automatically focus the view to the device-chain!)
 
+</details>
+
 ---
 
-### If "control" is active
+<details>
+<summary>:violin: <strong>CONTROL</strong></summary>  
 
 Most lights are simply there to help remember the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live.
@@ -212,9 +231,12 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 
 All encoders are assigned similar to the *"shift-layer"*.
 
+</details>
+
 ---
 
-### If "launch" is active
+<details>
+<summary>:guitar: <strong>LAUNCH</strong></summary>  
 
 In this control-layer, both button-rows (e.g. `1-7` and `9-15`) represent clip-slots.  
 NOTICE: the `stop` button has a special feature in this layer (see below).
@@ -265,9 +287,12 @@ The button-lights indicate the status of the clip-slots, e.g.:
 
 All encoders are assigned similar to the *"shift-layer"*.
 
+</details>
+
 ---
 
-### If "mix" is active
+<details>
+<summary>:headphones: <strong>MIX</strong></summary>  
 
 The lights in the top-row indicate the mute / solo status of the corresponding track.
 
@@ -319,9 +344,19 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 - `transpose encoder` : set volume of master-track
 
+</details>
+
 ---
 
-# Thanks to
+<details>
+<summary>:musical_score: <strong>SEQUENCER</strong></summary>  
+
+- ... coming soon
+
+</details>
+---  
+
+## Thanks to
 
 - [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
 
@@ -330,3 +365,4 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 - Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
 
 ---
+ 
