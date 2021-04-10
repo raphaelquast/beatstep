@@ -50,7 +50,7 @@ After initialization, you can recall any saved MIDI configuration and the contro
 
 
 
-
+{::options parse_block_html="true" /}
 <details>
 <summary>:black_square_button: BUTTONS (click to expand)</summary>  
 
@@ -362,7 +362,7 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 <summary>:musical_score: SEQUENCER layer (click to expand)</summary>  
 
 </details>
-
+{::options parse_block_html="false" /}
 ---  
 
 ## Thanks to
