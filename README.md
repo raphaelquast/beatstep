@@ -276,7 +276,7 @@ The button-lights indicate the status of the clip-slots, e.g.:
     - if the slot is a "group-slot": fold/unfold the corresponding group
 
 - `button 8` : select previous scene (e.g. go 1 scene up)
-  
+ 
   - *"if shift-pressed"*: select previous track
 
 - `button 9-15` : same as `1-7` but for the bottom row of the selection.
