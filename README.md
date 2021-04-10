@@ -45,7 +45,7 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 
 - To ensure that the script is automatically selected (instead of the default script), rename the already existing *"Beatstep"* folder to *"_Beatstep"* (or something that it is alphabetically sorted **after** *"BeatStep_Q"*)
 
-After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
+After initialization, you can recall any saved MIDI configuration and the control-layers will still work!
 
 
 ## General (click to expand)
