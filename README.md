@@ -48,7 +48,6 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
 
-<div>
 <p>
 <details><summary>:black_square_button: <strong>BUTTONS</strong> (click to expand)</summary>
 
@@ -74,7 +73,7 @@ The `stop` button can be used as follows:
 
 </details>
 </p>
-</div>
+
 ---
 
 <details><summary>:white_circle: <strong>ENCODERS</strong> (click to expand)</summary>  
