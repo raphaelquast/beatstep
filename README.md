@@ -48,7 +48,7 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
 
-<big><big><strong> General infos </strong></big></big> <small> <small>(click to expand)</small></small>
+## General
 
 <details><summary>:black_square_button:<strong>BUTTONS</strong></summary>
 
