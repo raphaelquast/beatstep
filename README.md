@@ -48,7 +48,9 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
 
-<details><summary><a>:black_square_button:<strong>BUTTONS</strong> (click to expand)</a></summary>
+## General infos <small> <small>(click to expand)</small></small>
+
+<details><summary>:black_square_button:<strong>BUTTONS</strong></summary>
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
@@ -75,7 +77,7 @@ The `stop` button can be used as follows:
 
 ---
 
-<details><summary>:white_circle: <strong>ENCODERS</strong> (click to expand)</summary>  
+<details><summary>:white_circle: <strong>ENCODERS</strong></summary>  
 
 The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
 (a red button-color indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc.)
