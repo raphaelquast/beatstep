@@ -359,7 +359,7 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 ---
 
 <details>
-<summary>:saxophone: SEQUENCER layer (click to expand)</summary>  
+<summary>:musical_score: SEQUENCER layer (click to expand)</summary>  
 
 </details>
 
