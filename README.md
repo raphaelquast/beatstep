@@ -51,9 +51,9 @@ After initialization, you can recall any saved MIDI configuration and the contro
 
 
 {::options parse_block_html="true" /}
+
 <details>
 <summary>:black_square_button: BUTTONS (click to expand)</summary>  
-{::options parse_block_html="false" /}
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
@@ -74,9 +74,9 @@ The `stop` button can be used as follows:
 - if the selected clip is playing: trigger stop
 
 - *"if shift pressed"* : stop ALL tracks
-{::options parse_block_html="true" /}
 
 </details>
+
 {::options parse_block_html="false" /}
 
 ---
