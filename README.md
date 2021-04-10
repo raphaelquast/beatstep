@@ -113,7 +113,7 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 
 
 <details>
-<summary>:trumpet: <strong>SHIFT</strong> layer</summary>  
+<summary>:trumpet: <strong>SHIFT</strong></summary>  
 
 You can always **double-tap** `shift` to re-activate the shift-layer permanently!
 
@@ -168,7 +168,7 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 ---
 
 <details>
-<summary>:violin: <strong>CONTROL</strong> layer</summary>  
+<summary>:violin: <strong>CONTROL</strong></summary>  
 
 Most lights are simply there to help remember the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live.
@@ -236,7 +236,7 @@ All encoders are assigned similar to the *"shift-layer"*.
 ---
 
 <details>
-<summary>:guitar: <strong>LAUNCH</strong> layer</summary>  
+<summary>:guitar: <strong>LAUNCH</strong></summary>  
 
 In this control-layer, both button-rows (e.g. `1-7` and `9-15`) represent clip-slots.  
 NOTICE: the `stop` button has a special feature in this layer (see below).
@@ -292,7 +292,7 @@ All encoders are assigned similar to the *"shift-layer"*.
 ---
 
 <details>
-<summary>:saxophone: <strong>MIX</strong> layer</summary>  
+<summary>:saxophone: <strong>MIX</strong></summary>  
 
 The lights in the top-row indicate the mute / solo status of the corresponding track.
 
@@ -349,7 +349,7 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 ---
 
 <details>
-<summary>:musical_score: <strong>SEQUENCER</strong> layer</summary>  
+<summary>:musical_score: <strong>SEQUENCER</strong></summary>  
 
 - ... coming soon
 
