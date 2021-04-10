@@ -374,4 +374,4 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 - Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
 
 ---
-
+ 
