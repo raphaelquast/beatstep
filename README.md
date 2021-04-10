@@ -48,7 +48,7 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
 
 
-## General
+## General (click to expand)
 
 <details><summary>:black_square_button:<strong>BUTTONS</strong></summary>
 
@@ -109,7 +109,7 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 
 ---
 
-## Layers:
+## Layers (click to expand)
 
 
 <details>
