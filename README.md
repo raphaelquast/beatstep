@@ -6,7 +6,7 @@ It turns the BeatStep controller into a fully-fledged control-surface for Ableto
 
 - select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
 - use pads to start/stop/trigger clips
-- initialize and edit 16 note MIDI-sequences
+- initialize and edit up to 16 note MIDI-sequences
 
 - get indications on the status of clips and tracks via button-LED's
 
@@ -352,7 +352,7 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 ---
 
-<details open>
+<details>
 <summary>:musical_score: <strong>SEQUENCER</strong></summary>  
 
 The `sequencer`-layer is only available in **Ableton 11** or newer!  
