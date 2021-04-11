@@ -60,17 +60,17 @@ The buttons `recall`, `store`,`chan` and `shift` are used to activate the contro
 
 - the *"shift-layer"* can be activated permanently by **double-tapping** the `shift` button
 
-- holding `shift` while pressing one of the layer-buttons will activate the layer until `shift` is released
+- holding `shift` while pressing `recall` or `chan` will activate the corresponding layer until `shift` is released
 
 - the *"if shift pressed"* features are only relevant if the layers are activated permanently **and** `shift` is pressed
 
 The `stop` button can be used as follows:
 
-- if the selected clip is currently recording: stop recording (but continue playback)
+- if the selected clip is currently recording: only stop recording (but continue playback)
 
 - if the selected clip is playing: trigger stop
 
-- *"if shift pressed"* : stop ALL tracks
+- *"if shift pressed"* : stop **ALL** tracks
 
 </details>
 
@@ -115,7 +115,9 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 <details>
 <summary>:trumpet: <strong>SHIFT</strong></summary>  
 
-You can always **double-tap** `shift` to re-activate the shift-layer permanently!
+The `shift` layer is active if no other layer is activated and shift is pressed.  
+It serves as a *quick-access* layer for frequently used functions.  
+The layer is deactivated as soon as `shift` is released!  
 
 The lights in the first indicate the currently activated clip.
 (`red` for midi, `blue` for audio and `magenta` for return tracks)
@@ -129,7 +131,6 @@ The lights in the second row indicate the track-arm status:
 - `blue` if the track represents a **track-group**
 
 - `off` if the track is muted and **not** armed
-
 
 
 #### The assignments are as follows:
@@ -236,7 +237,7 @@ All encoders are assigned similar to the *"shift-layer"*.
 ---
 
 <details>
-<summary>:guitar: <strong>LAUNCH</strong></summary>  
+<summary>:guitar: <strong>LAUNCH)</strong></summary>  
 
 In this control-layer, both button-rows (e.g. `1-7` and `9-15`) represent clip-slots.  
 NOTICE: the `stop` button has a special feature in this layer (see below).
@@ -351,7 +352,15 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 <details>
 <summary>:musical_score: <strong>SEQUENCER</strong></summary>  
 
+Due to a change in the Ableton API, the `sequencer`-layer is only available in **Ableton 11** or newer. 
+
+**Double-tap** `shift` to activate the `sequencer`-layer.
+
+
 - ... coming soon
+
+
+
 
 </details>
 ---  
