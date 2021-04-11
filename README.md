@@ -1,9 +1,12 @@
-This is a **MIDI Remote Script** for **Ableton Live 10 & 11** and the **Arturia BeatStep** controller.
+This is a **MIDI Remote Script** for **Ableton Live 9, 10 & 11** and the **Arturia BeatStep** controller.
 It turns the BeatStep controller into a fully-fledged control-surface for Ableton Live !
 
-- select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
+- there are 5 different layers that give you a lot of control over Ableton Live and MIDI-clips:
+  - **shift, mix, launch, control** and **sequencer**
 
+- select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
 - use pads to start/stop/trigger clips
+- initialize and edit up to 16 note MIDI-sequences
 
 - get indications on the status of clips and tracks via button-LED's
 
@@ -45,9 +48,12 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 
 - To ensure that the script is automatically selected (instead of the default script), rename the already existing *"Beatstep"* folder to *"_Beatstep"* (or something that it is alphabetically sorted **after** *"BeatStep_Q"*)
 
-After initialization, you can recall any saved MIDI configuration and the control-layers will still work !
+After initialization, you can recall any saved MIDI configuration and the control-layers will still work!
 
-## Buttons:
+
+## General (click to expand)
+
+<details><summary>:black_square_button: <strong>BUTTONS</strong></summary>
 
 The buttons `recall`, `store`,`chan` and `shift` are used to activate the control-layers.
 
@@ -57,19 +63,24 @@ The buttons `recall`, `store`,`chan` and `shift` are used to activate the contro
 
 - the *"shift-layer"* can be activated permanently by **double-tapping** the `shift` button
 
-- holding `shift` while pressing one of the layer-buttons will activate the layer until `shift` is released
+- holding `shift` while pressing `recall` or `chan` will activate the corresponding layer until `shift` is released
 
 - the *"if shift pressed"* features are only relevant if the layers are activated permanently **and** `shift` is pressed
 
 The `stop` button can be used as follows:
 
-- if the selected clip is currently recording: stop recording (but continue playback)
+- if the selected clip is currently recording: only stop recording (but continue playback)
 
 - if the selected clip is playing: trigger stop
 
-- *"if shift pressed"* : stop ALL tracks
+- *"if shift pressed"* : stop **ALL** tracks
 
-## Encoders:
+</details>
+
+
+---
+
+<details><summary>:white_circle: <strong>ENCODERS</strong></summary>  
 
 The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
 (a red button-color indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc.)
@@ -97,11 +108,19 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
   - *"if shift pressed"* **and** a *"drum-rack"* is selected:
     select row of viewed drum-pads
 
+</details>
+
 ---
 
-### If "shift" is active:
+## Layers (click to expand)
 
-You can always **double-tap** `shift` to re-activate the shift-layer permanently!
+
+<details>
+<summary>:trumpet: <strong>SHIFT</strong></summary>  
+
+The `shift` layer is active if no other layer is activated and shift is pressed.  
+It serves as a *quick-access* layer for frequently used functions.  
+The layer is deactivated as soon as `shift` is released!  
 
 The lights in the first indicate the currently activated clip.
 (`red` for midi, `blue` for audio and `magenta` for return tracks)
@@ -115,6 +134,7 @@ The lights in the second row indicate the track-arm status:
 - `blue` if the track represents a **track-group**
 
 - `off` if the track is muted and **not** armed
+
 
 #### The assignments are as follows:
 
@@ -147,9 +167,12 @@ The lights in the second row indicate the track-arm status:
 
 All encoders are assigned as described above except for the `transpose-encoder`, which is now used to **select devices** in the device-chain of the selected track. (turning the `transpose-encoder` will automatically focus the view to the device-chain!)
 
+</details>
+
 ---
 
-### If "control" is active
+<details>
+<summary>:violin: <strong>CONTROL</strong></summary>  
 
 Most lights are simply there to help remember the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live.
@@ -212,9 +235,12 @@ The lights of `button 13` and `button 14` indicate the status of their correspon
 
 All encoders are assigned similar to the *"shift-layer"*.
 
+</details>
+
 ---
 
-### If "launch" is active
+<details>
+<summary>:guitar: <strong>LAUNCH</strong></summary>  
 
 In this control-layer, both button-rows (e.g. `1-7` and `9-15`) represent clip-slots.  
 NOTICE: the `stop` button has a special feature in this layer (see below).
@@ -254,7 +280,7 @@ The button-lights indicate the status of the clip-slots, e.g.:
     - if the slot is a "group-slot": fold/unfold the corresponding group
 
 - `button 8` : select previous scene (e.g. go 1 scene up)
-  
+ 
   - *"if shift-pressed"*: select previous track
 
 - `button 9-15` : same as `1-7` but for the bottom row of the selection.
@@ -265,9 +291,12 @@ The button-lights indicate the status of the clip-slots, e.g.:
 
 All encoders are assigned similar to the *"shift-layer"*.
 
+</details>
+
 ---
 
-### If "mix" is active
+<details>
+<summary>:headphones: <strong>MIX</strong></summary>  
 
 The lights in the top-row indicate the mute / solo status of the corresponding track.
 
@@ -319,9 +348,103 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 - `transpose encoder` : set volume of master-track
 
+</details>
+
 ---
 
-# Thanks to
+<details>
+<summary>:musical_score: <strong>SEQUENCER</strong></summary>  
+
+The `sequencer`-layer is only available in **Ableton 11** or newer!  
+**Double-tap** `shift` to activate the `sequencer`-layer.
+
+The `sequencer` layer has 2 different functionalities:
+
+- If `shift` is pressed, you can use all button-functions from the `shift`-layer
+
+
+<details>
+<summary>:ant: <strong>SEQUENCE EDITOR</strong> (active if a MIDI clip is selected)</summary>  
+In the sequence-editor mode you can edit the first 16 notes of the selected MIDI clip.
+
+- the colors of `buttons 1-16` are
+  - `black` if there is no note or the note is muted
+  - `blue` if there is a note, and it is unmuted
+  - `magenta` if the note is unmuted and outside the loop
+    - it also indicates if less than 16 notes are present
+  - a moving `red` light indicates the playback-state of the clip
+  
+#### The assignments are as follows:
+
+- `button 1-16` : mute/unmute corresponding note
+- `shift` + `button 1-16` : use functionality of `shift`-layer
+
+- `encoder 1-16` : change assigned parameter of corresponding note
+
+- `shift` + `encoder 1` : set encoders to change **note pitch**
+- `shift` + `encoder 2` : set encoders to change **note velocity**
+- `shift` + `encoder 3` : set encoders to change **note start-time**
+- `shift` + `encoder 4` : set encoders to change **note duration**
+- `shift` + `encoder 5` : set encoders to change **note velocity-deviation**
+- `shift` + `encoder 6` : set encoders to change **note probability**
+
+- `shift` + `encoder 8` : select prev/next track
+
+- `shift` + `encoder 9` : change the loop start-time (coarse steps)
+- `shift` + `encoder 10` : change the loop start-time (fine steps)
+- `shift` + `encoder 11` : change the position of the loop (fine steps)
+- `shift` + `encoder 12` : change the loop end-time (fine steps)
+- `shift` + `encoder 13` : change the loop end-time (coarse steps)
+
+- `shift` + `encoder 15` : transpose all notes that are inside the loop
+- `shift` + `encoder 16` : select prev/next scene
+
+</details>
+
+
+<details>
+<summary>:hatching_chick: <strong>SEQUENCE INITIALIZER</strong> (active if the selected clip-slot is empty)</summary>  
+In the sequence-initializer layer you can set the parameters for the midi-sequence that
+is initialized if you **double-tap** `shift`.
+
+- the top button-row indicates the tempo of the MIDI notes as "notes/bar"
+  [1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4]
+
+- `buttons` 9, 10, 11, 12 indicate how the note-interval is filled
+  - NOTE you can also use this to offset the notes!
+- `buttons`13, 14, 15, 16 indicate the velocity of the notes (0.25, 0.5, 0.75, 1)
+
+#### The assignments are as follows:
+
+- top button-row: set sequence-tempo
+- `buttons` 9, 10, 11, 12 : set note-interval
+- `buttons`13, 14, 15, 16 : set velocity
+- **double-tap** `shift` : initialize a 16 note midi sequence with the selected parameters
+
+- `transpose-encoder` : set the note-pitch for the initialized sequence
+
+- `encoder 1` : set encoders to change **note pitch**
+- `encoder 2` : set encoders to change **note velocity**
+- `encoder 3` : set encoders to change **note start-time**
+- `encoder 4` : set encoders to change **note duration**
+- `encoder 5` : set encoders to change **note velocity-deviation**
+- `encoder 6` : set encoders to change **note probability**
+
+- `encoder 8` : select prev/next track
+
+- `encoder 9` : set pitch increment of notes
+- `encoder 10` : set number of incremented notes
+
+- `encoder 15` : transpose all notes that are inside the loop
+- `encoder 16` : select prev/next scene
+
+</details>
+
+
+</details>
+---  
+
+## Thanks to
 
 - [untergeek](https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/) for unravelling BeatStep sysex messages
 
@@ -330,3 +453,4 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 - Hanz Petrov for his [Introduction to the Framework-classes](https://livecontrol.q3f.org/ableton-liveapi/articles/introduction-to-the-framework-classes/) and the corresponding [remotescripts-blog](http://remotescripts.blogspot.com)
 
 ---
+ 

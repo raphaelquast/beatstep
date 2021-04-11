@@ -3,7 +3,7 @@
 
 
 class QSetup(object):
-    '''
+    """
     ##### BUTTON
     set_B_.........  (ID, val)
                      ID: the button number (1-16), or one of ('play', 'stop', 'cntrl', 'sync', 'recall', 'store', 'shift', 'chan')
@@ -79,20 +79,21 @@ class QSetup(object):
     #### GLOBAL
     set_global_channel(c): set the global midi-channel
                            (0-15)
-    '''
+    """
 
     def __init__(self):
 
         # a dict with the button IDS
-        self._B = dict(play=88,   # white
-                       stop=89,   # no light
-                       cntrl=90,  # red or blue
-                       sync=91,   # blue
-                       recall=92, # blue
-                       store=93,  # red
-                       shift=94,  # blue
-                       chan=95,   # blue
-                       )
+        self._B = dict(
+            play=88,  # white
+            stop=89,  # no light
+            cntrl=90,  # red or blue
+            sync=91,  # blue
+            recall=92,  # blue
+            store=93,  # red
+            shift=94,  # blue
+            chan=95,  # blue
+        )
         # a dict with the encoder IDS
         self._E = dict(transpose=48)
 
@@ -100,43 +101,72 @@ class QSetup(object):
             self._B[i] = 111 + i
             self._E[i] = 31 + i
 
+        self._funcdict = dict(
+            mode=1, channel=2, cc=3, off=4, on=5, behaviour=6, color=16
+        )
 
-        self._funcdict = dict(mode=1, channel=2, cc=3, off=4, on=5, behaviour=6, color=16)
+        self._S_funcdict = dict(
+            channel=1,
+            transpose=2,
+            scale=3,
+            mode=4,
+            stepsize=5,
+            length=6,
+            swing=7,
+            gate=8,
+            legato=9,
+        )
 
-        self._S_funcdict = dict(channel=1, transpose=2, scale=3, mode=4, stepsize=5, length=6, swing=7, gate=8, legato=9)
-
-        self._B_START_MSG =   (240, 0, 32, 107, 127, 66, 2, 0)   # F0 00 20 6B 7F 42 02 00 c  ID val F7
-        self._B_REQUEST_MSG = (240, 0, 32, 107, 127, 66, 1, 0)   # F0 00 20 6B 7F 42 01 00 c  ID     F7
+        self._B_START_MSG = (
+            240,
+            0,
+            32,
+            107,
+            127,
+            66,
+            2,
+            0,
+        )  # F0 00 20 6B 7F 42 02 00 c  ID val F7
+        self._B_REQUEST_MSG = (
+            240,
+            0,
+            32,
+            107,
+            127,
+            66,
+            1,
+            0,
+        )  # F0 00 20 6B 7F 42 01 00 c  ID     F7
 
         # set button and encoder getters and setters
         for key, c in self._funcdict.items():
             funcs = self._get_callbacks(c)
-            setattr(self, 'set_B_' + key, funcs[0])
-            setattr(self, 'get_B_' + key, funcs[1])
-            setattr(self, 'set_E_' + key, funcs[2])
-            setattr(self, 'get_E_' + key, funcs[3])
+            setattr(self, "set_B_" + key, funcs[0])
+            setattr(self, "get_B_" + key, funcs[1])
+            setattr(self, "set_E_" + key, funcs[2])
+            setattr(self, "get_E_" + key, funcs[3])
 
         E_acc_set, E_acc_get = self._get_acceleration_callback()
-        setattr(self, 'set_E_acceleration', E_acc_set)
-        setattr(self, 'get_E_acceleration', E_acc_get)
+        setattr(self, "set_E_acceleration", E_acc_set)
+        setattr(self, "get_E_acceleration", E_acc_get)
 
         B_velocity_set, B_velocity_get = self._get_velocity_callback()
-        setattr(self, 'set_B_velocity', B_velocity_set)
-        setattr(self, 'get_B_velocity', B_velocity_get)
+        setattr(self, "set_B_velocity", B_velocity_set)
+        setattr(self, "get_B_velocity", B_velocity_get)
 
         # set sequencer setters
         for key, c in self._S_funcdict.items():
             funcs = self._get_S_callbacks(c)
-            setattr(self, 'set_S_' + key, funcs[0])
-            setattr(self, 'get_S_' + key, funcs[1])
+            setattr(self, "set_S_" + key, funcs[0])
+            setattr(self, "get_S_" + key, funcs[1])
 
         S_note_set, S_note_get = self._get_S_note_callback()
-        setattr(self, 'set_S_note', S_note_set)
-        setattr(self, 'get_S_note', S_note_get)
+        setattr(self, "set_S_note", S_note_set)
+        setattr(self, "get_S_note", S_note_get)
 
-        setattr(self, 'set_S_on', self._get_S_toggle_callback(127))
-        setattr(self, 'set_S_off', self._get_S_toggle_callback(0))
-        setattr(self, 'get_S_onoff', self._get_S_toggle_get_callback())
+        setattr(self, "set_S_on", self._get_S_toggle_callback(127))
+        setattr(self, "set_S_off", self._get_S_toggle_callback(0))
+        setattr(self, "get_S_onoff", self._get_S_toggle_get_callback())
 
     def recall_preset(self, slot):
         return (240, 0, 32, 107, 127, 66, 5, slot, 247)
@@ -175,41 +205,50 @@ class QSetup(object):
     def _get_velocity_callback(self):
         def set_callback(val):
             return self._send_change(65, 3, val)
+
         def get_callback():
             return self._send_request(65, 3)
+
         return set_callback, get_callback
 
     def _get_acceleration_callback(self):
         def set_callback(val):
             return self._send_change(65, 4, val)
+
         def get_callback():
             return self._send_request(65, 4)
+
         return set_callback, get_callback
 
     def _get_S_callbacks(self, c):
         def set_callback(val):
             return self._send_change(80, c, val)
+
         def get_callback():
             return self._send_request(80, c)
+
         return set_callback, get_callback
 
     def _get_S_note_callback(self):
         def set_callback(ID, val):
             return self._send_change(82, ID, val)
+
         def get_callback(ID):
             return self._send_request(82, ID)
+
         return set_callback, get_callback
 
     def _get_S_toggle_callback(self, val):
         def set_callback(ID):
             return self._send_change(83, ID, val)
+
         return set_callback
 
     def _get_S_toggle_get_callback(self):
         def get_callback(ID):
             return self._send_request(83, ID)
-        return get_callback
 
+        return get_callback
 
     def decode(self, b):
         whatQ, control, val = None, None, None
@@ -221,14 +260,14 @@ class QSetup(object):
 
             for key, val in self._B.items():
                 if val == ID:
-                    control = 'button_' + str(key)
+                    control = "button_" + str(key)
                     break
                 else:
                     continue
             if control is None:
                 for key, val in self._E.items():
                     if val == ID:
-                        control = 'encoder_' + str(key)
+                        control = "encoder_" + str(key)
                         break
                     else:
                         continue
