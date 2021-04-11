@@ -373,7 +373,9 @@ In the sequence-editor mode you can edit the first 16 notes of the selected MIDI
   - `magenta` if the note is unmuted and outside the loop
     - it also indicates if less than 16 notes are present
   - a moving `red` light indicates the playback-state of the clip
-  
+
+- check the Ableton info-bar for info-messages!
+
 #### The assignments are as follows:
 
 - `button 1-16` : mute/unmute corresponding note
@@ -413,6 +415,8 @@ is initialized if you **double-tap** `shift`.
 - `buttons` 9, 10, 11, 12 indicate how the note-interval is filled
   - NOTE you can also use this to offset the notes!
 - `buttons`13, 14, 15, 16 indicate the velocity of the notes (0.25, 0.5, 0.75, 1)
+
+- check the Ableton info-bar for info-messages!
 
 #### The assignments are as follows:
 
