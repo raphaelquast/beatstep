@@ -364,8 +364,13 @@ The `sequencer` layer has 2 different functionalities:
 <summary>:ant: <strong>SEQUENCE EDITOR</strong> (active if a MIDI clip is selected)</summary>  
 In the sequence-editor mode you can edit the first 16 notes of the selected MIDI clip.
 
-- 
-
+- the colors of `buttons 1-16` are
+  - `black` if there is no note or the note is muted
+  - `blue` if there is a note, and it is unmuted
+  - `magenta` if the note is unmuted and outside the loop
+    - it also indicates if less than 16 notes are present
+  - a moving `red` light indicates the playback-state of the clip
+  
 #### The assignments are as follows:
 
 - `button 1-16` : mute/unmute corresponding note
@@ -431,13 +436,6 @@ is initialized if you **double-tap** `shift`.
 - `encoder 16` : select prev/next scene
 
 </details>
-
-
-
-
-- ... coming soon
-
-
 
 
 </details>
