@@ -349,12 +349,90 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 
 ---
 
-<details>
+<details open>
 <summary>:musical_score: <strong>SEQUENCER</strong></summary>  
 
-Due to a change in the Ableton API, the `sequencer`-layer is only available in **Ableton 11** or newer. 
-
+The `sequencer`-layer is only available in **Ableton 11** or newer!  
 **Double-tap** `shift` to activate the `sequencer`-layer.
+
+The `sequencer` layer has 2 different functionalities:
+
+- If `shift` is pressed, you can use all button-functions from the `shift`-layer
+
+
+<details>
+<summary>:ant: <strong>SEQUENCE EDITOR</strong> (active if a MIDI clip is selected)</summary>  
+In the sequence-editor mode you can edit the first 16 notes of the selected MIDI clip.
+
+- 
+
+#### The assignments are as follows:
+
+- `button 1-16` : mute/unmute corresponding note
+- `shift` + `button 1-16` : use functionality of `shift`-layer
+
+- `encoder 1-16` : change assigned parameter of corresponding note
+
+- `shift` + `encoder 1` : set encoders to change **note pitch**
+- `shift` + `encoder 2` : set encoders to change **note velocity**
+- `shift` + `encoder 3` : set encoders to change **note start-time**
+- `shift` + `encoder 4` : set encoders to change **note duration**
+- `shift` + `encoder 5` : set encoders to change **note velocity-deviation**
+- `shift` + `encoder 6` : set encoders to change **note probability**
+
+- `shift` + `encoder 8` : select prev/next track
+
+- `shift` + `encoder 9` : change the loop start-time (coarse steps)
+- `shift` + `encoder 10` : change the loop start-time (fine steps)
+- `shift` + `encoder 11` : change the position of the loop (fine steps)
+- `shift` + `encoder 12` : change the loop end-time (fine steps)
+- `shift` + `encoder 13` : change the loop end-time (coarse steps)
+
+- `shift` + `encoder 15` : transpose all notes that are inside the loop
+- `shift` + `encoder 16` : select prev/next scene
+
+</details>
+
+
+<details>
+<summary>:hatching_chick: <strong>SEQUENCE INITIALIZER</strong> (active if the selected clip-slot is empty)</summary>  
+In the sequence-initializer layer you can set the parameters for the midi-sequence that
+is initialized if you **double-tap** `shift`.
+
+- the top button-row indicates the tempo of the MIDI notes as "notes/bar"
+  [1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4]
+
+- `buttons` 9, 10, 11, 12 indicate how the note-interval is filled
+  - NOTE you can also use this to offset the notes!
+- `buttons`13, 14, 15, 16 indicate the velocity of the notes (0.25, 0.5, 0.75, 1)
+
+#### The assignments are as follows:
+
+- top button-row: set sequence-tempo
+- `buttons` 9, 10, 11, 12 : set note-interval
+- `buttons`13, 14, 15, 16 : set velocity
+- **double-tap** `shift` : initialize a 16 note midi sequence with the selected parameters
+
+- `transpose-encoder` : set the note-pitch for the initialized sequence
+
+- `encoder 1` : set encoders to change **note pitch**
+- `encoder 2` : set encoders to change **note velocity**
+- `encoder 3` : set encoders to change **note start-time**
+- `encoder 4` : set encoders to change **note duration**
+- `encoder 5` : set encoders to change **note velocity-deviation**
+- `encoder 6` : set encoders to change **note probability**
+
+- `encoder 8` : select prev/next track
+
+- `encoder 9` : set pitch increment of notes
+- `encoder 10` : set number of incremented notes
+
+- `encoder 15` : transpose all notes that are inside the loop
+- `encoder 16` : select prev/next scene
+
+</details>
+
+
 
 
 - ... coming soon
