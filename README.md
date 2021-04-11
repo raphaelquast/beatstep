@@ -237,7 +237,7 @@ All encoders are assigned similar to the *"shift-layer"*.
 ---
 
 <details>
-<summary>:guitar: <strong>LAUNCH)</strong></summary>  
+<summary>:guitar: <strong>LAUNCH</strong></summary>  
 
 In this control-layer, both button-rows (e.g. `1-7` and `9-15`) represent clip-slots.  
 NOTICE: the `stop` button has a special feature in this layer (see below).
