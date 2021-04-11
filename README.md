@@ -1,5 +1,5 @@
 This is a **MIDI Remote Script** for **Ableton Live 9, 10 & 11** and the **Arturia BeatStep** controller.
-It turns the BeatStep controller into a fully-fledged control-surface for Ableton Live !
+It turns your BeatStep into a fully-fledged control-surface for Ableton Live !
 
 - there are 5 different layers that give you a lot of control over Ableton Live and MIDI-clips:
   - **shift, mix, launch, control** and **sequencer**
