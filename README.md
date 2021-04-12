@@ -409,7 +409,12 @@ In the sequence-editor mode you can edit the first 16 notes of the selected MIDI
 In the sequence-initializer layer you can set the parameters for the midi-sequence that
 is initialized if you **double-tap** `shift`.
 
-- the top button-row indicates the tempo of the MIDI notes as "notes/bar"
+The first 6 characters of a clip-name are used to parse the tempo of the midi sequence!  
+e.g. a clip-name starting with `1/32_Q` will be identified as having a tempo of 1/32.
+Any characters after the first 6 are ignored. (e.g. a name of `1/32_Q what a nice clip` is fine!)
+
+
+- `buttons` 1-8 indicates the tempo of the MIDI notes as "notes/bar"
   [1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4]
 
 - `buttons` 9, 10, 11, 12 indicate how the note-interval is filled
@@ -420,7 +425,7 @@ is initialized if you **double-tap** `shift`.
 
 #### The assignments are as follows:
 
-- top button-row: set sequence-tempo
+- `buttons` 1-8: set sequence-tempo
 - `buttons` 9, 10, 11, 12 : set note-interval
 - `buttons`13, 14, 15, 16 : set velocity
 - **double-tap** `shift` : initialize a 16 note midi sequence with the selected parameters
