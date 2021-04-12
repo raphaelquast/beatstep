@@ -406,8 +406,8 @@ In the sequence-editor mode you can edit the first 16 notes of the selected MIDI
 
 <details>
 <summary>:hatching_chick: <strong>SEQUENCE INITIALIZER</strong> (active if the selected clip-slot is empty)</summary>  
-In the sequence-initializer layer you can set the parameters for the midi-sequence that
-is initialized if you **double-tap** `shift`.
+In the sequence-initializer layer you can set the parameters for the midi-sequence  
+that is initialized if you **double-tap** `shift`.
 
 The first 6 characters of a clip-name are used to parse the tempo of the midi sequence!  
 e.g. a clip-name starting with `1/32_Q` will be identified as having a tempo of 1/32.
