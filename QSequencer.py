@@ -642,9 +642,13 @@ class QSequencer(object):
                 # take only first 6 characters (e.b.   "1/64_Q" )
                 self.sequence_length = self.sequence_names_inverted[self.clip.name[:6]]
                 self._parent._parent.show_message(
-                    f"sequence tempo set to {simplify_fraction(self.sequence_length , 16)} beats"
+                    "sequence tempo set to:     "
+                    + f"{simplify_fraction(self.sequence_length, self.n_notes * 4)} BARS "
                 )
-            except IndexError:
+            except KeyError:
+                self._parent._parent.show_message(
+                    "sequence tempo could not be parsed from clip-name..."
+                )
                 pass
 
     def init_sequence(self):
