@@ -72,10 +72,10 @@ class QControlComponent(BaseComponent):
 
         self._shift_pressed = False
         self._shift_fixed = False
-        self._control_layer_1 = False  # track control
-        self._control_layer_2 = False  # song control
-        self._control_layer_3 = False  # clip launch
-        self._layer_onetrack = False  # clip launch
+        self._control_layer_1 = False  # mix
+        self._control_layer_2 = False  # control
+        self._control_layer_3 = False  # launch
+        self._layer_onetrack = False  # launch (onetrack)
         self._sequencer = False  # sequencer
 
         # do this before initializing the sequencer!
@@ -829,8 +829,9 @@ class QControlComponent(BaseComponent):
                 if hasattr(self, "QSequencer"):
                     self.QSequencer.remove_handler()
 
-            # activate device controls for the layers (encoder 1-4 and 9-12)
-            if layer in ["_control_layer_2", "_control_layer_3", "_shift_fixed"]:
+            # activate device controls for the control-layer and the shift-fixed layer
+            # (encoder 1-4 and 9-12)
+            if layer in ["_control_layer_2", "_shift_fixed"]:
                 self._parent._device.set_enabled(True)
             else:
                 self._parent._device.set_enabled(False)
@@ -1998,10 +1999,11 @@ class QControlComponent(BaseComponent):
             for key, val in self.layer_listener.items():
                 getattr(self, "_remove" + val)()
 
+            # remove value listeners from buttons in case shift is released
+            # (so that we can play instruments if shift is not pressed)
+            self._parent._device.set_enabled(False)
+
             if not self._shift_pressed:
-                # remove value listeners from buttons in case shift is released
-                # (so that we can play instruments if shift is not pressed)
-                self._parent._device.set_enabled(False)
                 self._remove_handler()
                 self._parent._deactivate_control_mode()
                 # transpose notes back to last set transpose-val
