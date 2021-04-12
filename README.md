@@ -365,6 +365,7 @@ The `sequencer` layer has 2 different functionalities:
 
 <details>
 <summary>:ant: <strong>SEQUENCE EDITOR</strong> (active if a MIDI clip is selected)</summary>  
+
 In the sequence-editor mode you can edit the first 16 notes of the selected MIDI clip.
 
 - the colors of `buttons 1-16` are
@@ -406,6 +407,7 @@ In the sequence-editor mode you can edit the first 16 notes of the selected MIDI
 
 <details>
 <summary>:hatching_chick: <strong>SEQUENCE INITIALIZER</strong> (active if the selected clip-slot is empty)</summary>  
+
 In the sequence-initializer layer you can set the parameters for the midi-sequence  
 that is initialized if you **double-tap** `shift`.
 
