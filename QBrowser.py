@@ -1,21 +1,34 @@
+import sys
 import Live
 from .QSetup import QSetup
 from itertools import islice
 
 NavDirection = Live.Application.Application.View.NavDirection
 
+if sys.version_info.major >= 3:
+    symb_folder = "\U0001f4c1"
+    symb_folder_open = "\U0001f4c2"
+    symb_red_circle = "\U0001f534"
+    symb_blue_diamond_large = "\U0001F537"
+    symb_blue_diamond_small = "\U0001f539"
+    symb_fire = "\U0001f525"
+    symb_black_circle = "\u25cf"
+    symb_stop = "\U0001f6ab"
 
-symb_folder = "\U0001f4c1"
-symb_folder_open = "\U0001f4c2"
-symb_red_circle = "\U0001f534"
-symb_blue_diamond_large = "\U0001F537"
-symb_blue_diamond_small = "\U0001f539"
-symb_fire = "\U0001f525"
-symb_black_circle = "\u25cf"
-symb_stop = "\U0001f6ab"
+    symb_left_arraow = "\u25c4"
+    symb_right_arrow = "\u25ba"
+else:
+    symb_folder = "#"
+    symb_folder_open = "#"
+    symb_red_circle = "+"
+    symb_blue_diamond_large = "*"
+    symb_blue_diamond_small = "*"
+    symb_fire = "--"
+    symb_black_circle = "*"
+    symb_stop = "#"
 
-symb_left_arraow = "\u25c4"
-symb_right_arrow = "\u25ba"
+    symb_left_arraow = "<<"
+    symb_right_arrow = ">>"
 
 
 # fmt: off
@@ -43,9 +56,9 @@ def makebold(text, surround='select', translate=False):
         target = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
                   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '?', '.', ',', '"', "'", "|"]
-        transl = ['ａ', 'ｂ', 'ｃ', 'ｄ', 'ｅ', 'ｆ', 'ｇ', 'ｈ', 'ｉ', 'ｊ', 'ｋ', 'ｌ', 'ｍ', 'ｎ', 'ｏ', 'ｐ', 'ｑ', 'ｒ', 'ｓ', 'ｔ', 'ｕ', 'ｖ', 'ｗ', 'ｘ', 'ｙ', 'ｚ',
-                  'Ａ', 'Ｂ', 'Ｃ', 'Ｄ', 'Ｅ', 'Ｆ', 'Ｇ', 'Ｈ', 'Ｉ', 'Ｊ', 'Ｋ', 'Ｌ', 'Ｍ', 'Ｎ', 'Ｏ', 'Ｐ', 'Ｑ', 'Ｒ', 'Ｓ', 'Ｔ', 'Ｕ', 'Ｖ', 'Ｗ', 'Ｘ', 'Ｙ', 'Ｚ',
-                  '０', '１', '２', '３', '４', '５', '６', '７', '８', '９', '！', '？', '．', '，', '"', '＇','｜']
+
+        transl = [u'\uff41', u'\uff42', u'\uff43', u'\uff44', u'\uff45', u'\uff46', u'\uff47', u'\uff48', u'\uff49', u'\uff4a', u'\uff4b', u'\uff4c', u'\uff4d', u'\uff4e', u'\uff4f', u'\uff50', u'\uff51', u'\uff52', u'\uff53', u'\uff54', u'\uff55', u'\uff56', u'\uff57', u'\uff58', u'\uff59', u'\uff5a', u'\uff21', u'\uff22', u'\uff23', u'\uff24', u'\uff25', u'\uff26', u'\uff27', u'\uff28', u'\uff29', u'\uff2a', u'\uff2b', u'\uff2c', u'\uff2d', u'\uff2e', u'\uff2f', u'\uff30', u'\uff31', u'\uff32', u'\uff33', u'\uff34', u'\uff35', u'\uff36', u'\uff37', u'\uff38', u'\uff39', u'\uff3a', u'\uff10', u'\uff11', u'\uff12', u'\uff13', u'\uff14', u'\uff15', u'\uff16', u'\uff17', u'\uff18', u'\uff19', u'\uff01', u'\uff1f', u'\uff0e', u'\uff0c', b'"', u'\uff07', u'\uff5c']
+
 
         translated = ''
         for i in text:
@@ -66,8 +79,11 @@ class QBrowser(object):
     def __init__(self, parent):
         self._parent = parent
 
-        self._encoder_up_counter = {**{i: 0 for i in range(16)}, "transpose": 0}
-        self._encoder_down_counter = {**{i: 0 for i in range(16)}, "transpose": 0}
+        self._encoder_up_counter = {i: 0 for i in range(16)}
+        self._encoder_up_counter["transpose"] = 0
+        self._encoder_down_counter = {i: 0 for i in range(16)}
+        self._encoder_down_counter["transpose"] = 0
+
         self.QS = QSetup()
 
         self.up_down = True
@@ -370,7 +386,7 @@ class QBrowser(object):
         self.hotswap = True
         self.app.view.toggle_browse()
         self._parent._parent.show_message(
-            f"hotswapping {self.app.browser.hotswap_target}"
+            "hotswapping " + str(self.app.browser.hotswap_target)
         )
 
     def button_callback(self, i):
@@ -393,7 +409,7 @@ class QBrowser(object):
             elif i == 5:
                 self._parent._change_quantization()
             elif i == 6:
-                self._parent._change_ableton_view(next(self._detail_cycle))
+                self._parent._change_ableton_view(next(self._parent._detail_cycle))
             elif i == 7:
                 self._parent._select_prev_scene()
             # ----------
