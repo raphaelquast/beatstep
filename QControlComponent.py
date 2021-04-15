@@ -2093,6 +2093,8 @@ class QControlComponent(BaseComponent):
         if value == 0:
             if self._shift_pressed:
                 self._activate_control_layer("_browser", True)
+                self.QBrowser._print_info()
+
             else:
                 self._activate_control_layer("_control_layer_2", True)
 

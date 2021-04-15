@@ -4,29 +4,59 @@ from itertools import islice
 
 NavDirection = Live.Application.Application.View.NavDirection
 
+
+symb_folder = "\U0001f4c1"
+symb_folder_open = "\U0001f4c2"
+symb_red_circle = "\U0001f534"
+symb_blue_diamond_large = "\U0001F537"
+symb_blue_diamond_small = "\U0001f539"
+symb_fire = "\U0001f525"
+symb_black_circle = "\u25cf"
+symb_stop = "\U0001f6ab"
+
+symb_left_arraow = "\u25c4"
+symb_right_arrow = "\u25ba"
+
+
 # fmt: off
 
+def makebold(text, surround='select', translate=False):
 
-def makebold(text, surround='select'):
-    target = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '?', '.', ',', '"', "'",]
-    transl = ['𝗮', '𝗯', '𝗰', '𝗱', '𝗲', '𝗳', '𝗴', '𝗵', '𝗶', '𝗷', '𝗸', '𝗹', '𝗺', '𝗻', '𝗼', '𝗽', '𝗾', '𝗿', '𝘀', '𝘁', '𝘂', '𝘃', '𝘄', '𝘅', '𝘆', '𝘇', '𝗔', '𝗕', '𝗖', '𝗗', '𝗘', '𝗙', '𝗚', '𝗛', '𝗜', '𝗝', '𝗞', '𝗟', '𝗠', '𝗡', '𝗢', '𝗣', '𝗤', '𝗥', '𝗦', '𝗧', '𝗨', '𝗩', '𝗪', '𝗫', '𝗬', '𝗭', '𝟬', '𝟭', '𝟮', '𝟯', '𝟰', '𝟱', '𝟲', '𝟳', '𝟴', '𝟵', '❗', '❓', '.', ',', '"', "'",]
-    transl = ['ａ', 'ｂ', 'ｃ', 'ｄ', 'ｅ', 'ｆ', 'ｇ', 'ｈ', 'ｉ', 'ｊ', 'ｋ', 'ｌ', 'ｍ', 'ｎ', 'ｏ', 'ｐ', 'ｑ', 'ｒ', 'ｓ', 'ｔ', 'ｕ', 'ｖ', 'ｗ', 'ｘ', 'ｙ', 'ｚ', 'Ａ', 'Ｂ', 'Ｃ', 'Ｄ', 'Ｅ', 'Ｆ', 'Ｇ', 'Ｈ', 'Ｉ', 'Ｊ', 'Ｋ', 'Ｌ', 'Ｍ', 'Ｎ', 'Ｏ', 'Ｐ', 'Ｑ', 'Ｒ', 'Ｓ', 'Ｔ', 'Ｕ', 'Ｖ', 'Ｗ', 'Ｘ', 'Ｙ', 'Ｚ', '０', '１', '２', '３', '４', '５', '６', '７', '８', '９', '！', '？', '．', '，', '"', '＇',]
+    if surround=="select":
+        #before = ' '.join([symb_blue_hex, symb_red_circle, ''])
+        #after = ' '.join(['', symb_red_circle, symb_blue_hex])
 
-    if surround=='select':
-        before = u"\U0001F537 " + u'\U0001f534  '
-        after = u'\U0001f534 ' + u"  \U0001F537"
-    elif surround=='list':
-        before = u"\U0001F537 "
+        before = "||  " + symb_fire + "   "
+        after = "   " + symb_fire + "  ||"
+
+    elif surround=="last_level":
+        before = " " + symb_stop
+        after = " " + symb_stop
+    elif surround=="list":
+        before = symb_blue_diamond_small + " "
+        after = ""
+    elif surround=="no":
+        before = ""
         after = ""
 
-    translated = ''
-    for i in text:
-        try:
-            translated += transl[target.index(i)]
-        except Exception:
-            translated += i
-    return before + translated +  after
+    if translate:
+        target = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '?', '.', ',', '"', "'", "|"]
+        transl = ['ａ', 'ｂ', 'ｃ', 'ｄ', 'ｅ', 'ｆ', 'ｇ', 'ｈ', 'ｉ', 'ｊ', 'ｋ', 'ｌ', 'ｍ', 'ｎ', 'ｏ', 'ｐ', 'ｑ', 'ｒ', 'ｓ', 'ｔ', 'ｕ', 'ｖ', 'ｗ', 'ｘ', 'ｙ', 'ｚ',
+                  'Ａ', 'Ｂ', 'Ｃ', 'Ｄ', 'Ｅ', 'Ｆ', 'Ｇ', 'Ｈ', 'Ｉ', 'Ｊ', 'Ｋ', 'Ｌ', 'Ｍ', 'Ｎ', 'Ｏ', 'Ｐ', 'Ｑ', 'Ｒ', 'Ｓ', 'Ｔ', 'Ｕ', 'Ｖ', 'Ｗ', 'Ｘ', 'Ｙ', 'Ｚ',
+                  '０', '１', '２', '３', '４', '５', '６', '７', '８', '９', '！', '？', '．', '，', '"', '＇','｜']
 
+        translated = ''
+        for i in text:
+            try:
+                translated += transl[target.index(i)]
+            except Exception:
+                translated += i
+    else:
+        translated = text
+
+    return before + translated +  after
 
 # fmt: on
 
@@ -45,12 +75,19 @@ class QBrowser(object):
         self.button_colors = {}
 
         self.pointer = 0
+        self.parent_pointer = []
 
-        self.parent_item = []
         self.browser_item = self.app.browser.instruments
+        self.parent_item = []
 
         # encoder turn sensitivity
         self.sensitivity = 6
+
+        self.itemlist = self._get_itemlist()
+        self.names = self._get_names()
+
+        self.preview_items = False
+        # self.hotswap = False
 
     @property
     def app(self):
@@ -92,7 +129,7 @@ class QBrowser(object):
             self.samples,
         ]
 
-    def get_itemlist(self):
+    def _get_itemlist(self):
         if len(self.parent_item) == 0:
             itemlist = self._itemlist
 
@@ -101,7 +138,7 @@ class QBrowser(object):
 
         return itemlist
 
-    def _scroll_browser(self, up_down):
+    def _scroll_browser(self, up_down, direction="up_down"):
         app = self.app
 
         if not app.view.is_view_visible("Browser"):
@@ -109,66 +146,92 @@ class QBrowser(object):
             app.view.focus_view("Browser")
 
         if up_down:
-            app.view.scroll_view(NavDirection.up, "Browser", False)
+            if direction == "up_down":
+                app.view.scroll_view(NavDirection.up, "Browser", False)
+            elif direction == "left_right":
+                app.view.scroll_view(NavDirection.left, "Browser", False)
         else:
-            app.view.scroll_view(NavDirection.down, "Browser", False)
+            if direction == "up_down":
+                app.view.scroll_view(NavDirection.down, "Browser", False)
+            elif direction == "left_right":
+                app.view.scroll_view(NavDirection.right, "Browser", False)
 
-    def next_level(self):
+    def next_level(self, empty=False):
         itemlist = list(self.browser_item.children)
         if len(itemlist) > 0:
-            self._print_info(empty=True)
             self.parent_item.append(self.browser_item)
+            self.parent_pointer.append(self.pointer)
+
+            if empty:
+                self._print_info(empty=empty)
+
             self.pointer = 0
             self.browser_item = itemlist[self.pointer]
 
+            self.itemlist = self._get_itemlist()
+            self.names = self._get_names()
+
+            if not empty:
+                self._print_info(empty=empty)
+
         else:
-            self._parent._parent.show_message("NO FURTHER LEVEL AVAILABLE")
+            self._print_info(empty=True, surround_selected="last_level")
 
     def prev_level(self):
         if len(self.parent_item) > 0:
             self.browser_item = self.parent_item.pop(-1)
+            self.pointer = self.parent_pointer.pop(-1)
 
-            self._print_info(empty=True)
-            self.pointer = 0
+            self.itemlist = self._get_itemlist()
+            self.names = self._get_names()
 
-        else:
-            self._parent._parent.show_message(
-                " ".join(
-                    [
-                        makebold(i, surround="list")
-                        for i in [
-                            "sounds",
-                            "drums",
-                            "instruments",
-                            "audio-effects",
-                            "midi-effects",
-                            "samples",
-                        ]
-                    ]
-                )
-            )
+        self._print_info(empty=False)
 
     def scroll_up(self):
-        itemlist = self.get_itemlist()
-        nitems = len(itemlist)
+        # if self.hotswap:
+        #     self._scroll_browser(True, direction="up_down")
+        #     return
+
+        # clear any remaining send-messages
+        self._parent._parent._task_group.clear()
+
+        nitems = len(self.itemlist)
         if self.pointer < nitems - 1:
             self.pointer += 1
 
-        self.browser_item = itemlist[self.pointer]
+        self.browser_item = self.itemlist[self.pointer]
         self._print_info()
+
+        if self.preview_items:
+            self.app.browser.stop_preview()
+            self._preview_item()
 
     def scroll_down(self):
-        itemlist = self.get_itemlist()
+        # if self.hotswap:
+        #     self._scroll_browser(False, direction="up_down")
+        #     return
+
+        # clear any remaining send-messages
+        self._parent._parent._task_group.clear()
+
         if self.pointer > 0:
             self.pointer -= 1
-        self.browser_item = itemlist[self.pointer]
+        self.browser_item = self.itemlist[self.pointer]
         self._print_info()
 
+        if self.preview_items:
+            self.app.browser.stop_preview()
+            self._preview_item()
 
     def scroll_item(self, value):
+        # if self.hotswap:
+        #     self._scroll_browser(value < 64, direction="up_down")
+        #     return
 
-        itemlist = self.get_itemlist()
-        nitems = len(itemlist)
+        # clear any remaining send-messages
+        self._parent._parent._task_group.clear()
+
+        nitems = len(self.itemlist)
         if value < 65:
             if self.pointer < nitems - 1:
                 self.pointer += 1
@@ -176,38 +239,104 @@ class QBrowser(object):
             if self.pointer > 0:
                 self.pointer -= 1
 
-        self.browser_item = itemlist[self.pointer]
+        self.browser_item = self.itemlist[self.pointer]
 
         self._print_info()
 
-    def _print_info(self, empty=False):
+        if self.preview_items:
+            self.app.browser.stop_preview()
+            self._preview_item()
 
+    def _get_names(self):
         names = []
-        for i in self.get_itemlist():
+        for i in self.itemlist:
             n = i.name
-            if n.endswith(".adg") or n.endswith(".adv"):
-                n = n[:-4]
+            # if n.endswith(".adg") or n.endswith(".adv"):
+            #     n = n[:-4]
+
+            if i.is_folder:
+                n = symb_folder + " " + n
+            elif i.is_device:
+                n = symb_blue_diamond_small + " " + n
+            else:
+                n = symb_black_circle + " " + n
 
             names.append(n)
+        return names
 
-        before = "  |  ".join(names[: self.pointer])
+    def _print_info(
+        self,
+        empty=False,
+        surround_selected="select",
+        surround_all=None,
+        sel_nchar=0,
+        l_r_nchar=80,
+        sep="     ",
+        space=" ",
+    ):
+        """
+
+        Parameters
+        ----------
+        empty : bool, optional
+            print whitespaces instead of text. The default is False.
+        surround_selected : str, optional
+            makebold() applied to the selected item
+            The default is "select".
+        surround_all : str, optional
+            makebold() applied to all names
+            The default is None.
+        sel_nchar : int, optional
+            min. number of characters for the selected string.
+            The default is 40.
+        l_r_nchar : int, optional
+            additional characters printed left-and right.
+            (filled with available item names)
+            The default is 50.
+        sep : str, optional
+            separator for additional elements
+        space: str, optional
+            space-character
+        """
+
+        if surround_all is not None:
+            names = [makebold(i, surround=surround_all) for i in self.names]
+        else:
+            names = self.names
+
+        before = sep.join(names[: self.pointer]) + sep
+        after = sep + sep.join(names[self.pointer + 1 :])
+
         selected = names[self.pointer]
-        after = "  |  ".join(names[self.pointer + 1 :])
+        if self.browser_item.is_loadable:
+            selected = symb_red_circle + selected[1:]
 
         if empty:
-            before = " " * len(before)
-            after = " "
-        nchar = (250 - len(selected) - 40) // 2
+            before = space * len(before)
+            after = ""
+
+        # number of additional text on left- and right side
+        nchar = l_r_nchar - len(selected) // 2
 
         outstr = (
-            before[-nchar:].rjust(nchar)
-            + " " * 15
-            + makebold(selected.upper())
-            + " " * 15
-            + after[:nchar].ljust(nchar)
+            before[-nchar:].rjust(nchar, space)
+            + makebold(
+                selected.upper(), surround=surround_selected, translate=True
+            ).center(sel_nchar, space)
+            + after[:nchar].ljust(nchar, space)
         )
 
-        self._parent._parent.show_message(outstr)
+        folder = (
+            symb_folder
+            + sep
+            + (sep + "|" + sep + symb_folder_open).join(
+                [i.name for i in self.parent_item]
+            )
+            + ":"
+            + sep * 5
+        )
+
+        self._parent._parent.show_message(folder + makebold(outstr, surround="no"))
 
     def _load_item(self):
 
@@ -217,8 +346,32 @@ class QBrowser(object):
 
         except Exception:
             self._parent._parent.show_message(
-                "the item " + str(self.item.browser_item) + " could not be loaded"
+                "the item  "
+                + str(self.item.browser_item.name)
+                + "  could not be loaded"
             )
+
+    def _toggle_preview_item(self):
+
+        self.preview_items = not self.preview_items
+
+    def _preview_item(self):
+
+        try:
+            self.app.browser.preview_item(self.browser_item)
+        except Exception:
+            self._parent._parent.show_message(
+                "the item  "
+                + str(self.item.browser_item.name)
+                + "  could not be previewed"
+            )
+
+    def _toggle_hotswap(self):
+        self.hotswap = True
+        self.app.view.toggle_browse()
+        self._parent._parent.show_message(
+            f"hotswapping {self.app.browser.hotswap_target}"
+        )
 
     def button_callback(self, i):
         """
@@ -238,9 +391,9 @@ class QBrowser(object):
             elif i == 4:
                 pass
             elif i == 5:
-                self._change_quantization()
+                self._parent._change_quantization()
             elif i == 6:
-                self._change_ableton_view(next(self._detail_cycle))
+                self._parent._change_ableton_view(next(self._detail_cycle))
             elif i == 7:
                 self._parent._select_prev_scene()
             # ----------
@@ -262,35 +415,48 @@ class QBrowser(object):
                 self._parent._select_next_scene()
             return
         else:
-            itemlist = self._itemlist
-            if i in range(0, len(itemlist)):
-                self.parent_item = [itemlist[i]]
+            if i in range(0, len(self._itemlist)):
+                self.pointer = i
+                self.parent_pointer = []
 
-                self.browser_item = itemlist[i].children[0]
-                self._print_info()
+                self.browser_item = self._itemlist[i]
+                self.parent_item = []
 
-                self.pointer = 0
+                self.itemlist = self._get_itemlist()
+                self.names = self._get_names()
+
+                self.next_level(empty=True)
+
+                # clear remaining scheduled messages
+                self._parent._parent._task_group.clear()
+                # after a delay of 10 ticks, show the folder content
+                self._parent._parent.schedule_message(10, self._print_info)
+
+            elif i == 6:
+                self._toggle_hotswap()
             elif i == 7:
                 self._parent._select_next_track()
             # ---
             elif i == 8:
-                self.prev_level()
-            elif i == 9:
-                self.next_level()
-            elif i == 10:
-                pass
-            elif i == 11:
                 self.scroll_down()
-            elif i == 12:
+            elif i == 9:
+                self.prev_level()
+            elif i == 10:
+                self.next_level()
+            elif i == 11:
                 self.scroll_up()
-            elif i == 13:
+            elif i == 12:
                 pass
+            elif i == 13:
+                self._toggle_preview_item()
             elif i == 14:
                 self._load_item()
             elif i == 15:
                 self._parent._select_prev_track()
             self.get_button_colors()
             self.button_colors[i] = "red"
+
+            self._parent._update_lights()
 
     def encoder_callback(self, i, value):
         up_down = value < 64
@@ -337,16 +503,21 @@ class QBrowser(object):
             self.button_colors[i + 1] = "black"
 
         self.button_colors[1] = "magenta"
-        self.button_colors[2] = "blue"
-        self.button_colors[3] = "blue"
+        self.button_colors[2] = "magenta"
+        self.button_colors[3] = "magenta"
         self.button_colors[4] = "magenta"
         self.button_colors[5] = "magenta"
+        self.button_colors[6] = "magenta"
         self.button_colors[6] = "blue"
 
         self.button_colors[9] = "magenta"
         self.button_colors[10] = "blue"
+        self.button_colors[11] = "red"
+        self.button_colors[12] = "magenta"
 
-        self.button_colors[12] = "blue"
-        self.button_colors[13] = "magenta"
+        if self.preview_items:
+            self.button_colors[14] = "blue"
+        else:
+            self.button_colors[14] = "black"
 
         self.button_colors[15] = "red"
