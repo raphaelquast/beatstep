@@ -1637,7 +1637,7 @@ class QControlComponent(BaseComponent):
     def _transpose_encoder_listener(self, value):
         if self._sequencer:
             self.QSequencer.encoder_callback("transpose", value)
-        if self._browser:
+        elif self._browser:
             self.QBrowser.encoder_callback("transpose", value)
         elif not self.__control_layer_permanent and not self._shift_pressed:
             self._transpose(value)
