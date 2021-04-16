@@ -392,11 +392,9 @@ class QBrowser(object):
         self._parent._parent.show_message(folder + makebold(outstr, surround="no"))
 
     def _load_item(self):
-
         try:
             self._print_info(empty=True)
             self.app.browser.load_item(self.browser_item)
-
         except Exception:
             self._parent._parent.show_message(
                 "the item  "
@@ -404,9 +402,18 @@ class QBrowser(object):
                 + "  could not be loaded"
             )
 
+        if self.hotswap:
+            self._hide_browser()
+            self._print_info()
+
     def _toggle_preview_item(self):
 
         self.preview_items = not self.preview_items
+
+        if not self.preview_items:
+            self.app.browser.stop_preview()
+        else:
+            self._preview_item()
 
     def _preview_item(self):
         try:
@@ -572,6 +579,11 @@ class QBrowser(object):
 
         self.button_colors[15] = "red"
 
+    def _hide_browser(self):
+        self._parent._parent.schedule_message(2, lambda : self.app.view.hide_view("Browser"))
+        self._parent._parent.schedule_message(4, lambda : self.app.view.hide_view("Browser"))
+        self._parent._parent.schedule_message(8, lambda : self.app.view.hide_view("Browser"))
+
     def _toggle_hotswap(self):
         self.hotswap = not self.hotswap
 
@@ -589,11 +601,8 @@ class QBrowser(object):
             self.find_device(device)
         else:
             self.app.browser.hotswap_target = None
-        
-        self._parent._parent.schedule_message(2, lambda : self.app.view.hide_view("Browser"))
-        self._parent._parent.schedule_message(4, lambda : self.app.view.hide_view("Browser"))
-        self._parent._parent.schedule_message(8, lambda : self.app.view.hide_view("Browser"))
 
+        self._hide_browser()
         self._print_info()
 
     def find_device(self, device):
