@@ -170,8 +170,8 @@ class QBrowser(object):
     @property
     def _itemlist_names(self):
         return dict(
-            sounds=[self.sounds.name, self.samples.name],
-            instruments=[self.instruments.name, self.drums.name],
+            clips=[self.samples.name],
+            instruments=[self.sounds.name, self.instruments.name, self.drums.name],
             audio_effects=[self.audio_effects.name],
             midi_effects=[self.midi_effects.name],
             special=[self._itemlist[6].name],
@@ -747,7 +747,7 @@ class QBrowser(object):
         elif ID == 'instruments':
             self.song.create_midi_track()
             self._load_item()
-        elif ID == 'sounds':
+        elif ID == 'clips':
             self.song.create_audio_track()
             self._load_item()
         else:
