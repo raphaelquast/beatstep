@@ -79,6 +79,8 @@ class dummy_item(object):
         self.is_loadable = False
         self.is_folder = True
         self.is_device = False
+        self.source = "QBrowser"
+        self.uri = "QBrowser#top-level"
 
 
 # class QSequencer(ControlSurface):
@@ -111,6 +113,10 @@ class QBrowser(object):
 
         self.preview_items = False
         self.hotswap = False
+    
+    @property
+    def song(self):
+        return self._parent._parent.song()
 
     @property
     def app(self):
@@ -160,6 +166,16 @@ class QBrowser(object):
             self.samples,
             self.colors,
         ]
+
+    @property
+    def _itemlist_names(self):
+        return dict(
+            sounds=[self.sounds.name, self.samples.name],
+            instruments=[self.instruments.name, self.drums.name],
+            audio_effects=[self.audio_effects.name],
+            midi_effects=[self.midi_effects.name],
+            special=[self._itemlist[6].name],
+        )
 
     def _get_itemlist(self):
         if len(self.parent_item) == 0:
@@ -462,7 +478,7 @@ class QBrowser(object):
             elif i == 13:
                 self._parent._toggle_automation()
             elif i == 14:
-                self._parent._fire_record()
+                self._load_on_new_track()
             elif i == 15:
                 self._parent._select_next_scene()
             return
@@ -605,7 +621,23 @@ class QBrowser(object):
         self._hide_browser()
         self._print_info()
 
-    def find_device(self, device):
+    def _select_item(self, pointer, parent_pointer, parent_item):
+        try:
+            self.pointer = pointer
+            self.parent_pointer = parent_pointer
+            self.parent_item = parent_item
+
+            self.itemlist = self._get_itemlist()
+            self.names = self._get_names()
+            self.browser_item = self.itemlist[self.pointer]
+
+            self._print_info()
+        except Exception:
+            self._parent._parent.show_message(
+                "the item could not be selected"
+            )
+
+    def find_device(self, device, select=True):
         folders = self._itemlist[:-1]
         # returns indexes of the sub-level structure
         parent_pointer = []
@@ -635,20 +667,94 @@ class QBrowser(object):
                     parent_item.pop(-1)
 
         try:
-            self.pointer = next(get_nested_elements(folders, device))
+            pointer = next(get_nested_elements(folders, device))
 
-            self.parent_pointer = parent_pointer
-
-            self.parent_item = parent_item
-
-            self.itemlist = self._get_itemlist()
-            self.names = self._get_names()
-
-            self.browser_item = self.itemlist[self.pointer]
-
-            self._print_info()
+            if select is True:
+                self._select_item(pointer, parent_pointer, parent_item)
+            else:
+                return pointer, parent_pointer, parent_item
 
         except Exception:
             self._parent._parent.show_message(
                 "could not find the device " + str(device.name)
             )
+
+    def _find_item(self, item, select=True):
+        folders = self._itemlist[:-1]
+        # returns indexes of the sub-level structure
+        parent_pointer = []
+        parent_item = []
+
+        def get_nested_elements(folders, item):
+            device_found = [
+                i
+                for i, dev in enumerate(folders)
+                if dev.name == item.name
+            ]
+
+            if len(device_found) > 0:
+                yield device_found[0]
+            else:
+                for i, node in enumerate(folders):
+                    if hasattr(node, "children") and len(node.children) > 0:
+                        parent_pointer.append(i)
+                        parent_item.append(node)
+
+                        for e in get_nested_elements(node.children, item):
+                            yield e
+                if len(parent_pointer) > 0:
+                    parent_pointer.pop(-1)
+                    parent_item.pop(-1)
+
+        try:
+            pointer = next(get_nested_elements(folders, item))
+
+            if select is True:
+                self._select_item(pointer, parent_pointer, parent_item)
+            else:
+                return pointer, parent_pointer, parent_item
+
+        except AssertionError:
+            self._parent._parent.show_message(
+                "could not find the device " + str(item.name)
+            )
+
+    def identify_item(self):
+
+        if len(self.parent_item) > 0:
+            parent = self.parent_item[0].name
+
+            for key, val in self._itemlist_names.items():
+                if parent in val:
+                    ID = key
+            if ID == 'special':
+                
+                try:
+                    _, _, parent_item = self._find_item(self.browser_item, select=False)
+                    if len(parent_item) > 0:
+                        ID = parent_item[0].name
+                    else:
+                        ID = 'UNKNOWN'
+                except Exception:
+                    self._parent._parent.show_message("item not found... please create track manually")
+                    ID = 'UNKNOWN'
+
+        return ID
+
+    def _load_on_new_track(self):
+        ID = self.identify_item()
+        if ID == 'audio_effects' or 'midi_effects':
+            self.song.create_return_track()
+            self._load_item()
+        elif ID == 'instruments':
+            self.song.create_midi_track()
+            self._load_item()
+        elif ID == 'sounds':
+            self.song.create_audio_track()
+            self._load_item()
+        else:
+            self._parent._parent.show_message('could not establish the type of ' +
+                                              str(self.browser_item.name) +
+                                              ' ... please create the appropriate' +
+                                              'track manually')
+
