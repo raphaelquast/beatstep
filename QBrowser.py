@@ -644,8 +644,6 @@ class QBrowser(object):
         parent_item = []
 
         def get_nested_elements(folders, device):
-            # names = list(map(lambda x: x.name, folders))
-            # self._parent._parent.log_message(f"{device.name}: {names}")
             device_found = [
                 i
                 for i, dev in enumerate(folders)
