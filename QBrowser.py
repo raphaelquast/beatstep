@@ -444,8 +444,6 @@ class QBrowser(object):
         self._parent._parent.show_message(folder + makebold(outstr, surround="no"))
 
         # continue updating the info-bar unil the browser is closed
-        self._parent._parent.log_message(f"keeping it alive {self._parent._browser}")
-
         if self._parent._browser:
             self._parent._parent.schedule_message(16, self._print_info)
 
@@ -510,7 +508,7 @@ class QBrowser(object):
             elif i == 1:
                 self._parent._collapse_device()
             elif i == 2:
-                self._parent._toggle_or_delete_device()
+                self._parent._toggle_device_on_off()
             elif i == 3:
                 pass
             elif i == 4:
