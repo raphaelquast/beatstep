@@ -467,9 +467,12 @@ class QBrowser(object):
             try:
 
                 def cb():
-                    self.app.browser.hotswap_target = (
-                        self._parent.selected_track.view.selected_device
-                    )
+                    try:
+                        track = self.song.view.selected_track
+                        device = track.view.selected_device
+                        self.app.browser.hotswap_target = device
+                    except Exception:
+                        self._parent._parent.log_message("couldn't set hotswap target")
 
                 self._parent._parent.schedule_message(4, cb)
             except Exception:
