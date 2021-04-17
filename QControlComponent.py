@@ -950,7 +950,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._mute_solo_track(5)
             elif self._control_layer_2:
-                self._change_quantization()
+                self._change_or_off_quantization()
             elif self._control_layer_3:
                 self._play_slot(5, 0)
             elif self._sequencer:
@@ -1452,20 +1452,31 @@ class QControlComponent(BaseComponent):
         if not app_view.is_view_visible(view):
             app_view.focus_view(view)
 
+    def _change_or_off_quantization(self):
+        if self._shift_pressed:
+            self._toggle_quantization()
+        else:
+            self._change_quantization()
+
+    def _toggle_quantization(self):
+        song = self._parent.song()
+
+        curr_q = song.clip_trigger_quantization
+        if curr_q not in [Live.Song.Quantization.q_no_q]:
+            song.clip_trigger_quantization = Live.Song.Quantization.q_no_q
+        else:
+            # start with 1 bar if quantization was turned off
+            song.clip_trigger_quantization = Live.Song.Quantization.q_bar
+
     def _change_quantization(self):
         song = self._parent.song()
 
         curr_q = song.clip_trigger_quantization
         if curr_q not in [Live.Song.Quantization.q_no_q]:
-            if self._shift_pressed:
-                song.clip_trigger_quantization = Live.Song.Quantization.q_no_q
-            else:
-                # find currently active quantization index
-                qid = self.quants.index(curr_q)
+            # find currently active quantization index
+            qid = self.quants.index(curr_q)
 
-                song.clip_trigger_quantization = self.quants[
-                    (qid + 1) % len(self.quants)
-                ]
+            song.clip_trigger_quantization = self.quants[(qid + 1) % len(self.quants)]
         else:
             # start with 1 bar if quantization was turned off
             song.clip_trigger_quantization = Live.Song.Quantization.q_bar
@@ -2095,7 +2106,6 @@ class QControlComponent(BaseComponent):
                 self._activate_control_layer("_browser", True)
                 self.QBrowser._hide_browser()
                 self.QBrowser._print_info()
-
             else:
                 self._activate_control_layer("_control_layer_2", True)
 
