@@ -840,7 +840,7 @@ class QControlComponent(BaseComponent):
 
             # activate device controls for the control-layer and the shift-fixed layer
             # (encoder 1-4 and 9-12)
-            if layer in ["_control_layer_2", "_shift_fixed"]:
+            if layer in ["_control_layer_2", "_shift_fixed", "_browser"]:
                 self._parent._device.set_enabled(True)
             else:
                 self._parent._device.set_enabled(False)
@@ -1884,7 +1884,7 @@ class QControlComponent(BaseComponent):
         elif value > 65:
             self._select_prev_track()
 
-    def _scroll_device_chain(self, value):
+    def _scroll_device_chain(self, value, sensitivity=4):
         app = self._parent.application()
 
         if not app.view.is_view_visible("Detail/DeviceChain"):
@@ -1893,7 +1893,7 @@ class QControlComponent(BaseComponent):
 
         # increase notes only every 4 ticks of the transpose-slider
         # (e.g. to make it a little less sensitive)
-        self.__transpose_cnt = (self.__transpose_cnt + 1) % 4
+        self.__transpose_cnt = (self.__transpose_cnt + 1) % sensitivity
 
         if self.__transpose_cnt == 0:
 

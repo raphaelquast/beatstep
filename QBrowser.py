@@ -93,13 +93,6 @@ class QBrowser(object):
     def __init__(self, parent):
         self._parent = parent
 
-        self._encoder_up_counter = {i: 0 for i in range(16)}
-        self._encoder_up_counter["transpose"] = 0
-        self._encoder_down_counter = {i: 0 for i in range(16)}
-        self._encoder_down_counter["transpose"] = 0
-
-        self.QS = QSetup()
-
         self.up_down = True
 
         self.button_colors = {}
@@ -504,7 +497,7 @@ class QBrowser(object):
             elif i == 6:
                 self._parent._change_ableton_view(next(self._parent._detail_cycle))
             elif i == 7:
-                self._parent._select_prev_scene()
+                self._parent._scroll_device_chain(0, sensitivity=1)
             # ----------
             elif i == 8:
                 self._parent._undo()
@@ -521,7 +514,7 @@ class QBrowser(object):
             elif i == 14:
                 self._load_on_new_track()
             elif i == 15:
-                self._parent._select_next_scene()
+                self._parent._scroll_device_chain(127, sensitivity=1)
             return
         else:
             if i in range(7):
@@ -569,38 +562,32 @@ class QBrowser(object):
             self._parent._update_lights()
 
     def encoder_callback(self, i, value):
-        up_down = value < 64
 
-        if i == 15:
-            self._parent._select_prev_next_scene(value)
-            return
+        if i == 4:
+            self._parent._track_send_x(value, -1, 0)
+        elif i == 5:
+            self._parent._track_send_x(value, -1, 2)
+        elif i == 6:
+            self._parent._track_volume_master_or_current(value)
         elif i == 7:
-            self._parent._select_prev_next_track(value)
-            return
+            if self._parent._shift_pressed:
+                self._parent._scroll_drum_pad_row(value)
+            else:
+                self._parent._select_prev_next_track(value)
+        elif i == 12:
+            self._parent._track_send_x(value, -1, 1)
+        elif i == 13:
+            self._parent._track_send_x(value, -1, 4)
+        elif i == 14:
+            self._parent._track_pan_master_or_current(value)
+        elif i == 15:
+            if self._parent._shift_pressed:
+                self._parent._scroll_drum_pad_col(value)
+            else:
+                self._parent._select_prev_next_scene(value)
 
-        # do this to avoid jumping around
-        if up_down:
-            for key in self._encoder_down_counter.keys():
-                self._encoder_down_counter[key] = 0
-            self._counter = self._encoder_up_counter
-        else:
-            for key in self._encoder_up_counter.keys():
-                self._encoder_up_counter[key] = 0
-            self._counter = self._encoder_down_counter
-
-        if i == "transpose":
+        elif i == "transpose":
             self.scroll_item(value)
-
-        # increase the counter
-        self._counter[i] = self._counter[i] + 1
-        if self._counter[i] > self.sensitivity:
-            if i == 0:
-                self.scroll_item(value)
-
-            # set all counters to zero
-            for key in self._encoder_down_counter.keys():
-                self._encoder_down_counter[key] = 0
-                self._encoder_up_counter[key] = 0
 
     def get_button_colors(self):
         self.button_colors = dict(
