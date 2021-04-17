@@ -1,4 +1,3 @@
-import sys
 import Live
 from .QSetup import QSetup
 
@@ -7,38 +6,22 @@ FilterType = Live.Browser.FilterType
 DeviceType = Live.Device.DeviceType
 Relation = Live.Browser.Relation
 
-if sys.version_info.major >= 3:
-    symb_folder = "\U0001f4c1"
-    symb_folder_open = "\U0001f4c2"
-    symb_red_circle = "\U0001f534"
-    symb_orange_circle = "\U0001f7e0"
-    symb_red_box = "\U0001f7e5"
-    symb_circle_arrow = "\U0001f504"
 
-    symb_blue_diamond_large = "\U0001F537"
-    symb_blue_diamond_small = "\U0001f539"
-    symb_fire = "\U0001f525"
-    symb_black_circle = "\u25cf"
-    symb_stop = "\U0001f6ab"
+symb_folder = u"\U0001f4c1"
+symb_folder_open = u"\U0001f4c2"
+symb_red_circle = u"\U0001f534"
+symb_orange_circle = u"\U0001f7e0"
+symb_red_box = u"\U0001f7e5"
+symb_circle_arrow = u"\U0001f504"
 
-    symb_left_arraow = "\u25c4"
-    symb_right_arrow = "\u25ba"
-else:
-    symb_folder = "#"
-    symb_folder_open = "#"
-    symb_red_circle = "+"
-    symb_orange_circle = "+"
-    symb_red_box = "+"
-    symb_circle_arrow = "!!"
+symb_blue_diamond_large = u"\U0001F537"
+symb_blue_diamond_small = u"\U0001f539"
+symb_fire = u"\U0001f525"
+symb_black_circle = u"\u25cf"
+symb_stop = u"\U0001f6ab"
 
-    symb_blue_diamond_large = "*"
-    symb_blue_diamond_small = "*"
-    symb_fire = "--"
-    symb_black_circle = "*"
-    symb_stop = "#"
-
-    symb_left_arraow = "<<"
-    symb_right_arrow = ">>"
+symb_left_arraow = u"\u25c4"
+symb_right_arrow = u"\u25ba"
 
 
 # fmt: off
@@ -80,7 +63,7 @@ def makebold(text, surround="select", translate=False):
                   u'\uff39', u'\uff3a', u'\uff10', u'\uff11', u'\uff12',
                   u'\uff13', u'\uff14', u'\uff15', u'\uff16', u'\uff17',
                   u'\uff18', u'\uff19', u'\uff01', u'\uff1f', u'\uff0e',
-                  u'\uff0c', b'"', u'\uff07', u'\uff5c']
+                  u'\uff0c', u'"', u'\uff07', u'\uff5c']
         translated = ""
         for i in text:
             try:
@@ -343,12 +326,12 @@ class QBrowser(object):
 
     def _get_names(self):
         names = []
-        for i in self.itemlist:
-            n = i.name
+        for item in self.itemlist:
+            n = item.name
 
-            if i.is_folder:
+            if item.is_folder:
                 n = symb_folder + " " + n
-            elif i.is_device:
+            elif item.is_device:
                 n = symb_blue_diamond_small + " " + n
             else:
                 n = symb_black_circle + " " + n
@@ -410,11 +393,11 @@ class QBrowser(object):
         selected = names[self.pointer]
         if self.browser_item.is_loadable:
             if self.hotswap:
-                selected = symb_circle_arrow + selected[1:]
+                selected = symb_circle_arrow + selected[selected.index(" ") :]
             else:
-                selected = symb_red_circle + selected[1:]
+                selected = symb_red_circle + selected[selected.index(" ") :]
         else:
-            selected = symb_orange_circle + selected[1:]
+            selected = symb_orange_circle + selected[selected.index(" ") :]
 
         if empty:
             before = space * len(before)
