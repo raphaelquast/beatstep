@@ -1103,7 +1103,7 @@ class QControlComponent(BaseComponent):
             if self._control_layer_1:
                 self._arm_or_fold_track(5)
             elif self._control_layer_2:
-                self._toggle_automation()
+                self._toggle_or_re_enable_automation()
             elif self._control_layer_3:
                 self._play_slot(5, 1)
             elif self._sequencer:
@@ -1423,16 +1423,23 @@ class QControlComponent(BaseComponent):
         else:
             self._parent.song().metronome = True
 
+    def _toggle_or_re_enable_automation(self):
+        if self._shift_pressed and self.__control_layer_permanent:
+            self._re_enable_automation()
+        else:
+            self._toggle_automation()
+
+    def _re_enable_automation(self):
+        song = self._parent.song()
+        if song.re_enable_automation_enabled:
+            song.re_enable_automation()
+
     def _toggle_automation(self):
         song = self._parent.song()
-        if self._shift_pressed and self.__control_layer_permanent:
-            if song.re_enable_automation_enabled:
-                song.re_enable_automation()
+        if song.session_automation_record == True:
+            song.session_automation_record = False
         else:
-            if song.session_automation_record == True:
-                song.session_automation_record = False
-            else:
-                song.session_automation_record = True
+            song.session_automation_record = True
 
     def _tap_tempo(self):
         self._parent.song().tap_tempo()
