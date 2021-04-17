@@ -11,7 +11,7 @@ if sys.version_info.major >= 3:
     symb_folder = "\U0001f4c1"
     symb_folder_open = "\U0001f4c2"
     symb_red_circle = "\U0001f534"
-    symb_circle_arrow = '\U0001f504'
+    symb_circle_arrow = "\U0001f504"
 
     symb_blue_diamond_large = "\U0001F537"
     symb_blue_diamond_small = "\U0001f539"
@@ -25,7 +25,7 @@ else:
     symb_folder = "#"
     symb_folder_open = "#"
     symb_red_circle = "+"
-    symb_circle_arrow = '!!'
+    symb_circle_arrow = "!!"
 
     symb_blue_diamond_large = "*"
     symb_blue_diamond_small = "*"
@@ -37,9 +37,13 @@ else:
     symb_right_arrow = ">>"
 
 
+# fmt: off
 def makebold(text, surround="select", translate=False):
 
     if surround == "select":
+        before = "||  " + "    "
+        after = "    " + "  ||"
+    elif surround == "hotswap":
         before = "||  " + symb_fire + "   "
         after = "   " + symb_fire + "  ||"
     elif surround == "last_level":
@@ -51,15 +55,28 @@ def makebold(text, surround="select", translate=False):
     elif surround == "no":
         before = ""
         after = ""
-# fmt: off
     if translate:
-        target = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-                  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '?', '.', ',', '"', "'", "|"]
+        target = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '?', '.',
+                  ',', '"', "'", "|"]
 
-        transl = [u'\uff41', u'\uff42', u'\uff43', u'\uff44', u'\uff45', u'\uff46', u'\uff47', u'\uff48', u'\uff49', u'\uff4a', u'\uff4b', u'\uff4c', u'\uff4d', u'\uff4e', u'\uff4f', u'\uff50', u'\uff51', u'\uff52', u'\uff53', u'\uff54', u'\uff55', u'\uff56', u'\uff57', u'\uff58', u'\uff59', u'\uff5a', u'\uff21', u'\uff22', u'\uff23', u'\uff24', u'\uff25', u'\uff26', u'\uff27', u'\uff28', u'\uff29', u'\uff2a', u'\uff2b', u'\uff2c', u'\uff2d', u'\uff2e', u'\uff2f', u'\uff30', u'\uff31', u'\uff32', u'\uff33', u'\uff34', u'\uff35', u'\uff36', u'\uff37', u'\uff38', u'\uff39', u'\uff3a', u'\uff10', u'\uff11', u'\uff12', u'\uff13', u'\uff14', u'\uff15', u'\uff16', u'\uff17', u'\uff18', u'\uff19', u'\uff01', u'\uff1f', u'\uff0e', u'\uff0c', b'"', u'\uff07', u'\uff5c']
-# fmt: on
-
+        transl = [u'\uff41', u'\uff42', u'\uff43', u'\uff44', u'\uff45',
+                  u'\uff46', u'\uff47', u'\uff48', u'\uff49', u'\uff4a',
+                  u'\uff4b', u'\uff4c', u'\uff4d', u'\uff4e', u'\uff4f',
+                  u'\uff50', u'\uff51', u'\uff52', u'\uff53', u'\uff54',
+                  u'\uff55', u'\uff56', u'\uff57', u'\uff58', u'\uff59',
+                  u'\uff5a', u'\uff21', u'\uff22', u'\uff23', u'\uff24',
+                  u'\uff25', u'\uff26', u'\uff27', u'\uff28', u'\uff29',
+                  u'\uff2a', u'\uff2b', u'\uff2c', u'\uff2d', u'\uff2e',
+                  u'\uff2f', u'\uff30', u'\uff31', u'\uff32', u'\uff33',
+                  u'\uff34', u'\uff35', u'\uff36', u'\uff37', u'\uff38',
+                  u'\uff39', u'\uff3a', u'\uff10', u'\uff11', u'\uff12',
+                  u'\uff13', u'\uff14', u'\uff15', u'\uff16', u'\uff17',
+                  u'\uff18', u'\uff19', u'\uff01', u'\uff1f', u'\uff0e',
+                  u'\uff0c', b'"', u'\uff07', u'\uff5c']
         translated = ""
         for i in text:
             try:
@@ -70,6 +87,7 @@ def makebold(text, surround="select", translate=False):
         translated = text
 
     return before + translated + after
+# fmt: on
 
 
 class dummy_item(object):
@@ -113,7 +131,11 @@ class QBrowser(object):
 
         self.preview_items = False
         self.hotswap = False
-    
+
+        self._ableton_version = self.app.get_major_version()
+
+    # --------------------------
+
     @property
     def song(self):
         return self._parent._parent.song()
@@ -121,6 +143,8 @@ class QBrowser(object):
     @property
     def app(self):
         return self._parent._parent.application()
+
+    # --------------------------
 
     @property
     def sounds(self):
@@ -149,6 +173,8 @@ class QBrowser(object):
     @property
     def colors(self):
         return dummy_item("Collections", self.app.browser.colors)
+
+    # --------------------------
 
     @property
     def hotswap_target(self):
@@ -294,7 +320,6 @@ class QBrowser(object):
         if value < 65:
             if self.pointer < nitems - 1:
                 self.pointer += 1
-
                 # if self.hotswap:
                 #     self._scroll_browser(False, direction="up_down")
 
@@ -316,8 +341,6 @@ class QBrowser(object):
         names = []
         for i in self.itemlist:
             n = i.name
-            # if n.endswith(".adg") or n.endswith(".adv"):
-            #     n = n[:-4]
 
             if i.is_folder:
                 n = symb_folder + " " + n
@@ -373,6 +396,9 @@ class QBrowser(object):
         before = sep.join(names[: self.pointer]) + sep
         after = sep + sep.join(names[self.pointer + 1 :])
 
+        if self.hotswap:
+            surround_selected = "hotswap"
+
         selected = names[self.pointer]
         if self.browser_item.is_loadable:
             if self.hotswap:
@@ -413,7 +439,9 @@ class QBrowser(object):
             self.app.browser.load_item(self.browser_item)
         except Exception:
             self._parent._parent.show_message(
-                "the item  "
+                "     "
+                + symb_stop
+                + " the item  "
                 + str(self.browser_item.name)
                 + "  could not be loaded"
             )
@@ -421,6 +449,17 @@ class QBrowser(object):
         if self.hotswap:
             self._hide_browser()
             self._print_info()
+
+            try:
+
+                def cb():
+                    self.app.browser.hotswap_target = (
+                        self._parent.selected_track.view.selected_device
+                    )
+
+                self._parent._parent.schedule_message(4, cb)
+            except Exception:
+                self._parent._parent.schedule_message(2, cb)
 
     def _toggle_preview_item(self):
 
@@ -436,7 +475,9 @@ class QBrowser(object):
             self.app.browser.preview_item(self.browser_item)
         except Exception:
             self._parent._parent.show_message(
-                "the item  "
+                "     "
+                + symb_stop
+                + "the item  "
                 + str(self.browser_item.name)
                 + "  could not be previewed"
             )
@@ -483,7 +524,7 @@ class QBrowser(object):
                 self._parent._select_next_scene()
             return
         else:
-            if i in range(0, len(self._itemlist)):
+            if i in range(0, 6):
                 self.pointer = i
                 self.parent_pointer = []
 
@@ -596,9 +637,15 @@ class QBrowser(object):
         self.button_colors[15] = "red"
 
     def _hide_browser(self):
-        self._parent._parent.schedule_message(2, lambda : self.app.view.hide_view("Browser"))
-        self._parent._parent.schedule_message(4, lambda : self.app.view.hide_view("Browser"))
-        self._parent._parent.schedule_message(8, lambda : self.app.view.hide_view("Browser"))
+        self._parent._parent.schedule_message(
+            2, lambda: self.app.view.hide_view("Browser")
+        )
+        self._parent._parent.schedule_message(
+            4, lambda: self.app.view.hide_view("Browser")
+        )
+        self._parent._parent.schedule_message(
+            8, lambda: self.app.view.hide_view("Browser")
+        )
 
     def _toggle_hotswap(self):
         self.hotswap = not self.hotswap
@@ -607,7 +654,9 @@ class QBrowser(object):
             device = self._parent.selected_track.view.selected_device
 
             if device is None:
-                self._parent._parent.show_message("cannot activate hotswap without a target")
+                self._parent._parent.show_message(
+                    "cannot activate hotswap without a target"
+                )
                 self.hotswap = False
                 return
 
@@ -633,9 +682,7 @@ class QBrowser(object):
 
             self._print_info()
         except Exception:
-            self._parent._parent.show_message(
-                "the item could not be selected"
-            )
+            self._parent._parent.show_message("the item could not be selected")
 
     def find_device(self, device, select=True):
         folders = self._itemlist[:-1]
@@ -674,7 +721,7 @@ class QBrowser(object):
 
         except Exception:
             self._parent._parent.show_message(
-                "could not find the device " + str(device.name)
+                "     " + symb_stop + " could not find the device " + str(device.name)
             )
 
     def _find_item(self, item, select=True):
@@ -684,11 +731,7 @@ class QBrowser(object):
         parent_item = []
 
         def get_nested_elements(folders, item):
-            device_found = [
-                i
-                for i, dev in enumerate(folders)
-                if dev.name == item.name
-            ]
+            device_found = [i for i, dev in enumerate(folders) if dev.name == item.name]
 
             if len(device_found) > 0:
                 yield device_found[0]
@@ -725,34 +768,38 @@ class QBrowser(object):
             for key, val in self._itemlist_names.items():
                 if parent in val:
                     ID = key
-            if ID == 'special':
-                
+            if ID == "special":
+
                 try:
                     _, _, parent_item = self._find_item(self.browser_item, select=False)
                     if len(parent_item) > 0:
                         ID = parent_item[0].name
                     else:
-                        ID = 'UNKNOWN'
+                        ID = "UNKNOWN"
                 except Exception:
-                    self._parent._parent.show_message("item not found... please create track manually")
-                    ID = 'UNKNOWN'
+                    self._parent._parent.show_message(
+                        "item not found... please create track manually"
+                    )
+                    ID = "UNKNOWN"
 
         return ID
 
     def _load_on_new_track(self):
         ID = self.identify_item()
-        if ID == 'audio_effects' or 'midi_effects':
+        if ID == "audio_effects" or "midi_effects":
             self.song.create_return_track()
             self._load_item()
-        elif ID == 'instruments':
+        elif ID == "instruments":
             self.song.create_midi_track()
             self._load_item()
-        elif ID == 'clips':
+        elif ID == "clips":
             self.song.create_audio_track()
             self._load_item()
         else:
-            self._parent._parent.show_message('could not establish the type of ' +
-                                              str(self.browser_item.name) +
-                                              ' ... please create the appropriate' +
-                                              'track manually')
+            self._parent._parent.show_message(
+                "could not establish the type of "
+                + str(self.browser_item.name)
+                + " ... please create the appropriate"
+                + "track manually"
+            )
 
