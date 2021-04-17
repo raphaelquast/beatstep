@@ -11,6 +11,8 @@ if sys.version_info.major >= 3:
     symb_folder = "\U0001f4c1"
     symb_folder_open = "\U0001f4c2"
     symb_red_circle = "\U0001f534"
+    symb_orange_circle = "\U0001f7e0"
+    symb_red_box = "\U0001f7e5"
     symb_circle_arrow = "\U0001f504"
 
     symb_blue_diamond_large = "\U0001F537"
@@ -25,6 +27,8 @@ else:
     symb_folder = "#"
     symb_folder_open = "#"
     symb_red_circle = "+"
+    symb_orange_circle = "+"
+    symb_red_box = "+"
     symb_circle_arrow = "!!"
 
     symb_blue_diamond_large = "*"
@@ -388,6 +392,10 @@ class QBrowser(object):
             space-character
         """
 
+        # don't print the info if browser is no longer active
+        if not self._parent._browser:
+            return
+
         if surround_all is not None:
             names = [makebold(i, surround=surround_all) for i in self.names]
         else:
@@ -405,6 +413,8 @@ class QBrowser(object):
                 selected = symb_circle_arrow + selected[1:]
             else:
                 selected = symb_red_circle + selected[1:]
+        else:
+            selected = symb_orange_circle + selected[1:]
 
         if empty:
             before = space * len(before)
@@ -432,6 +442,12 @@ class QBrowser(object):
         )
 
         self._parent._parent.show_message(folder + makebold(outstr, surround="no"))
+
+        # continue updating the info-bar unil the browser is closed
+        self._parent._parent.log_message(f"keeping it alive {self._parent._browser}")
+
+        if self._parent._browser:
+            self._parent._parent.schedule_message(16, self._print_info)
 
     def _load_item(self):
         try:
@@ -524,7 +540,8 @@ class QBrowser(object):
                 self._parent._select_next_scene()
             return
         else:
-            if i in range(0, 6):
+            if i in range(7):
+
                 self.pointer = i
                 self.parent_pointer = []
 
@@ -539,7 +556,7 @@ class QBrowser(object):
                 # clear remaining scheduled messages
                 self._parent._parent._task_group.clear()
                 # after a delay of 10 ticks, show the folder content
-                self._parent._parent.schedule_message(10, self._print_info)
+                self._parent._parent.schedule_message(8, self._print_info)
 
             elif i == 6:
                 pass
@@ -802,4 +819,3 @@ class QBrowser(object):
                 + " ... please create the appropriate"
                 + "track manually"
             )
-
