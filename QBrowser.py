@@ -151,8 +151,20 @@ class QBrowser(object):
         return self.app.browser.samples
 
     @property
-    def colors(self):
+    def collections(self):
         return dummy_item("Collections", self.app.browser.colors)
+
+    @property
+    def plugins(self):
+        return self.app.browser.plugins
+
+    @property
+    def max_for_live(self):
+        return self.app.browser.max_for_live
+
+    @property
+    def clips(self):
+        return self.app.browser.clips
 
     # --------------------------
 
@@ -163,24 +175,39 @@ class QBrowser(object):
     # TODO implement grooves via Live.GroovePool
     @property
     def _itemlist(self):
-        return [
+        itemlist = [
             self.sounds,
             self.drums,
             self.instruments,
             self.audio_effects,
             self.midi_effects,
+            self.plugins,
+            self.clips,
             self.samples,
-            self.colors,
+            self.max_for_live,
         ]
+
+        # make sure collections is the last entry
+        itemlist.append(self.collections)
+        return itemlist
+
+    @property
+    def _level0_names(self):
+        return [i.name for i in self._itemlist]
 
     @property
     def _itemlist_names(self):
         return dict(
             clips=[self.samples.name],
-            instruments=[self.sounds.name, self.instruments.name, self.drums.name],
+            instruments=[
+                self.sounds.name,
+                self.instruments.name,
+                self.drums.name,
+                self.plugins.name,
+            ],
             audio_effects=[self.audio_effects.name],
             midi_effects=[self.midi_effects.name],
-            special=[self._itemlist[6].name],
+            special=[self.collections.name],
         )
 
     def _get_itemlist(self):
@@ -517,26 +544,29 @@ class QBrowser(object):
                 self._parent._scroll_device_chain(127, sensitivity=1)
             return
         else:
-            if i in range(7):
 
-                self.pointer = i
-                self.parent_pointer = []
-
-                self.browser_item = self._itemlist[i]
-                self.parent_item = []
-
-                self.itemlist = self._get_itemlist()
-                self.names = self._get_names()
-
-                self.next_level(empty=True)
-
-                # clear remaining scheduled messages
-                self._parent._parent._task_group.clear()
-                # after a delay of 10 ticks, show the folder content
-                self._parent._parent.schedule_message(8, self._print_info)
-
+            if i == 0:
+                self._select_item(self._level0_names.index(self.sounds.name), [], [])
+            elif i == 1:
+                self._select_item(self._level0_names.index(self.drums.name), [], [])
+            elif i == 2:
+                self._select_item(
+                    self._level0_names.index(self.instruments.name), [], []
+                )
+            elif i == 3:
+                self._select_item(
+                    self._level0_names.index(self.audio_effects.name), [], []
+                )
+            elif i == 4:
+                self._select_item(
+                    self._level0_names.index(self.midi_effects.name), [], []
+                )
+            elif i == 5:
+                self._select_item(self._level0_names.index(self.samples.name), [], [])
             elif i == 6:
-                pass
+                self._select_item(
+                    self._level0_names.index(self.collections.name), [], []
+                )
             elif i == 7:
                 self._parent._select_next_track()
             # ---
@@ -556,8 +586,17 @@ class QBrowser(object):
                 self._load_item()
             elif i == 15:
                 self._parent._select_prev_track()
+
+            if i in range(7):
+                # enter the folder
+                self.next_level(empty=True)
+
+                # clear remaining scheduled messages
+                self._parent._parent._task_group.clear()
+                # after a delay of 10 ticks, show the folder content
+                self._parent._parent.schedule_message(8, self._print_info)
+
             self.get_button_colors()
-            self.button_colors[i] = "red"
 
             self._parent._update_lights()
 
@@ -643,7 +682,7 @@ class QBrowser(object):
 
             if device is None:
                 self._parent._parent.show_message(
-                    "cannot activate hotswap without a target"
+                    "     " + symb_stop + "cannot activate hotswap without a target"
                 )
                 self.hotswap = False
                 return
@@ -752,10 +791,12 @@ class QBrowser(object):
 
         if len(self.parent_item) > 0:
             parent = self.parent_item[0].name
+            ID = "UNKNOWN"
 
             for key, val in self._itemlist_names.items():
                 if parent in val:
                     ID = key
+
             if ID == "special":
 
                 try:
@@ -765,10 +806,11 @@ class QBrowser(object):
                     else:
                         ID = "UNKNOWN"
                 except Exception:
-                    self._parent._parent.show_message(
-                        "item not found... please create track manually"
-                    )
                     ID = "UNKNOWN"
+
+            self._parent._parent.show_message(
+                "     " + symb_stop + "item not found... please create track manually"
+            )
 
         return ID
 
