@@ -180,10 +180,47 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 
 <details>
 <summary>:open_file_folder: <strong>BROWSE</strong></summary>  
+The browser works ONLY in the info-bar... it is not connected to Ableton's browser-window!
+(I know this would be nice... but the Ableton python-API does not allow it)
+The status-bar symbols indicate the following:
 
-Most lights are simply there to help remember the button-assignments.
+- :red_circle: : the selected item can be loaded
+- :fire: : hotswap is active
+- :arrows_counterclockwise: : the item can be hotswapped
+- :black_circle: : the item can not be loaded directly
+- :file_folder: : the item is a folder
+
+
+Most button-lights are simply there to help remember the button-assignments.
 - `button 13` indicates if **hotswap** is on or off (`red` for on)
 - `button 14` indicates if **prelisten** is on or off (`blue` for on)
+
+#### The assignments are as follows:
+
+- `button 1` : open **sounds**
+- `button 2` : open **drums**
+- `button 3` : open **instruments**
+- `button 4` : open **audio-effects**
+- `button 5` : open **MIDI-effects**
+- `button 6` : open **samples**
+- `button 7` : open **collections**
+- `button 8` : select previous track
+   - "if shift pressed" : select previous device
+
+- `button 9` : go 1 item left
+- `button 10` : go 1 item right
+- `button 11` : go 1 folder-level down (if possible)
+- `button 12` : go 1 folder-level up (if possible)
+- `button 13` : toggle hotswapping the currently selected instrument/device
+- `button 14` : toggle item-preview
+- `button 15` : load the selected item (on the currently selected track if possible)
+   - "if shift pressed" : load the selected item on a new track
+- `button 16` : select next track
+   - "if shift pressed" : select next device
+
+
+All encoders are assigned similar to the *"shift-layer"*.
+
 
 </details>
 
@@ -196,10 +233,8 @@ Most lights are simply there to help remember the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live.
 
 - `button 13` indicates the status of the metronome (`red` for on)
-
 - `button 14` indicates the status of "automation arm" (`red` for active)
-  
-  - "if shift pressed" and an automation has been overridden, the button will turn `blue`
+   - "if shift pressed" and an automation has been overridden, the button will turn `blue`
 
 - `button 3`, `10` and `11` will turn red if shift is pressed to highlight the alternative functionality
 
