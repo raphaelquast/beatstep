@@ -16,16 +16,12 @@ It turns your BeatStep into a fully-fledged control-surface for Ableton Live !
 > Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues) or start a [Discussion](https://github.com/raphaelquast/beatstep/discussions) and I'll see what I can do!  
   
 
-<div style="display: inline">
-    <div style="width:60%; display: inline-block; float:left; margin-right: 10px;">
-    ... and as you might imagine... developing and maintaining all of this is quite some work, so  
-if you like what I did, how about buying me a coffee?   
-</div>
-    <div style="width: 30%; display: inline-block;">
-    &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-    <a href="https://www.buymeacoffee.com/raphaelquast" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;" ></a>
-    </div>
-</div>
+... and as you might imagine...  
+developing and maintaining all of this is quite some work, so if you like what I did, how about buying me a coffee?   
+
+<center>
+<a href="https://www.buymeacoffee.com/raphaelquast" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;" ></a>
+</center>
 
 # Installation
 
