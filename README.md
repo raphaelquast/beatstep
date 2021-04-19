@@ -1,25 +1,27 @@
 This is a **MIDI Remote Script** for **Ableton Live 9, 10 & 11** and the **Arturia BeatStep** controller.
 It turns your BeatStep into a fully-fledged control-surface for Ableton Live !
 
-- there are 5 different layers that give you a lot of control over Ableton Live and MIDI-clips:
-  - **shift, mix, launch, control** and **sequencer**
+- there are 6 different layers that give you a lot of control over Ableton Live and MIDI-clips:  
+  **shift, mix, launch, control, browse** and a **sequencer**
 
-- select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
-- use pads to start/stop/trigger clips
-- initialize and edit up to 16 note MIDI-sequences
-
-- get indications on the status of clips and tracks via button-LED's
-
-- play midi instruments with access to the **full range** of midi-notes!
-
-- ... and much more!
+  - select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
+  - use pads to start/stop/trigger existing clips
+  - browse the library to load instruments and devices
+  - initialize and edit up to 16 note MIDI-sequences
+  - get indications on the status of clips and tracks via button-LED's
+  - play midi instruments with access to the **full range** of midi-notes!
+  - ... and much more!
 
 ### Comments / suggestions / bugs?  
 > Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues) or start a [Discussion](https://github.com/raphaelquast/beatstep/discussions) and I'll see what I can do!  
   
-... and if you like what I did, how about buying me a coffee?  
 
+... and as you might imagine...  
+developing and maintaining all of this is quite some work, so if you like what I did, how about buying me a coffee?   
+
+<center>
 <a href="https://www.buymeacoffee.com/raphaelquast" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;" ></a>
+</center>
 
 # Installation
 
@@ -28,7 +30,7 @@ To use this script, simply copy the files of the latest [release](https://github
 WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten!
 
 # Overlay
-The overlay-design provides indications for most of the assignments as well as the original sequencer-functions.  
+The overlay-design provides indications for all assignments (including secondary-functions)  
 <sup>
 (I got mine printed here: [Taktility](https://www.taktility.com/))
 </sup>
@@ -48,7 +50,11 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 
 - To ensure that the script is automatically selected (instead of the default script), rename the already existing *"Beatstep"* folder to *"_Beatstep"* (or something that it is alphabetically sorted **after** *"BeatStep_Q"*)
 
-After initialization, you can recall any saved MIDI configuration and the control-layers will still work!
+> After initialization, you can recall any saved MIDI configuration and the control-layers will still work!
+
+
+
+
 
 
 ## General (click to expand)
@@ -61,19 +67,21 @@ The buttons `recall`, `store`,`chan` and `shift` are used to activate the contro
 
 - all layers (except the *"shift-layer"*) remain activated until the corresponding button is pressed again
 
-- the *"shift-layer"* can be activated permanently by **double-tapping** the `shift` button
+- holding `shift` while pressing `chan` will temporarily activate the *"mix-layer"* until `shift` is released
 
-- holding `shift` while pressing `recall` or `chan` will activate the corresponding layer until `shift` is released
+- the *"if shift pressed"* features are only available if the corresponding layer is activated permanently **and** `shift` is pressed
 
-- the *"if shift pressed"* features are only relevant if the layers are activated permanently **and** `shift` is pressed
+The `stop` button works the same (on all layers) as follows:
 
-The `stop` button can be used as follows:
+- if the selected clip is currently recording: only recording is stopped (but playback is continued)
 
-- if the selected clip is currently recording: only stop recording (but continue playback)
-
-- if the selected clip is playing: trigger stop
+- if the selected clip is playing: stop is triggered
 
 - *"if shift pressed"* : stop **ALL** tracks
+
+> While no layer is active, all buttons can be used to play midi-notes!  
+> (>> use the `transpose-encoder` to change the assigned range of midi-notes)
+
 
 </details>
 
@@ -82,8 +90,9 @@ The `stop` button can be used as follows:
 
 <details><summary>:white_circle: <strong>ENCODERS</strong></summary>  
 
-The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
+The `transpose-encoder` can be used to transpose the note-assignments of the buttons.  
 (a red button-color indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc.)
+> The info-message also tells you the current assignment of the lower-left button (e.g. `button 9`)
 
 - `encoder 1-4` and `9-12` : control the first 8 parameters of the selected device
 
@@ -172,16 +181,62 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 ---
 
 <details>
+<summary>:open_file_folder: <strong>BROWSE</strong></summary>  
+The browser works ONLY in the info-bar... it is not connected to Ableton's browser-window!
+(I know this would be nice... but the Ableton python-API does not allow it)
+The status-bar symbols indicate the following:
+
+- :red_circle: : the selected item can be loaded
+- :fire: ... :fire: : hotswap is active
+- :arrows_counterclockwise: : the item can be hotswapped
+- :black_circle: : the item can not be loaded directly (it's a collection of sub-items)
+- :file_folder: : the item is a folder (and can not be loaded directly)
+- :small_blue_diamond: a loadable item that is not selected
+
+Most button-lights are simply there to help remember the button-assignments.
+- `button 13` indicates if **hotswap** is on or off (`red` for on)
+- `button 14` indicates if **prelisten** is on or off (`blue` for on)
+
+#### The assignments are as follows:
+
+- `button 1` : open **sounds**
+- `button 2` : open **drums**
+- `button 3` : open **instruments**
+- `button 4` : open **audio-effects**
+- `button 5` : open **MIDI-effects**
+- `button 6` : open **samples**
+- `button 7` : open **collections**
+- `button 8` : select previous track
+   - "if shift pressed" : select previous device
+
+- `button 9` : go 1 item left
+- `button 10` : go 1 item right
+- `button 11` : go 1 folder-level down (if possible)
+- `button 12` : go 1 folder-level up (if possible)
+- `button 13` : toggle hotswapping the currently selected instrument/device
+- `button 14` : toggle item-preview
+- `button 15` : load the selected item (on the currently selected track if possible)
+   - "if shift pressed" : load the selected item on a new track
+- `button 16` : select next track
+   - "if shift pressed" : select next device
+
+
+All encoders are assigned similar to the *"shift-layer"*.
+
+
+</details>
+
+--- 
+
+<details>
 <summary>:violin: <strong>CONTROL</strong></summary>  
 
 Most lights are simply there to help remember the button-assignments.
 The lights of `button 13` and `button 14` indicate the status of their corresponding parameter in Live.
 
 - `button 13` indicates the status of the metronome (`red` for on)
-
 - `button 14` indicates the status of "automation arm" (`red` for active)
-  
-  - "if shift pressed" and an automation has been overridden, the button will turn `blue`
+   - "if shift pressed" and an automation has been overridden, the button will turn `blue`
 
 - `button 3`, `10` and `11` will turn red if shift is pressed to highlight the alternative functionality
 
