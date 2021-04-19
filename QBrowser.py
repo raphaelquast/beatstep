@@ -573,11 +573,11 @@ class QBrowser(object):
             elif i == 8:
                 self.scroll_down()
             elif i == 9:
-                self.prev_level()
-            elif i == 10:
-                self.next_level()
-            elif i == 11:
                 self.scroll_up()
+            elif i == 10:
+                self.prev_level()
+            elif i == 11:
+                self.next_level()
             elif i == 12:
                 self._toggle_hotswap()
             elif i == 13:
@@ -646,9 +646,9 @@ class QBrowser(object):
         self.button_colors[6] = "magenta"
         self.button_colors[7] = "magenta"
 
-        self.button_colors[9] = "magenta"
+        self.button_colors[9] = "blue"
         self.button_colors[10] = "blue"
-        self.button_colors[11] = "red"
+        self.button_colors[11] = "magenta"
         self.button_colors[12] = "magenta"
 
         if self.hotswap:

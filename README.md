@@ -48,7 +48,11 @@ The script will set all encoders and buttons to send messages on the Midi-channe
 
 - To ensure that the script is automatically selected (instead of the default script), rename the already existing *"Beatstep"* folder to *"_Beatstep"* (or something that it is alphabetically sorted **after** *"BeatStep_Q"*)
 
-After initialization, you can recall any saved MIDI configuration and the control-layers will still work!
+> After initialization, you can recall any saved MIDI configuration and the control-layers will still work!
+
+
+
+
 
 
 ## General (click to expand)
@@ -61,19 +65,21 @@ The buttons `recall`, `store`,`chan` and `shift` are used to activate the contro
 
 - all layers (except the *"shift-layer"*) remain activated until the corresponding button is pressed again
 
-- the *"shift-layer"* can be activated permanently by **double-tapping** the `shift` button
+- holding `shift` while pressing `chan` will temporarily activate the *"mix-layer"* until `shift` is released
 
-- holding `shift` while pressing `recall` or `chan` will activate the corresponding layer until `shift` is released
+- the *"if shift pressed"* features are only available if the corresponding layer is activated permanently **and** `shift` is pressed
 
-- the *"if shift pressed"* features are only relevant if the layers are activated permanently **and** `shift` is pressed
+The `stop` button works the same (on all layers) as follows:
 
-The `stop` button can be used as follows:
+- if the selected clip is currently recording: only recording is stopped (but playback is continued)
 
-- if the selected clip is currently recording: only stop recording (but continue playback)
-
-- if the selected clip is playing: trigger stop
+- if the selected clip is playing: stop is triggered
 
 - *"if shift pressed"* : stop **ALL** tracks
+
+> While no layer is active, all buttons can be used to play midi-notes!  
+> (>> use the `transpose-encoder` to change the assigned range of midi-notes)
+
 
 </details>
 
@@ -82,8 +88,9 @@ The `stop` button can be used as follows:
 
 <details><summary>:white_circle: <strong>ENCODERS</strong></summary>  
 
-The `transpose-encoder` can be used to transpose the note-assignments of the buttons.
+The `transpose-encoder` can be used to transpose the note-assignments of the buttons.  
 (a red button-color indicates that the lower-left button is at the note C-2, C-1, C0, C1, etc.)
+> The info-message also tells you the current assignment of the lower-left button (e.g. `button 9`)
 
 - `encoder 1-4` and `9-12` : control the first 8 parameters of the selected device
 
@@ -177,7 +184,6 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 - coming soon
 
 </details>
-
 
 --- 
 
