@@ -28,7 +28,7 @@ To use this script, simply copy the files of the latest [release](https://github
 WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten!
 
 # Overlay
-The overlay-design provides indications for most of the assignments as well as the original sequencer-functions.  
+The overlay-design provides indications for all assignments (including secondary-functions)  
 <sup>
 (I got mine printed here: [Taktility](https://www.taktility.com/))
 </sup>
