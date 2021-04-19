@@ -172,6 +172,16 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 ---
 
 <details>
+<summary>:open_file_folder: <strong>BROWSE</strong></summary>  
+
+- coming soon
+
+</details>
+
+
+--- 
+
+<details>
 <summary>:violin: <strong>CONTROL</strong></summary>  
 
 Most lights are simply there to help remember the button-assignments.
