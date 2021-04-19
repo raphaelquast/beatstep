@@ -181,7 +181,9 @@ All encoders are assigned as described above except for the `transpose-encoder`,
 <details>
 <summary>:open_file_folder: <strong>BROWSE</strong></summary>  
 
-- coming soon
+Most lights are simply there to help remember the button-assignments.
+- `button 13` indicates if **hotswap** is on or off (`red` for on)
+- `button 14` indicates if **prelisten** is on or off (`blue` for on)
 
 </details>
 
