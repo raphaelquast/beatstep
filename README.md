@@ -185,11 +185,11 @@ The browser works ONLY in the info-bar... it is not connected to Ableton's brows
 The status-bar symbols indicate the following:
 
 - :red_circle: : the selected item can be loaded
-- :fire: : hotswap is active
+- :fire: ... :fire: : hotswap is active
 - :arrows_counterclockwise: : the item can be hotswapped
-- :black_circle: : the item can not be loaded directly
-- :file_folder: : the item is a folder
-
+- :black_circle: : the item can not be loaded directly (it's a collection of sub-items)
+- :file_folder: : the item is a folder (and can not be loaded directly)
+- :small_blue_diamond: a loadable item that is not selected
 
 Most button-lights are simply there to help remember the button-assignments.
 - `button 13` indicates if **hotswap** is on or off (`red` for on)
