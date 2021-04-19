@@ -1,25 +1,31 @@
 This is a **MIDI Remote Script** for **Ableton Live 9, 10 & 11** and the **Arturia BeatStep** controller.
 It turns your BeatStep into a fully-fledged control-surface for Ableton Live !
 
-- there are 5 different layers that give you a lot of control over Ableton Live and MIDI-clips:
-  - **shift, mix, launch, control** and **sequencer**
+- there are 6 different layers that give you a lot of control over Ableton Live and MIDI-clips:  
+  **shift, mix, launch, control, browse** and a **sequencer**
 
-- select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
-- use pads to start/stop/trigger clips
-- initialize and edit up to 16 note MIDI-sequences
-
-- get indications on the status of clips and tracks via button-LED's
-
-- play midi instruments with access to the **full range** of midi-notes!
-
-- ... and much more!
+  - select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
+  - use pads to start/stop/trigger existing clips
+  - browse the library to load instruments and devices
+  - initialize and edit up to 16 note MIDI-sequences
+  - get indications on the status of clips and tracks via button-LED's
+  - play midi instruments with access to the **full range** of midi-notes!
+  - ... and much more!
 
 ### Comments / suggestions / bugs?  
 > Just drop an [Issue](https://github.com/raphaelquast/beatstep/issues) or start a [Discussion](https://github.com/raphaelquast/beatstep/discussions) and I'll see what I can do!  
   
-... and if you like what I did, how about buying me a coffee?  
 
-<a href="https://www.buymeacoffee.com/raphaelquast" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;" ></a>
+<div style="display: inline">
+    <div style="width:60%; display: inline-block; float:left; margin-right: 10px;">
+    ... and as you might imagine... developing and maintaining all of this is quite some work, so  
+if you like what I did, how about buying me a coffee?   
+</div>
+    <div style="width: 30%; display: inline-block;">
+    &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+    <a href="https://www.buymeacoffee.com/raphaelquast" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;" ></a>
+    </div>
+</div>
 
 # Installation
 
