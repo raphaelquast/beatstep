@@ -2071,12 +2071,7 @@ class QControlComponent(BaseComponent):
 
                     # self._activate_control_layer("_shift_fixed", True)
             else:
-                if self.__control_layer_permanent:
-                    if self._shift_fixed:
-                        self.__control_layer_permanent = False
-                        self._unpress_shift()
-                else:
-                    self._unpress_shift()
+                self._unpress_shift()
 
             self.__shift_clicked = time.time()
 
@@ -2090,10 +2085,14 @@ class QControlComponent(BaseComponent):
             for key, val in self.layer_listener.items():
                 getattr(self, "_remove" + val)()
 
+            # make sure device-controls are enabled if no layer is active
+            if not self.__control_layer_permanent:
+                self._parent._device.set_enabled(True)
+            else:
+                self._parent._device.set_enabled(False)
+
             # remove value listeners from buttons in case shift is released
             # (so that we can play instruments if shift is not pressed)
-            self._parent._device.set_enabled(False)
-
             if not self._shift_pressed:
                 self._remove_handler()
                 self._parent._deactivate_control_mode()
