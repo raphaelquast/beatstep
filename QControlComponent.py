@@ -2058,6 +2058,7 @@ class QControlComponent(BaseComponent):
                             self.QSequencer.init_sequence()
                         else:
                             self._activate_control_layer("_sequencer", True)
+                            self._change_ableton_view("Detail/Clip")
                             self.QSequencer.show_sequence_info()
                     else:
                         self._activate_control_layer("_sequencer", True)

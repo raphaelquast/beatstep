@@ -652,7 +652,9 @@ class QSequencer(object):
                 pass
 
     def init_sequence(self):
-        # note = (pitch, time, duration, velocity, mute_state)
+        # show midi-clip view when sequence is initialized
+        self._parent._change_ableton_view("Detail/Clip")
+
         if not self.clip_slot.has_clip:
             self.clip_slot.create_clip(self.sequence_length)
 
@@ -670,10 +672,6 @@ class QSequencer(object):
                 )
 
             self.clip.name = self.sequence_names[self.sequence_length]
-
-        app = self._parent._parent.application()
-
-        app.view.show_view("Detail/Clip")
         self.add_handler()
 
     def set_sequence(self):
@@ -687,11 +685,6 @@ class QSequencer(object):
                             notes[i + j] + i // self.sequence_n * self.sequence_up
                         )
         return notes
-
-    # TODO
-    # self.clip.apply_note_modifications()
-    # self.clip.get_notes_extended()
-    # self.clip.remove_notes_extended(0, 128, 0, 16)
 
     # get_notes_extended( (int)from_pitch, (int)pitch_span, (float)from_time, (float)time_span) ->
     # MidiNoteVector : Returns a list of MIDI notes from the given pitch and time range.
