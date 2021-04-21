@@ -2,7 +2,16 @@ import Live
 from .QSetup import QSetup
 import time
 
+
+symb_voltage = u"\u26A1"
+symb_blue_diamond_small = u"\U0001f539"
+symb_blue_diamond_large = u"\U0001F537"
+symb_white_diamond = u"\u25c7"
+symb_red_circle = u"\U0001f534"
+
 # add this to be able to print nice Fractions (without using the "fractions" module)
+
+
 def gcd(a, b):
     """Calculate the Greatest Common Divisor of a and b.
 
@@ -36,8 +45,10 @@ class QSequencer(object):
     def __init__(self, parent):
         self._parent = parent
 
-        self._encoder_up_counter = {**{i: 0 for i in range(16)}, "transpose": 0}
-        self._encoder_down_counter = {**{i: 0 for i in range(16)}, "transpose": 0}
+        self._encoder_up_counter = {
+            **{i: 0 for i in range(16)}, "transpose": 0}
+        self._encoder_down_counter = {
+            **{i: 0 for i in range(16)}, "transpose": 0}
         self.QS = QSetup()
 
         self.up_down = True
@@ -110,7 +121,8 @@ class QSequencer(object):
 
     def dotheblink(self):
         if self.clip is not None and self._parent._sequencer:
-            i = 1 + (int(self.clip.playing_position * 16 / self.sequence_length) % 16)
+            i = 1 + (int(self.clip.playing_position *
+                     16 / self.sequence_length) % 16)
             if self._activeslot == i:
                 return
             else:
@@ -162,6 +174,22 @@ class QSequencer(object):
             if self.clip.playing_position_has_listener(self.dotheblink):
                 self.clip.remove_playing_position_listener(self.dotheblink)
 
+    @property
+    def _set_encoder_prop_msg(self):
+        if len(self._assigned_notes) > 0:
+            self._multitouch_info_msg()
+        else:
+            return (
+                " " * 15
+                + " changing"
+                + " " * 20
+                + symb_voltage
+                + " "
+                + str(self.change_property).upper()
+                + " "
+                + symb_voltage
+            )
+
     def set_change_properties(self, i, up_down):
         msg = None
         if i == 0:
@@ -170,42 +198,42 @@ class QSequencer(object):
             self.change_min = 0
             self.change_max = 127
             self.sensitivity = 8
-            msg = "Encoders set to:     " + self.change_property
+            msg = self._set_encoder_prop_msg
         elif i == 1:
             self.change_property = "velocity"
             self.change_interval = 1
             self.sensitivity = 1
             self.change_min = 1
             self.change_max = 127
-            msg = "Encoders set to:     " + self.change_property
+            msg = self._set_encoder_prop_msg
         elif i == 2:
             self.change_property = "start_time"
             self.change_interval = self.sequence_length / 16 * self.adjust_fine
             self.sensitivity = 5
             self.change_min = 0
             self.change_max = 9999
-            msg = "Encoders set to:     " + self.change_property
+            msg = self._set_encoder_prop_msg
         elif i == 3:
             self.change_property = "duration"
             self.change_interval = self.sequence_length / 16 * self.adjust_fine
             self.sensitivity = 5
             self.change_min = 0
             self.change_max = 127
-            msg = "Encoders set to:     " + self.change_property
+            msg = self._set_encoder_prop_msg
         elif i == 4:
             self.change_property = "velocity_deviation"
             self.change_interval = 1
             self.sensitivity = 1
             self.change_min = -127
             self.change_max = 127
-            msg = "Encoders set to:     " + self.change_property
+            msg = self._set_encoder_prop_msg
         elif i == 5:
             self.change_property = "probability"
             self.change_interval = 0.05
             self.sensitivity = 5
             self.change_min = 0
             self.change_max = 1
-            msg = "Encoders set to:     " + self.change_property
+            msg = self._set_encoder_prop_msg
         elif i == 6:
             pass
         elif i == 7:
@@ -264,6 +292,19 @@ class QSequencer(object):
             self.clip.select_all_notes()
             self.change_note_property(range(16), up_down)
 
+            self._parent._parent.show_message(
+                " " * 15
+                + " changing"
+                + " " * 20
+                + symb_voltage
+                + " "
+                + str(self.change_property).upper()
+                + " "
+                + symb_voltage
+                + " " * 20
+                + " of ALL notes"
+            )
+
     def set_sequence_up(self, up_down):
         if up_down:
 
@@ -316,74 +357,114 @@ class QSequencer(object):
         """
         the callback for button i (e.g. 1 - 16)
         """
+        if kwargs["value"] > 0:
+            if self._parent._shift_pressed:
+                if i in range(1, 7):
+                    self._parent._select_track(i)
+                elif i == 7:
+                    self._parent._select_prev_scene()
+                elif i == 8:
+                    self._parent._undo()
+                elif i == 9:
+                    self._parent._delete_clip()
+                elif i == 11:
+                    self._parent._duplicate_clip()
+                elif i == 12:
+                    self._parent._duplicate_loop()
+                elif i == 14:
+                    self._parent._fire_record()
+                elif i == 15:
+                    self._parent._select_next_scene()
 
-        if self._parent._shift_pressed:
-            if i in range(1, 7):
-                self._parent._select_track(i)
-            elif i == 7:
-                self._parent._select_prev_scene()
-            elif i == 8:
-                self._parent._undo()
-            elif i == 9:
-                self._parent._delete_clip()
-            elif i == 11:
-                self._parent._duplicate_clip()
-            elif i == 12:
-                self._parent._duplicate_loop()
-            elif i == 14:
-                self._parent._fire_record()
-            elif i == 15:
-                self._parent._select_next_scene()
-            return
-
-        if self.clip is not None:
-
-            # handle long-pressing a button
-            if kwargs["value"] > 0:
-                self._doit = True
-                self._assigned_notes.add(i)
-
-                if len(self._assigned_notes) > 1 or not self._singlebutton:
-                    # only mute notes if the button has been pressed alone
-                    self._doit = False
-                    self._singlebutton = False
-                else:
+            elif self.clip is None:
+                self.set_sequence_length_button(i)
+                self.set_note_duration_button(i)
+                self.set_note_velocity_button(i)
+            else:
+                # handle long-pressing a button
+                if kwargs["value"] > 0:
                     self._doit = True
+                    self._assigned_notes.add(i)
 
-            if kwargs["value"] == 0:
+                    if len(self._assigned_notes) > 1 or not self._singlebutton:
+                        # only mute notes if the button has been pressed alone
+                        self._doit = False
+                        self._singlebutton = False
+                    else:
+                        self._doit = True
+
+        elif kwargs["value"] == 0:
+            if self.clip is not None:
+                # remove released buttons from _assigned_notes
+                # if no buttons are pressed any longer, reset _singlebutton
                 try:
                     self._assigned_notes.remove(i)
-                    if len(self._assigned_notes) == 0:
-                        self._singlebutton = True
-
-                except ValueError:
+                except KeyError:
                     pass
 
+                if len(self._assigned_notes) == 0:
+                    self._singlebutton = True
+
+                # if the button is released and no other buttons have been pressed,
+                # mute/unmute it
                 if self._doit:
-                    if self._parent._shift_pressed:
-                        self.clip.scrub(self.sequence_length / 16 * i)
-                        self.clip.stop_scrub()
-                    else:
-                        self.clip.select_all_notes()
-                        self.modify_note(
-                            assigned_notes={i},
-                            mute=not self.get_note_specs(i, "mute"),
-                        )
-            if len(self._assigned_notes) > 0:
-                self._parent._parent.show_message(
-                    "     >> TRANSPOSE <<      to change the parameter     >> "
-                    + str(self.change_property).upper()
-                    + " <<     of the notes    "
-                    + str(self._assigned_notes)
-                )
+                    # self.clip.scrub(self.sequence_length / 16 * i)
+                    # self.clip.stop_scrub()
 
-        else:
-            self.set_sequence_length_button(i)
-            self.set_note_duration_button(i)
-            self.set_note_velocity_button(i)
-            # self.set_n_notes_button(i)
+                    self.clip.select_all_notes()
+                    self.modify_note(
+                        assigned_notes={i},
+                        mute=not self.get_note_specs(i, "mute"),
+                    )
 
+        if self.clip is not None:
+            # if a button is pressed a duration of 3 ticks, activate note-edit mode
+            self._parent._parent.schedule_message(3, self._multitouch_info_msg)
         self.get_button_colors()
+
+    def _multitouch_info_msg(self):
+        self._doit = False
+        if len(self._assigned_notes) > 0:
+            notevector, notes = self.get_notes()
+
+            if notevector is None:
+                return
+
+            s = ""
+            for i, note in enumerate(notes[:16]):
+                if i == 8:
+                    s += " | "
+                if i in [4, 12]:
+                    s += "  "
+                if i in self._assigned_notes:
+                    s += symb_red_circle
+                else:
+                    if note.mute:
+                        s += symb_white_diamond + " "
+                    else:
+                        s += symb_blue_diamond_large
+
+            self._parent._parent.show_message(
+                " " * 15
+                + " changing"
+                + " " * 20
+                + symb_voltage
+                + " "
+                + str(self.change_property).upper()
+                + " "
+                + symb_voltage
+                + " " * 20
+                + "of notes"
+                + " " * 20
+                + s
+            )
+
+            # keep message alive until all buttons are released
+            self._parent._parent.schedule_message(
+                16, self._multitouch_info_msg)
+        else:
+            self._parent._parent._task_group.clear()
+            self._parent._parent.show_message(" ")
 
     def change_note_property(self, assigned_notes, up_down):
         if self.clip is not None:
@@ -439,6 +520,7 @@ class QSequencer(object):
             return
 
         if not self._parent._shift_pressed and i != "transpose":
+            self.clip.select_all_notes()
             self.set_change_properties(i, up_down)
             return
 
@@ -449,7 +531,7 @@ class QSequencer(object):
                     self._doit = False
                 else:
                     self.irene_transposers(up_down)
-                    # self.set_change_properties(i, up_down)
+
             elif self._parent._shift_pressed:
                 self.change_note_property([i], up_down)
             # set all counters to zero
@@ -609,8 +691,14 @@ class QSequencer(object):
     # -------------------------------------------
 
     def show_sequence_info(self):
-        empty_square = "\u2591"
-        v_bars = ["\u2582", "\u2584", "\u2586", "\u2588"]
+        # keep message alive until a clip is created
+        if self.clip is None:
+            self._parent._parent.schedule_message(16, self.show_sequence_info)
+        else:
+            self._parent._parent._task_group.clear()
+
+        empty_square = u"\u2591"
+        v_bars = [u"\u2582", u"\u2584", u"\u2586", u"\u2588"]
 
         n_velocity = self.note_velocities.index(self.note_velocity)
         v_symb = v_bars[n_velocity]
@@ -718,7 +806,8 @@ class QSequencer(object):
             for i in range(16):
                 self.add_note(
                     pitch=sequence[i],
-                    start_time=self.sequence_length / 16 * (i + self.note_offset),
+                    start_time=self.sequence_length /
+                    16 * (i + self.note_offset),
                     duration=self.sequence_length / 16 * self.note_duration,
                     velocity=int(127 * self.note_velocity),
                     velocity_deviation=0,
@@ -737,7 +826,8 @@ class QSequencer(object):
                 for j in range(self.sequence_n):
                     if i + j < len(notes):
                         notes[i + j] = (
-                            notes[i + j] + i // self.sequence_n * self.sequence_up
+                            notes[i + j] + i // self.sequence_n *
+                            self.sequence_up
                         )
         return notes
 
