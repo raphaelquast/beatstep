@@ -816,7 +816,7 @@ class QBrowser(object):
 
     def _load_on_new_track(self):
         ID = self.identify_item()
-        if ID == "audio_effects" or "midi_effects":
+        if ID == "audio_effects" or ID == "midi_effects":
             self.song.create_return_track()
             self._load_item()
         elif ID == "instruments":
