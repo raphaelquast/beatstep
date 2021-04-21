@@ -416,6 +416,8 @@ class QSequencer(object):
                         assigned_notes={i},
                         mute=not self.get_note_specs(i, "mute"),
                     )
+                    self._singlebutton = True
+                    self._assigned_notes.clear()
 
         if self.clip is not None:
             # if a button is pressed a duration of 3 ticks, activate note-edit mode
