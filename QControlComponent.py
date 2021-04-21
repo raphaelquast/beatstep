@@ -2178,6 +2178,12 @@ class QControlComponent(BaseComponent):
             else:
                 self._activate_control_layer("_control_layer_2", True)
 
+                app = self._parent.application()
+
+                if not app.view.is_view_visible("Detail/DeviceChain"):
+                    app.view.show_view("Detail/DeviceChain")
+                    app.view.focus_view("Detail/DeviceChain")
+
     def _store_listener(self, value):
         if value == 0:
             if self._shift_pressed:
