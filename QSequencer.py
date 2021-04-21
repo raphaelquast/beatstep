@@ -260,8 +260,7 @@ class QSequencer(object):
     def irene_transposers(self, up_down):
         if self.clip is not None:
             self.clip.select_all_notes()
-            for i in range(16):
-                self.change_note_property(i, up_down)
+            self.change_note_property(range(16), up_down)
 
     def set_sequence_up(self, up_down):
         if up_down:
@@ -343,9 +342,17 @@ class QSequencer(object):
                     else:
                         self.clip.select_all_notes()
                         self.modify_note(
-                            i=i,
+                            assigned_notes=[i],
                             mute=not self.get_note_specs(i, "mute"),
                         )
+            if len(self._assigned_notes) > 0:
+                self._parent._parent.show_message(
+                    "     >> TRANSPOSE <<      to change the parameter     >> "
+                    + str(self.change_property).upper()
+                    + " <<     of the notes    "
+                    + str(self._assigned_notes)
+                )
+
         else:
             self.set_sequence_length_button(i)
             self.set_note_duration_button(i)
@@ -354,24 +361,9 @@ class QSequencer(object):
 
         self.get_button_colors()
 
-    def change_note_property(self, i, up_down):
+    def change_note_property(self, assigned_notes, up_down):
         if self.clip is not None:
-            kwargs = {"i": i}
-            curr_val = self.get_note_specs(i, self.change_property)
-
-            if curr_val is not None:
-                if up_down:
-                    kwargs[self.change_property] = min(
-                        curr_val + self.change_interval,
-                        self.change_max,
-                    )
-                else:
-                    kwargs[self.change_property] = max(
-                        curr_val - self.change_interval,
-                        self.change_min,
-                    )
-
-                self.modify_note(**kwargs)
+            self.modify_note(assigned_notes, up_down)
 
     def encoder_callback(self, i, value):
         up_down = value < 64
@@ -422,22 +414,20 @@ class QSequencer(object):
                         self._encoder_up_counter[key] = 0
             return
 
-        if self._parent._shift_pressed and i in [0, 1, 2, 3, 4, 5]:
+        if not self._parent._shift_pressed and i in [0, 1, 2, 3, 4, 5]:
             self.set_change_properties(i, up_down)
             return
 
         if self._counter[i] > self.sensitivity:
-            if i == "transpose" or self._parent._shift_pressed:
-
+            if i == "transpose":
                 if len(self._assigned_notes) > 0:
-                    for j in self._assigned_notes:
-                        self.change_note_property(j, up_down)
+                    self.change_note_property(self._assigned_notes, up_down)
                     self._doit = False
                 else:
                     self.irene_transposers(up_down)
                     # self.set_change_properties(i, up_down)
-            else:
-                self.change_note_property(i, up_down)
+            elif self._parent._shift_pressed:
+                self.change_note_property([i], up_down)
             # set all counters to zero
             for key in self._encoder_down_counter.keys():
                 self._encoder_down_counter[key] = 0
@@ -543,13 +533,33 @@ class QSequencer(object):
         else:
             return None, None
 
-    def modify_note(self, i, **kwargs):
+    def modify_note(self, assigned_notes, up_down=True, **note_kwargs):
         notevector, notes = self.get_notes()
 
-        if notevector is not None and len(notes) > i:
-            note = notes[i]
-            for key, val in kwargs.items():
-                setattr(note, key, val)
+        if self.clip is not None and notevector is not None:
+            for i in assigned_notes:
+                if len(note_kwargs) == 0:
+                    kwargs = {}
+                    curr_val = self.get_note_specs(i, self.change_property)
+
+                    if curr_val is not None:
+                        if up_down:
+                            kwargs[self.change_property] = min(
+                                curr_val + self.change_interval,
+                                self.change_max,
+                            )
+                        else:
+                            kwargs[self.change_property] = max(
+                                curr_val - self.change_interval,
+                                self.change_min,
+                            )
+                else:
+                    kwargs = note_kwargs
+
+                if len(notes) > i:
+                    note = notes[i]
+                    for key, val in kwargs.items():
+                        setattr(note, key, val)
 
             self.clip.apply_note_modifications(notevector)
 
