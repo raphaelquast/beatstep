@@ -1,6 +1,6 @@
 import Live
 from .QSetup import QSetup
-
+import time
 
 # add this to be able to print nice Fractions (without using the "fractions" module)
 def gcd(a, b):
@@ -67,6 +67,8 @@ class QSequencer(object):
         self.note_duration = 0.5
         self.note_offset = 0
         self.note_velocity = 0.75
+
+        self._assigned_notes = []
 
         self.sequence_lengths = [1, 2, 4, 8, 16, 32, 64, 128]
         #                       [2,1,1/2,1/4,1/8,1/16,1/32]
@@ -302,13 +304,13 @@ class QSequencer(object):
                 getattr(self.clip, prop) - interval,
             )
 
-    def button_callback(self, i):
+    def button_callback(self, i, **kwargs):
         """
         the callback for button i (e.g. 1 - 16)
         """
 
         if self._parent._shift_pressed:
-            if i in range(7):
+            if i in range(1, 7):
                 self._parent._select_track(i)
             elif i == 7:
                 self._parent._select_prev_scene()
@@ -327,15 +329,23 @@ class QSequencer(object):
             return
 
         if self.clip is not None:
-            if self._parent._shift_pressed:
-                self.clip.scrub(self.sequence_length / 16 * i)
-                self.clip.stop_scrub()
-            else:
-                self.clip.select_all_notes()
-                self.modify_note(
-                    i=i,
-                    mute=not self.get_note_specs(i, "mute"),
-                )
+
+            # handle long-pressing a button
+            if kwargs["value"] > 0:
+                self._doit = True
+                self._assigned_notes += [i]
+            if kwargs["value"] == 0:
+                self._assigned_notes.clear()
+                if self._doit:
+                    if self._parent._shift_pressed:
+                        self.clip.scrub(self.sequence_length / 16 * i)
+                        self.clip.stop_scrub()
+                    else:
+                        self.clip.select_all_notes()
+                        self.modify_note(
+                            i=i,
+                            mute=not self.get_note_specs(i, "mute"),
+                        )
         else:
             self.set_sequence_length_button(i)
             self.set_note_duration_button(i)
@@ -418,7 +428,14 @@ class QSequencer(object):
 
         if self._counter[i] > self.sensitivity:
             if i == "transpose" or self._parent._shift_pressed:
-                self.set_change_properties(i, up_down)
+
+                if len(self._assigned_notes) > 0:
+                    for j in self._assigned_notes:
+                        self.change_note_property(j, up_down)
+                    self._doit = False
+                else:
+                    self.irene_transposers(up_down)
+                    # self.set_change_properties(i, up_down)
             else:
                 self.change_note_property(i, up_down)
             # set all counters to zero
@@ -454,6 +471,10 @@ class QSequencer(object):
                             self.button_colors[i + 1] = self.notecolor
                 if i < 15:
                     self.button_colors[i + 2] = self.notecolor
+
+            if len(self._assigned_notes) > 0:
+                for i in self._assigned_notes:
+                    self.button_colors[i + 1] = "red"
         else:
             self.button_colors[
                 self.sequence_lengths.index(self.sequence_length) + 1
