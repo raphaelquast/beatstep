@@ -68,7 +68,9 @@ class QSequencer(object):
         self.note_offset = 0
         self.note_velocity = 0.75
 
-        self._assigned_notes = []
+        self._assigned_notes = set()
+        self._singlebutton = True
+        self._doit = True
 
         self.sequence_lengths = [1, 2, 4, 8, 16, 32, 64, 128]
         #                       [2,1,1/2,1/4,1/8,1/16,1/32]
@@ -332,9 +334,24 @@ class QSequencer(object):
             # handle long-pressing a button
             if kwargs["value"] > 0:
                 self._doit = True
-                self._assigned_notes += [i]
+                self._assigned_notes.add(i)
+
+                if len(self._assigned_notes) > 1 or not self._singlebutton:
+                    # only mute notes if the button has been pressed alone
+                    self._doit = False
+                    self._singlebutton = False
+                else:
+                    self._doit = True
+
             if kwargs["value"] == 0:
-                self._assigned_notes.clear()
+                try:
+                    self._assigned_notes.remove(i)
+                    if len(self._assigned_notes) == 0:
+                        self._singlebutton = True
+
+                except ValueError:
+                    pass
+
                 if self._doit:
                     if self._parent._shift_pressed:
                         self.clip.scrub(self.sequence_length / 16 * i)
@@ -342,7 +359,7 @@ class QSequencer(object):
                     else:
                         self.clip.select_all_notes()
                         self.modify_note(
-                            assigned_notes=[i],
+                            assigned_notes={i},
                             mute=not self.get_note_specs(i, "mute"),
                         )
             if len(self._assigned_notes) > 0:
