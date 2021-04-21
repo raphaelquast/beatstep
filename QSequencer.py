@@ -291,19 +291,26 @@ class QSequencer(object):
 
         self.show_sequence_info()
 
-    def set_loop_property(self, up_down, prop, interval):
-        if up_down:
-            setattr(
-                self.clip,
-                prop,
-                getattr(self.clip, prop) + interval,
-            )
+    def _check_loop_prop_integrity(self, prop, val):
+        if prop == "loop_end":
+            start_val = getattr(self.clip, "loop_start")
+            return start_val < val
+        elif prop == "loop_start":
+            end_val = getattr(self.clip, "loop_end")
+            return end_val > val
         else:
-            setattr(
-                self.clip,
-                prop,
-                getattr(self.clip, prop) - interval,
-            )
+            return True
+
+    def set_loop_property(self, up_down, prop, interval):
+        curr_val = getattr(self.clip, prop)
+        if up_down:
+            new_val = curr_val + interval
+            if self._check_loop_prop_integrity(prop, new_val):
+                setattr(self.clip, prop, new_val)
+        else:
+            new_val = curr_val - interval
+            if self._check_loop_prop_integrity(prop, new_val):
+                setattr(self.clip, prop, new_val)
 
     def button_callback(self, i, **kwargs):
         """
