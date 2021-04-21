@@ -414,7 +414,7 @@ class QSequencer(object):
                         self._encoder_up_counter[key] = 0
             return
 
-        if not self._parent._shift_pressed and i in [0, 1, 2, 3, 4, 5]:
+        if not self._parent._shift_pressed and i != "transpose":
             self.set_change_properties(i, up_down)
             return
 
