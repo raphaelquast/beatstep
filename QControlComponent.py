@@ -43,7 +43,7 @@ QUANTIZATIONS = [
 
 def get_midi_note_name(value):
     octave = int(value / 12) - 2
-    note = "C C#D D#E F F#G G#A A#B "[(value % 12) * 2 : (value % 12) * 2 + 2]
+    note = "C C#D D#E F F#G G#A A#B "[(value % 12) * 2: (value % 12) * 2 + 2]
     return note.strip() + str(octave)
 
 
@@ -130,7 +130,8 @@ class QControlComponent(BaseComponent):
         self._sequencer_running = False
 
         # get a list of all possible song-quantization-states
-        self.quants = [getattr(Live.Song.Quantization, key) for key in QUANTIZATIONS]
+        self.quants = [getattr(Live.Song.Quantization, key)
+                       for key in QUANTIZATIONS]
 
         self._detail_cycle = cycle(("Detail/Clip", "Detail/DeviceChain"))
         self._view_cycle = cycle(("Arranger", "Session"))
@@ -186,7 +187,8 @@ class QControlComponent(BaseComponent):
 
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
-        self._parent._send_midi(self._parent.QS.set_B_color(buttonid, colordict[color]))
+        self._parent._send_midi(
+            self._parent.QS.set_B_color(buttonid, colordict[color]))
 
     def _blink(
         self, condition=lambda: False, buttonid=1, timeout=5, colors=["red", "black"]
@@ -226,7 +228,8 @@ class QControlComponent(BaseComponent):
             use_slots = [None for i in range(14)]
 
             for i, scene_id in enumerate(
-                range(self.selected_scene_index, self.selected_scene_index + 14)
+                range(self.selected_scene_index,
+                      self.selected_scene_index + 14)
             ):
                 if scene_id < nslots:
                     use_slots[i] = slots[scene_id]
@@ -525,7 +528,7 @@ class QControlComponent(BaseComponent):
         self.use_tracks = [None for i in range(self.npads)]
         ntrack = 0
         # don't use master track! that's why there's [:-1]
-        for track in all_tracks[:-1][self.track_offset :]:
+        for track in all_tracks[:-1][self.track_offset:]:
             self.use_tracks[ntrack] = track
             ntrack += 1
 
@@ -656,7 +659,8 @@ class QControlComponent(BaseComponent):
                             self._set_color(buttonid, next(c2))
                             self._parent.schedule_message(1, callback)
                         else:
-                            self._playing_state_callback(track_id, slot_id, buttonid)
+                            self._playing_state_callback(
+                                track_id, slot_id, buttonid)
                     else:
                         # update lights in case the callback is released while the
                         # control-layer has already been changed
@@ -1279,16 +1283,20 @@ class QControlComponent(BaseComponent):
         # find the track-index  explicitly since the duplicate_track function
         # uses a different indexing than QControl!
         selected_track = song.view.selected_track
-        if selected_track != None:
-            selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(
-                selected_track
-            )
-
-            if selected_track_index not in [song.master_track]:
+        if selected_track != None and selected_track not in [song.master_track]:
+            if selected_track.can_be_armed:
+                selected_track_index = list(song.tracks).index(selected_track)
                 try:
                     song.delete_track(selected_track_index)
-                except RuntimeError:
-                    self.show_notification("deletion of track failed")
+                except Exception:
+                    self._parent.show_message("deletion of track failed")
+            else:
+                selected_track_index = list(
+                    song.return_tracks).index(selected_track)
+                try:
+                    song.delete_return_track(selected_track_index)
+                except Exception:
+                    self._parent.show_message("deletion of track failed")
 
     def _duplicate_or_delete_scene(self):
         if self.__control_layer_permanent and self._shift_pressed:
@@ -1531,7 +1539,8 @@ class QControlComponent(BaseComponent):
             # find currently active quantization index
             qid = self.quants.index(curr_q)
 
-            song.clip_trigger_quantization = self.quants[(qid + 1) % len(self.quants)]
+            song.clip_trigger_quantization = self.quants[(
+                qid + 1) % len(self.quants)]
         else:
             # start with 1 bar if quantization was turned off
             song.clip_trigger_quantization = Live.Song.Quantization.q_bar
@@ -1946,9 +1955,11 @@ class QControlComponent(BaseComponent):
         if self.__transpose_cnt == 0:
 
             if value > 65:
-                app.view.scroll_view(NavDirection.left, "Detail/DeviceChain", False)
+                app.view.scroll_view(
+                    NavDirection.left, "Detail/DeviceChain", False)
             else:
-                app.view.scroll_view(NavDirection.right, "Detail/DeviceChain", False)
+                app.view.scroll_view(NavDirection.right,
+                                     "Detail/DeviceChain", False)
 
     def _scroll_drum_pad_row(self, value):
         # reduce sensitivity to make it easier to select items
@@ -2027,9 +2038,11 @@ class QControlComponent(BaseComponent):
             scrollpos = usedevice.view.drum_pads_scroll_position
             newscrollpos = int(newpadid / 4)
             if newscrollpos < scrollpos:
-                usedevice.view.drum_pads_scroll_position = newscrollpos % (nrows)
+                usedevice.view.drum_pads_scroll_position = newscrollpos % (
+                    nrows)
             elif newscrollpos > scrollpos + 3:
-                usedevice.view.drum_pads_scroll_position = (newscrollpos - 3) % (nrows)
+                usedevice.view.drum_pads_scroll_position = (
+                    newscrollpos - 3) % (nrows)
 
     # ------------------------------------------------------------------------
 
@@ -2186,7 +2199,8 @@ class QControlComponent(BaseComponent):
         }
         self._pad_velocity = (self._pad_velocity + 1) % 4
 
-        self._parent._send_midi(self._parent.QS.set_B_velocity(self._pad_velocity))
+        self._parent._send_midi(
+            self._parent.QS.set_B_velocity(self._pad_velocity))
 
         self._parent.show_message(
             'Pad-velocity set to:  "' + msg[self._pad_velocity] + '"'
