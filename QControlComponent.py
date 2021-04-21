@@ -1392,14 +1392,15 @@ class QControlComponent(BaseComponent):
             self._stop_clip()
 
     def _duplicate_clip(self):
-        all_scenes = self._parent.song().scenes
         # duplicate the clip slot
         if self.selected_track == None:
             return
+
         duplicated_id = self.selected_track.duplicate_clip_slot(
             self.selected_scene_index
         )
-        duplicated_slot = all_scenes[duplicated_id]
+
+        duplicated_slot = self._parent.song().scenes[duplicated_id]
 
         if self._parent.song().view.highlighted_clip_slot.is_playing:
             # move to the duplicated clip_slot
