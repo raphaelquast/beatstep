@@ -2,12 +2,19 @@ import Live
 from .QSetup import QSetup
 import time
 
-
+# fmt: off
 symb_voltage = u"\u26A1"
 symb_blue_diamond_small = u"\U0001f539"
 symb_blue_diamond_large = u"\U0001F537"
 symb_white_diamond = u"\u25c7"
 symb_red_circle = u"\U0001f534"
+
+symb_stop = u"\U0001f6ab"
+symb_exclamation = u"\u2757"
+empty_square = u"\u2591"
+v_bars = [u"\u2582", u"\u2584", u"\u2586", u"\u2588"]
+
+# fmt: on
 
 # add this to be able to print nice Fractions (without using the "fractions" module)
 
@@ -699,9 +706,6 @@ class QSequencer(object):
         else:
             self._parent._parent._task_group.clear()
 
-        empty_square = u"\u2591"
-        v_bars = [u"\u2582", u"\u2584", u"\u2586", u"\u2588"]
-
         n_velocity = self.note_velocities.index(self.note_velocity)
         v_symb = v_bars[n_velocity]
 
@@ -792,7 +796,8 @@ class QSequencer(object):
                 )
             except KeyError:
                 self._parent._parent.show_message(
-                    "sequence tempo could not be parsed from clip-name..."
+                    symb_exclamation
+                    + " sequence tempo could not be parsed from clip-name..."
                 )
                 pass
 

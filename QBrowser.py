@@ -6,6 +6,7 @@ FilterType = Live.Browser.FilterType
 DeviceType = Live.Device.DeviceType
 Relation = Live.Browser.Relation
 
+# fmt: off
 
 symb_folder = u"\U0001f4c1"
 symb_folder_open = u"\U0001f4c2"
@@ -19,12 +20,12 @@ symb_blue_diamond_small = u"\U0001f539"
 symb_fire = u"\U0001f525"
 symb_black_circle = u"\u25cf"
 symb_stop = u"\U0001f6ab"
+symb_exclamation = u"\u2757"
 
 symb_left_arraow = u"\u25c4"
 symb_right_arrow = u"\u25ba"
 
 
-# fmt: off
 def makebold(text, surround="select", translate=False):
 
     if surround == "select":

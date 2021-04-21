@@ -15,6 +15,10 @@ import Live
 
 NavDirection = Live.Application.Application.View.NavDirection
 
+# fmt: off
+symb_stop = u"\U0001f6ab"
+
+
 VIEWS = (
     "Browser",
     "Arranger",
@@ -39,6 +43,8 @@ QUANTIZATIONS = [
     "q_sixtenth_triplet",
     "q_thirtytwoth",
 ]
+
+# fmt: on
 
 
 def get_midi_note_name(value):
@@ -2115,11 +2121,15 @@ class QControlComponent(BaseComponent):
                     else:
                         self._activate_control_layer("_sequencer", True)
                         self._parent.show_message(
-                            "A MIDI Sequence can only be created on a MIDI track!"
+                            symb_stop
+                            + "A MIDI Sequence can only be created on a MIDI track!"
+                            + symb_stop
                         )
                 else:
                     self._parent.show_message(
-                        "The MIDI SEQUENCER EDITOR works only with Ableton 11 or later!"
+                        symb_stop
+                        + " The MIDI SEQUENCER EDITOR works only with Ableton 11 or later! "
+                        + symb_stop
                     )
 
                     # self._activate_control_layer("_shift_fixed", True)
