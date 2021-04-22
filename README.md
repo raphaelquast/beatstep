@@ -25,9 +25,15 @@ developing and maintaining all of this is quite some work, so if you like what I
 
 # Installation
 
-To use this script, simply copy the files of the latest [release](https://github.com/raphaelquast/beatstep/releases) into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live (located at `..install-dir..\Resources\MIDI Remote Scripts`) and then select the **Beatstep_Q** device as control-surface in the MIDI-tab of the preferences. (make sure to activate both `track` and `remote` for this device!)
+No real installation required... just copy the files and you are ready to go!
 
-WARNING: The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten!
+1) copy the files of the latest [release](https://github.com/raphaelquast/beatstep/releases) into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live  
+  (located at `..install-dir..\Resources\MIDI Remote Scripts`) 
+2) start Ableton and select **Beatstep_Q** as control-surface in the MIDI-tab of the preferences.  
+   (make sure to activate both `track` and `remote` for this device!)
+
+
+❗ The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten ❗ 
 
 # Overlay
 The overlay-design provides indications for all assignments (including secondary-functions)  
