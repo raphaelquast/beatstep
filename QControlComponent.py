@@ -15,6 +15,10 @@ import Live
 
 NavDirection = Live.Application.Application.View.NavDirection
 
+# fmt: off
+symb_stop = u"\U0001f6ab"
+
+
 VIEWS = (
     "Browser",
     "Arranger",
@@ -39,6 +43,8 @@ QUANTIZATIONS = [
     "q_sixtenth_triplet",
     "q_thirtytwoth",
 ]
+
+# fmt: on
 
 
 def get_midi_note_name(value):
@@ -260,7 +266,7 @@ class QControlComponent(BaseComponent):
             bdict["play"] = "black"
 
         if self._control_layer_1:  # e.g. MIX
-            bdict["shift"] = "black"
+            bdict["shift"] = "red"
             bdict["chan"] = "red"
             bdict["store"] = "black"
             bdict["recall"] = "black"
@@ -676,8 +682,12 @@ class QControlComponent(BaseComponent):
                 return
             if clip_slot.is_playing:
                 self._set_color(buttonid, "red")
-            elif clip_slot.is_group_slot and clip_slot.controls_other_clips:
-                self._set_color(buttonid, "magenta")
+            elif clip_slot.is_group_slot:  # and clip_slot.controls_other_clips:
+                if clip_slot.controls_other_clips:
+                    self._set_color(buttonid, "blue")
+                else:
+                    self._set_color(buttonid, "magenta")
+
             elif clip_slot.has_clip:
                 self._set_color(buttonid, "blue")
             else:
@@ -850,6 +860,11 @@ class QControlComponent(BaseComponent):
     ###################################################
 
     def _1_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(0, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(0)
@@ -857,8 +872,6 @@ class QControlComponent(BaseComponent):
                 self._redo()
             elif self._control_layer_3:
                 self._play_slot(0, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(0)
             elif self._browser:
                 self.QBrowser.button_callback(0)
             elif self._shift_pressed or self._shift_fixed:
@@ -869,6 +882,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _2_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(1, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(1)
@@ -876,8 +894,6 @@ class QControlComponent(BaseComponent):
                 self._collapse_device()
             elif self._control_layer_3:
                 self._play_slot(1, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(1)
             elif self._browser:
                 self.QBrowser.button_callback(1)
             elif self._shift_pressed or self._shift_fixed:
@@ -888,6 +904,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _3_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(2, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(2)
@@ -895,8 +916,6 @@ class QControlComponent(BaseComponent):
                 self._toggle_or_delete_device()
             elif self._control_layer_3:
                 self._play_slot(2, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(2)
             elif self._browser:
                 self.QBrowser.button_callback(2)
             elif self._shift_pressed or self._shift_fixed:
@@ -907,6 +926,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _4_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(3, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(3)
@@ -914,8 +938,6 @@ class QControlComponent(BaseComponent):
                 pass
             elif self._control_layer_3:
                 self._play_slot(3, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(3)
             elif self._browser:
                 self.QBrowser.button_callback(3)
             elif self._shift_pressed or self._shift_fixed:
@@ -927,6 +949,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _5_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(4, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(4)
@@ -934,8 +961,6 @@ class QControlComponent(BaseComponent):
                 pass
             elif self._control_layer_3:
                 self._play_slot(4, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(4)
             elif self._browser:
                 self.QBrowser.button_callback(4)
             elif self._shift_pressed or self._shift_fixed:
@@ -946,6 +971,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _6_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(5, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(5)
@@ -953,8 +983,6 @@ class QControlComponent(BaseComponent):
                 self._change_or_off_quantization()
             elif self._control_layer_3:
                 self._play_slot(5, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(5)
             elif self._browser:
                 self.QBrowser.button_callback(5)
             elif self._shift_pressed or self._shift_fixed:
@@ -965,6 +993,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _7_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(6, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(6)
@@ -975,8 +1008,6 @@ class QControlComponent(BaseComponent):
                     self._change_ableton_view(next(self._detail_cycle))
             elif self._control_layer_3:
                 self._play_slot(6, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(6)
             elif self._browser:
                 self.QBrowser.button_callback(6)
             elif self._shift_pressed or self._shift_fixed:
@@ -987,10 +1018,13 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _8_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(7, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
-            if self._sequencer:
-                self.QSequencer.button_callback(7)
-            elif self._browser:
+            if self._browser:
                 self.QBrowser.button_callback(7)
             elif self.__control_layer_permanent:
                 if self._shift_pressed:
@@ -1006,6 +1040,11 @@ class QControlComponent(BaseComponent):
     ###################################################
 
     def _9_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(8, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(0)
@@ -1013,8 +1052,6 @@ class QControlComponent(BaseComponent):
                 self._undo()
             elif self._control_layer_3:
                 self._play_slot(0, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(8)
             elif self._browser:
                 self.QBrowser.button_callback(8)
             elif self._shift_pressed or self._shift_fixed:
@@ -1025,6 +1062,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _10_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(9, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(1)
@@ -1032,8 +1074,6 @@ class QControlComponent(BaseComponent):
                 self._duplicate_or_delete_track()
             elif self._control_layer_3:
                 self._play_slot(1, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(9)
             elif self._browser:
                 self.QBrowser.button_callback(9)
             elif self._shift_pressed or self._shift_fixed:
@@ -1044,6 +1084,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _11_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(10, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(2)
@@ -1051,8 +1096,6 @@ class QControlComponent(BaseComponent):
                 self._duplicate_or_delete_scene()
             elif self._control_layer_3:
                 self._play_slot(2, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(10)
             elif self._browser:
                 self.QBrowser.button_callback(10)
             elif self._layer_onetrack:
@@ -1061,6 +1104,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _12_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(11, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(3)
@@ -1068,8 +1116,6 @@ class QControlComponent(BaseComponent):
                 self._tap_tempo()
             elif self._control_layer_3:
                 self._play_slot(3, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(11)
             elif self._browser:
                 self.QBrowser.button_callback(11)
             elif self._shift_pressed or self._shift_fixed:
@@ -1080,6 +1126,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _13_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(12, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(4)
@@ -1087,8 +1138,6 @@ class QControlComponent(BaseComponent):
                 self._toggle_metronome()
             elif self._control_layer_3:
                 self._play_slot(4, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(12)
             elif self._browser:
                 self.QBrowser.button_callback(12)
             elif self._shift_pressed or self._shift_fixed:
@@ -1099,6 +1148,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _14_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(13, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(5)
@@ -1106,8 +1160,6 @@ class QControlComponent(BaseComponent):
                 self._toggle_or_re_enable_automation()
             elif self._control_layer_3:
                 self._play_slot(5, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(13)
             elif self._browser:
                 self.QBrowser.button_callback(13)
             elif self._shift_pressed or self._shift_fixed:
@@ -1118,6 +1170,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _15_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(14, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(6)
@@ -1125,8 +1182,6 @@ class QControlComponent(BaseComponent):
                 self._change_pad_velocity_response()
             elif self._control_layer_3:
                 self._play_slot(6, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(14)
             elif self._browser:
                 self.QBrowser.button_callback(14)
             elif self._shift_pressed or self._shift_fixed:
@@ -1137,10 +1192,13 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _16_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(15, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
-            if self._sequencer:
-                self.QSequencer.button_callback(15)
-            elif self._browser:
+            if self._browser:
                 self.QBrowser.button_callback(15)
             elif self.__control_layer_permanent:
                 if self._shift_pressed:
@@ -1231,16 +1289,19 @@ class QControlComponent(BaseComponent):
         # find the track-index  explicitly since the duplicate_track function
         # uses a different indexing than QControl!
         selected_track = song.view.selected_track
-        if selected_track != None:
-            selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(
-                selected_track
-            )
-
-            if selected_track_index not in [song.master_track]:
+        if selected_track != None and selected_track not in [song.master_track]:
+            if selected_track.can_be_armed:
+                selected_track_index = list(song.tracks).index(selected_track)
                 try:
                     song.delete_track(selected_track_index)
-                except RuntimeError:
-                    self.show_notification("deletion of track failed")
+                except Exception:
+                    self._parent.show_message("deletion of track failed")
+            else:
+                selected_track_index = list(song.return_tracks).index(selected_track)
+                try:
+                    song.delete_return_track(selected_track_index)
+                except Exception:
+                    self._parent.show_message("deletion of track failed")
 
     def _duplicate_or_delete_scene(self):
         if self.__control_layer_permanent and self._shift_pressed:
@@ -1336,14 +1397,15 @@ class QControlComponent(BaseComponent):
             self._stop_clip()
 
     def _duplicate_clip(self):
-        all_scenes = self._parent.song().scenes
         # duplicate the clip slot
         if self.selected_track == None:
             return
+
         duplicated_id = self.selected_track.duplicate_clip_slot(
             self.selected_scene_index
         )
-        duplicated_slot = all_scenes[duplicated_id]
+
+        duplicated_slot = self._parent.song().scenes[duplicated_id]
 
         if self._parent.song().view.highlighted_clip_slot.is_playing:
             # move to the duplicated clip_slot
@@ -2050,29 +2112,14 @@ class QControlComponent(BaseComponent):
             # on release
             if abs(time.time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
-                # activate the sequencer only if Ableton 11 or later is running
-                version = self._parent.application().get_major_version()
-                if version >= 11:
-                    if not self.selected_track.has_audio_input:
-                        if self._sequencer:
-                            self.QSequencer.init_sequence()
-                        else:
-                            self._activate_control_layer("_sequencer", True)
-                            self._change_ableton_view("Detail/Clip")
-                            self.QSequencer.show_sequence_info()
-                    else:
-                        self._activate_control_layer("_sequencer", True)
-                        self._parent.show_message(
-                            "A MIDI Sequence can only be created on a MIDI track!"
-                        )
-                else:
-                    self._parent.show_message(
-                        "The MIDI SEQUENCER EDITOR works only with Ableton 11 or later!"
-                    )
+                # self._activate_control_layer("_control_layer_1", True)
 
-                    # self._activate_control_layer("_shift_fixed", True)
+                self._activate_control_layer("_shift_fixed", True)
             else:
-                self._unpress_shift()
+                if self._shift_fixed:
+                    self._shift_fixed = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
 
             self.__shift_clicked = time.time()
 
@@ -2103,9 +2150,52 @@ class QControlComponent(BaseComponent):
     def _chan_listener(self, value):
         if value == 0:
             if self._shift_pressed:
-                self._activate_control_layer("_control_layer_1", False)
-            else:
                 self._activate_control_layer("_control_layer_1", True)
+            else:
+                if self._control_layer_1:
+                    self._control_layer_1 = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
+                    self._update_lights()
+                    return
+                elif self._sequencer and self.selected_clip_slot.has_clip:
+                    self._sequencer = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
+                    self._update_lights()
+                    return
+
+                # self._activate_control_layer("_control_layer_1", True)
+
+                # activate the sequencer only if Ableton 11 or later is running
+                version = self._parent.application().get_major_version()
+                if version >= 11:
+                    if self.selected_clip_slot.has_clip and self._sequencer:
+                        self._sequencer = False
+                        self.__control_layer_permanent = False
+                        self._unpress_shift()
+                    else:
+                        if not self.selected_track.has_audio_input:
+                            if self._sequencer:
+                                self.QSequencer.init_sequence()
+                            else:
+                                self._activate_control_layer("_sequencer", True)
+                                self._change_ableton_view("Detail/Clip")
+                                self.QSequencer.show_sequence_info()
+                        else:
+                            self._activate_control_layer("_sequencer", True)
+                            self._parent.show_message(
+                                symb_stop
+                                + "A MIDI Sequence can only be created on a MIDI track!"
+                                + symb_stop
+                            )
+                else:
+                    self._parent.show_message(
+                        symb_stop
+                        + " The MIDI SEQUENCER EDITOR works only with Ableton 11 or later! "
+                        + symb_stop
+                    )
+            self._update_lights()
 
     def _recall_listener(self, value):
         if value == 0:
@@ -2115,6 +2205,12 @@ class QControlComponent(BaseComponent):
                 self.QBrowser._print_info()
             else:
                 self._activate_control_layer("_control_layer_2", True)
+
+                app = self._parent.application()
+
+                if not app.view.is_view_visible("Detail/DeviceChain"):
+                    app.view.show_view("Detail/DeviceChain")
+                    app.view.focus_view("Detail/DeviceChain")
 
     def _store_listener(self, value):
         if value == 0:
