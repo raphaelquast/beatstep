@@ -1,4 +1,4 @@
-## Beatstep_Q
+# Beatstep_Q
 **Beatstep_Q** is a **MIDI Remote Script** for **Ableton Live 9, 10 & 11** and the **Arturia BeatStep** controller.  
 It turns your BeatStep into a fully-fledged control-surface for Ableton Live !
 
