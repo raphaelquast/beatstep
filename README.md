@@ -33,7 +33,7 @@ No real installation required... just copy the files and you are ready to go!
    (make sure to activate both `track` and `remote` for this device!)
 
 
-❗ The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten ❗ 
+❗The script is using BeatStep's **storage bank 9** during runtime. Any configuration stored to this slot will be overwritten❗ 
 
 # Overlay
 The overlay-design provides indications for all assignments (including secondary-functions)  
