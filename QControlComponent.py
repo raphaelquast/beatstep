@@ -266,7 +266,7 @@ class QControlComponent(BaseComponent):
             bdict["play"] = "black"
 
         if self._control_layer_1:  # e.g. MIX
-            bdict["shift"] = "black"
+            bdict["shift"] = "red"
             bdict["chan"] = "red"
             bdict["store"] = "black"
             bdict["recall"] = "black"
@@ -682,8 +682,12 @@ class QControlComponent(BaseComponent):
                 return
             if clip_slot.is_playing:
                 self._set_color(buttonid, "red")
-            elif clip_slot.is_group_slot and clip_slot.controls_other_clips:
-                self._set_color(buttonid, "magenta")
+            elif clip_slot.is_group_slot:  # and clip_slot.controls_other_clips:
+                if clip_slot.controls_other_clips:
+                    self._set_color(buttonid, "blue")
+                else:
+                    self._set_color(buttonid, "magenta")
+
             elif clip_slot.has_clip:
                 self._set_color(buttonid, "blue")
             else:
@@ -2108,33 +2112,14 @@ class QControlComponent(BaseComponent):
             # on release
             if abs(time.time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
-                # activate the sequencer only if Ableton 11 or later is running
-                version = self._parent.application().get_major_version()
-                if version >= 11:
-                    if not self.selected_track.has_audio_input:
-                        if self._sequencer:
-                            self.QSequencer.init_sequence()
-                        else:
-                            self._activate_control_layer("_sequencer", True)
-                            self._change_ableton_view("Detail/Clip")
-                            self.QSequencer.show_sequence_info()
-                    else:
-                        self._activate_control_layer("_sequencer", True)
-                        self._parent.show_message(
-                            symb_stop
-                            + "A MIDI Sequence can only be created on a MIDI track!"
-                            + symb_stop
-                        )
-                else:
-                    self._parent.show_message(
-                        symb_stop
-                        + " The MIDI SEQUENCER EDITOR works only with Ableton 11 or later! "
-                        + symb_stop
-                    )
+                # self._activate_control_layer("_control_layer_1", True)
 
-                    # self._activate_control_layer("_shift_fixed", True)
+                self._activate_control_layer("_shift_fixed", True)
             else:
-                self._unpress_shift()
+                if self._shift_fixed:
+                    self._shift_fixed = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
 
             self.__shift_clicked = time.time()
 
@@ -2165,9 +2150,52 @@ class QControlComponent(BaseComponent):
     def _chan_listener(self, value):
         if value == 0:
             if self._shift_pressed:
-                self._activate_control_layer("_control_layer_1", False)
-            else:
                 self._activate_control_layer("_control_layer_1", True)
+            else:
+                if self._control_layer_1:
+                    self._control_layer_1 = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
+                    self._update_lights()
+                    return
+                elif self._sequencer and self.selected_clip_slot.has_clip:
+                    self._sequencer = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
+                    self._update_lights()
+                    return
+
+                # self._activate_control_layer("_control_layer_1", True)
+
+                # activate the sequencer only if Ableton 11 or later is running
+                version = self._parent.application().get_major_version()
+                if version >= 11:
+                    if self.selected_clip_slot.has_clip and self._sequencer:
+                        self._sequencer = False
+                        self.__control_layer_permanent = False
+                        self._unpress_shift()
+                    else:
+                        if not self.selected_track.has_audio_input:
+                            if self._sequencer:
+                                self.QSequencer.init_sequence()
+                            else:
+                                self._activate_control_layer("_sequencer", True)
+                                self._change_ableton_view("Detail/Clip")
+                                self.QSequencer.show_sequence_info()
+                        else:
+                            self._activate_control_layer("_sequencer", True)
+                            self._parent.show_message(
+                                symb_stop
+                                + "A MIDI Sequence can only be created on a MIDI track!"
+                                + symb_stop
+                            )
+                else:
+                    self._parent.show_message(
+                        symb_stop
+                        + " The MIDI SEQUENCER EDITOR works only with Ableton 11 or later! "
+                        + symb_stop
+                    )
+            self._update_lights()
 
     def _recall_listener(self, value):
         if value == 0:

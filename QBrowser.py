@@ -632,8 +632,8 @@ class QBrowser(object):
     def get_button_colors(self):
         self.button_colors = dict(
             shift="red",
-            chan="red",
-            store="red",
+            chan="black",
+            store="black",
             recall="red",
         )
         for i in range(16):

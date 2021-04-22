@@ -52,10 +52,8 @@ class QSequencer(object):
     def __init__(self, parent):
         self._parent = parent
 
-        self._encoder_up_counter = {
-            **{i: 0 for i in range(16)}, "transpose": 0}
-        self._encoder_down_counter = {
-            **{i: 0 for i in range(16)}, "transpose": 0}
+        self._encoder_up_counter = {**{i: 0 for i in range(16)}, "transpose": 0}
+        self._encoder_down_counter = {**{i: 0 for i in range(16)}, "transpose": 0}
         self.QS = QSetup()
 
         self.up_down = True
@@ -128,8 +126,7 @@ class QSequencer(object):
 
     def dotheblink(self):
         if self.clip is not None and self._parent._sequencer:
-            i = 1 + (int(self.clip.playing_position *
-                     16 / self.sequence_length) % 16)
+            i = 1 + (int(self.clip.playing_position * 16 / self.sequence_length) % 16)
             if self._activeslot == i:
                 return
             else:
@@ -297,7 +294,7 @@ class QSequencer(object):
     def irene_transposers(self, up_down):
         if self.clip is not None:
             self.clip.select_all_notes()
-            self.change_note_property(range(16), up_down)
+            self.modify_note(range(16), up_down)
 
             self._parent._parent.show_message(
                 " " * 15
@@ -469,26 +466,28 @@ class QSequencer(object):
             )
 
             # keep message alive until all buttons are released
-            self._parent._parent.schedule_message(
-                16, self._multitouch_info_msg)
+            self._parent._parent.schedule_message(16, self._multitouch_info_msg)
         else:
             self._parent._parent._task_group.clear()
             self._parent._parent.show_message(" ")
 
-    def change_note_property(self, assigned_notes, up_down):
-        if self.clip is not None:
-            self.modify_note(assigned_notes, up_down)
-
     def encoder_callback(self, i, value):
+        # use encoders 8 & 16 for normal scenes/tracks/drumrack navigation
+        if i == 7:
+            if self._parent._shift_pressed:
+                self._parent._scroll_drum_pad_row(value)
+            else:
+                self._parent._select_prev_next_track(value)
+            return
+        elif i == 15:
+            if self._parent._shift_pressed:
+                self._parent._scroll_drum_pad_col(value)
+            else:
+                self._parent._select_prev_next_scene(value)
+            return
+
         up_down = value < 64
         self.noterange = "all"
-
-        if i == 15 and (self._parent._shift_pressed or self.clip is None):
-            self._parent._select_prev_next_scene(value)
-            return
-        elif i == 7 and (self._parent._shift_pressed or self.clip is None):
-            self._parent._select_prev_next_track(value)
-            return
 
         # do this to avoid jumping around
         if up_down:
@@ -536,25 +535,34 @@ class QSequencer(object):
         if self._counter[i] > self.sensitivity:
             if i == "transpose":
                 if len(self._assigned_notes) > 0:
-                    self.change_note_property(self._assigned_notes, up_down)
+                    self.modify_note(self._assigned_notes, up_down)
                     self._doit = False
                 else:
                     self.irene_transposers(up_down)
 
             elif self._parent._shift_pressed:
-                self.change_note_property([i], up_down)
+                self.modify_note([i], up_down)
             # set all counters to zero
             for key in self._encoder_down_counter.keys():
                 self._encoder_down_counter[key] = 0
                 self._encoder_up_counter[key] = 0
 
     def get_button_colors(self):
-        self.button_colors = dict(
-            shift="red",
-            chan="red",
-            store="red",
-            recall="red",
-        )
+        if self.clip is None:
+            self.button_colors = dict(
+                shift="black",
+                chan="red",
+                store="black",
+                recall="black",
+            )
+        else:
+            self.button_colors = dict(
+                shift="black",
+                chan="red",
+                store="red",
+                recall="red",
+            )
+
         for i in range(16):
             self.button_colors[i + 1] = "black"
 
@@ -813,8 +821,7 @@ class QSequencer(object):
             for i in range(16):
                 self.add_note(
                     pitch=sequence[i],
-                    start_time=self.sequence_length /
-                    16 * (i + self.note_offset),
+                    start_time=self.sequence_length / 16 * (i + self.note_offset),
                     duration=self.sequence_length / 16 * self.note_duration,
                     velocity=int(127 * self.note_velocity),
                     velocity_deviation=0,
@@ -833,8 +840,7 @@ class QSequencer(object):
                 for j in range(self.sequence_n):
                     if i + j < len(notes):
                         notes[i + j] = (
-                            notes[i + j] + i // self.sequence_n *
-                            self.sequence_up
+                            notes[i + j] + i // self.sequence_n * self.sequence_up
                         )
         return notes
 
