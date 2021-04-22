@@ -6,11 +6,9 @@ It turns your BeatStep into a fully-fledged control-surface for Ableton Live !
   - play midi instruments with access to the **full range** of midi-notes!
   - control tracks/scenes and clips
      - select / arm / mute / solo / start / stop / record / delete / duplicate / overdub / undo / redo / ...
-     - use pads to start/stop/trigger existing clips
   - browse Ableton's library to load instruments and devices
   - initialize and edit 16 note MIDI-sequences
-     - you can set pitch, velocity, start-time, duration, velocity-deviation and probability
-     - change one or more notes simultaneously via the "multi-touch" editing mode
+     - change properties of one or more notes simultaneously via the "multi-touch" editing mode
   - get indications on the status of clips, tracks and MIDI notes via button-LED's
   - ... and much more!
 
