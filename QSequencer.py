@@ -269,23 +269,9 @@ class QSequencer(object):
                 up_down, "loop_end", self.sequence_length / 16 * self.adjust_coarse
             )
         elif i == 14:
-            msg = "transposing loop notes"
+            msg = None
             # transpose only notes inside current loop
             self.noterange = "loop"
-            self.change_property = "pitch"
-            self.change_interval = 1
-            self.change_min = 0
-            self.change_max = 127
-            self.sensitivity = 8
-            self.irene_transposers(up_down)
-        elif i == "transpose":
-            msg = "transposing all notes"
-            # transpose all notes
-            self.change_property = "pitch"
-            self.change_interval = 1
-            self.change_min = 0
-            self.change_max = 127
-            self.sensitivity = 4
             self.irene_transposers(up_down)
 
         if msg is not None:
