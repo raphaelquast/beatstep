@@ -2119,6 +2119,8 @@ class QControlComponent(BaseComponent):
                 if self._shift_fixed:
                     self._shift_fixed = False
                     self.__control_layer_permanent = False
+
+                if not self.__control_layer_permanent:
                     self._unpress_shift()
 
             self.__shift_clicked = time.time()
