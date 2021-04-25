@@ -1517,6 +1517,11 @@ class QControlComponent(BaseComponent):
     def _redo(self):
         self._parent.song().redo()
 
+    def _hide_ableton_view(self, view):
+        assert view in VIEWS
+        app_view = self._parent.application().view
+        app_view.hide_view(view)
+
     def _change_ableton_view(self, view):
         assert view in VIEWS
         app_view = self._parent.application().view
@@ -2163,6 +2168,8 @@ class QControlComponent(BaseComponent):
         if value == 0:
             if self._shift_pressed:
                 self._activate_control_layer("_control_layer_1", True)
+                self._hide_ableton_view("Detail")
+
             else:
                 if self._control_layer_1:
                     self._control_layer_1 = False
@@ -2229,6 +2236,7 @@ class QControlComponent(BaseComponent):
         if value == 0:
             if self._shift_pressed:
                 self._activate_control_layer("_layer_onetrack", True)
+                self._change_ableton_view("Detail/DeviceChain")
             else:
                 if self._layer_onetrack:
                     self._layer_onetrack = False
@@ -2236,6 +2244,8 @@ class QControlComponent(BaseComponent):
                     self._unpress_shift()
                 else:
                     self._activate_control_layer("_control_layer_3", True)
+                    self._change_ableton_view("Detail/DeviceChain")
+
         self._update_lights()
 
     def _change_pad_velocity_response(self):
