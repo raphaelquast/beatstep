@@ -73,7 +73,10 @@ The buttons `recall`, `store`,`chan` and `shift` are used to activate the contro
 
 - all layers (except the *"shift-layer"*) remain activated until the corresponding button is pressed again
 
-- holding `shift` while pressing `chan` will temporarily activate the *"mix-layer"* until `shift` is released
+- holding `shift` and pressing `chan` will activate the *"mix-layer"* 
+- holding `shift` and pressing `recall` will activate the *"browser-layer"* 
+
+- **double-tapping** `shift` will activate the *"shift-layer"* permanently (until shift is pressed again) 
 
 - the *"if shift pressed"* features are only available if the corresponding layer is activated permanently **and** `shift` is pressed
 
@@ -112,20 +115,20 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
   
   - *"if shift pressed"*: pan of master-track
 
-- `encoder 8` : track-selection (left-right)
+- `encoder 8` : track-selection (left-right) [💡 this is the same for all layers!]
   
   - *"if shift pressed"* **and** a *"drum-rack"* is selected:
-    
+
     select drum-pad slot of the viewed 16 slots
 
-- `encoder 16` : scene selection (up-down)
-  
+- `encoder 16` : scene selection (up-down) [💡 this is the same for all layers!]
   - *"if shift pressed"* **and** a *"drum-rack"* is selected:
+
     select row of viewed drum-pads
 
 </details>
 
----
+--- 	
 
 ## Layers (click to expand)
 
@@ -133,9 +136,11 @@ The `transpose-encoder` can be used to transpose the note-assignments of the but
 <details>
 <summary>:trumpet: <strong>SHIFT</strong></summary>  
 
-The `shift` layer is active if no other layer is activated and shift is pressed.  
+If NO other layer is activated, pressing "shift" temporarily activates the `shift` layer 
 It serves as a *quick-access* layer for frequently used functions.  
-The layer is deactivated as soon as `shift` is released!  
+The layer is deactivated as soon as `shift` is released!   
+**double-tap** `shift` to activate the layer permanently.
+
 
 The lights in the first indicate the currently activated clip.
 (`red` for midi, `blue` for audio and `magenta` for return tracks)
@@ -417,11 +422,10 @@ The lights in the bottom-row indicate the arm status of the corresponding track.
 <summary>:musical_score: <strong>SEQUENCER</strong></summary>  
 
 The `sequencer`-layer is only available in **Ableton 11** or newer!  
-**Double-tap** `shift` to activate the `sequencer`-layer.
 
 The `sequencer` layer has 2 different functionalities:
 
-- If `shift` is pressed, you can use all button-functions from the `shift`-layer
+- If `shift` is pressed, you can use all button-functions from the `shift`-layer!
 
 
 NOTE: The first 6 characters of a clip-name are used to parse the tempo of the midi sequence!  
@@ -445,28 +449,32 @@ In the sequence-editor mode you can edit the first 16 notes of the selected MIDI
 
 #### The assignments are as follows:
 
+- multi-touch editing mode:
+   - touch & hold one (or more) buttons and turn the `transpose`-encoder to change the assigned property of the selected notes
+   - use `encoder 1-6` to set which property you want to change
+
 - `button 1-16` : mute/unmute corresponding note
 - `shift` + `button 1-16` : use functionality of `shift`-layer
 
-- `encoder 1-16` : change assigned parameter of corresponding note
+- `encoder 1` : set encoders to change **note pitch**
+- `encoder 2` : set encoders to change **note velocity**
+- `encoder 3` : set encoders to change **note start-time**
+- `encoder 4` : set encoders to change **note duration**
+- `encoder 5` : set encoders to change **note velocity-deviation**
+- `encoder 6` : set encoders to change **note probability**
 
-- `shift` + `encoder 1` : set encoders to change **note pitch**
-- `shift` + `encoder 2` : set encoders to change **note velocity**
-- `shift` + `encoder 3` : set encoders to change **note start-time**
-- `shift` + `encoder 4` : set encoders to change **note duration**
-- `shift` + `encoder 5` : set encoders to change **note velocity-deviation**
-- `shift` + `encoder 6` : set encoders to change **note probability**
+- `encoder 8` : select prev/next track
 
-- `shift` + `encoder 8` : select prev/next track
+- `encoder 9` : change the loop start-time (coarse steps)
+- `encoder 10` : change the loop start-time (fine steps)
+- `encoder 11` : change the position of the loop (fine steps)
+- `encoder 12` : change the loop end-time (fine steps)
+- `encoder 13` : change the loop end-time (coarse steps)
 
-- `shift` + `encoder 9` : change the loop start-time (coarse steps)
-- `shift` + `encoder 10` : change the loop start-time (fine steps)
-- `shift` + `encoder 11` : change the position of the loop (fine steps)
-- `shift` + `encoder 12` : change the loop end-time (fine steps)
-- `shift` + `encoder 13` : change the loop end-time (coarse steps)
+- `encoder 15` : transpose all notes that are inside the loop
+- `encoder 16` : select prev/next scene
 
-- `shift` + `encoder 15` : transpose all notes that are inside the loop
-- `shift` + `encoder 16` : select prev/next scene
+- `shift` + `encoder 1-16` : change assigned parameter of corresponding note
 
 </details>
 
@@ -474,8 +482,8 @@ In the sequence-editor mode you can edit the first 16 notes of the selected MIDI
 <details>
 <summary>:hatching_chick: <strong>SEQUENCE INITIALIZER</strong> (active if the selected clip-slot is empty)</summary>  
 
-In the sequence-initializer layer you can set the parameters for the midi-sequence  
-that is initialized if you **double-tap** `shift`.
+In the sequence-initializer layer you can set the start-parameters for the midi-sequence  
+that is initialized if you press `chan` again.
 
 - `buttons` 1-8 indicates the tempo of the MIDI notes as "notes/bar"
   [1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4]
