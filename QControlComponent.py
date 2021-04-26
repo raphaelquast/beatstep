@@ -2218,19 +2218,23 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _recall_listener(self, value):
+        app = self._parent.application()
+
         if value == 0:
             if self._shift_pressed:
                 self._activate_control_layer("_browser", True)
+
+                app.view.show_view("Detail/DeviceChain")
+                app.view.focus_view("Detail/DeviceChain")
                 self.QBrowser._hide_browser()
+
                 self.QBrowser._print_info()
+
             else:
                 self._activate_control_layer("_control_layer_2", True)
 
-                app = self._parent.application()
-
-                if not app.view.is_view_visible("Detail/DeviceChain"):
-                    app.view.show_view("Detail/DeviceChain")
-                    app.view.focus_view("Detail/DeviceChain")
+                app.view.show_view("Detail/DeviceChain")
+                app.view.focus_view("Detail/DeviceChain")
 
     def _store_listener(self, value):
         if value == 0:
