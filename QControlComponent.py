@@ -15,6 +15,10 @@ import Live
 
 NavDirection = Live.Application.Application.View.NavDirection
 
+# fmt: off
+symb_stop = u"\U0001f6ab"
+
+
 VIEWS = (
     "Browser",
     "Arranger",
@@ -40,10 +44,12 @@ QUANTIZATIONS = [
     "q_thirtytwoth",
 ]
 
+# fmt: on
+
 
 def get_midi_note_name(value):
     octave = int(value / 12) - 2
-    note = "C C#D D#E F F#G G#A A#B "[(value % 12) * 2 : (value % 12) * 2 + 2]
+    note = "C C#D D#E F F#G G#A A#B "[(value % 12) * 2: (value % 12) * 2 + 2]
     return note.strip() + str(octave)
 
 
@@ -130,7 +136,8 @@ class QControlComponent(BaseComponent):
         self._sequencer_running = False
 
         # get a list of all possible song-quantization-states
-        self.quants = [getattr(Live.Song.Quantization, key) for key in QUANTIZATIONS]
+        self.quants = [getattr(Live.Song.Quantization, key)
+                       for key in QUANTIZATIONS]
 
         self._detail_cycle = cycle(("Detail/Clip", "Detail/DeviceChain"))
         self._view_cycle = cycle(("Arranger", "Session"))
@@ -186,7 +193,8 @@ class QControlComponent(BaseComponent):
 
     def _set_color(self, buttonid, color):
         colordict = dict(black=0, red=1, blue=16, magenta=17)
-        self._parent._send_midi(self._parent.QS.set_B_color(buttonid, colordict[color]))
+        self._parent._send_midi(
+            self._parent.QS.set_B_color(buttonid, colordict[color]))
 
     def _blink(
         self, condition=lambda: False, buttonid=1, timeout=5, colors=["red", "black"]
@@ -226,7 +234,8 @@ class QControlComponent(BaseComponent):
             use_slots = [None for i in range(14)]
 
             for i, scene_id in enumerate(
-                range(self.selected_scene_index, self.selected_scene_index + 14)
+                range(self.selected_scene_index,
+                      self.selected_scene_index + 14)
             ):
                 if scene_id < nslots:
                     use_slots[i] = slots[scene_id]
@@ -260,7 +269,7 @@ class QControlComponent(BaseComponent):
             bdict["play"] = "black"
 
         if self._control_layer_1:  # e.g. MIX
-            bdict["shift"] = "black"
+            bdict["shift"] = "red"
             bdict["chan"] = "red"
             bdict["store"] = "black"
             bdict["recall"] = "black"
@@ -525,7 +534,7 @@ class QControlComponent(BaseComponent):
         self.use_tracks = [None for i in range(self.npads)]
         ntrack = 0
         # don't use master track! that's why there's [:-1]
-        for track in all_tracks[:-1][self.track_offset :]:
+        for track in all_tracks[:-1][self.track_offset:]:
             self.use_tracks[ntrack] = track
             ntrack += 1
 
@@ -656,7 +665,8 @@ class QControlComponent(BaseComponent):
                             self._set_color(buttonid, next(c2))
                             self._parent.schedule_message(1, callback)
                         else:
-                            self._playing_state_callback(track_id, slot_id, buttonid)
+                            self._playing_state_callback(
+                                track_id, slot_id, buttonid)
                     else:
                         # update lights in case the callback is released while the
                         # control-layer has already been changed
@@ -676,8 +686,12 @@ class QControlComponent(BaseComponent):
                 return
             if clip_slot.is_playing:
                 self._set_color(buttonid, "red")
-            elif clip_slot.is_group_slot and clip_slot.controls_other_clips:
-                self._set_color(buttonid, "magenta")
+            elif clip_slot.is_group_slot:  # and clip_slot.controls_other_clips:
+                if clip_slot.controls_other_clips:
+                    self._set_color(buttonid, "blue")
+                else:
+                    self._set_color(buttonid, "magenta")
+
             elif clip_slot.has_clip:
                 self._set_color(buttonid, "blue")
             else:
@@ -850,6 +864,11 @@ class QControlComponent(BaseComponent):
     ###################################################
 
     def _1_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(0, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(0)
@@ -857,8 +876,6 @@ class QControlComponent(BaseComponent):
                 self._redo()
             elif self._control_layer_3:
                 self._play_slot(0, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(0)
             elif self._browser:
                 self.QBrowser.button_callback(0)
             elif self._shift_pressed or self._shift_fixed:
@@ -869,6 +886,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _2_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(1, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(1)
@@ -876,8 +898,6 @@ class QControlComponent(BaseComponent):
                 self._collapse_device()
             elif self._control_layer_3:
                 self._play_slot(1, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(1)
             elif self._browser:
                 self.QBrowser.button_callback(1)
             elif self._shift_pressed or self._shift_fixed:
@@ -888,6 +908,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _3_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(2, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(2)
@@ -895,8 +920,6 @@ class QControlComponent(BaseComponent):
                 self._toggle_or_delete_device()
             elif self._control_layer_3:
                 self._play_slot(2, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(2)
             elif self._browser:
                 self.QBrowser.button_callback(2)
             elif self._shift_pressed or self._shift_fixed:
@@ -907,6 +930,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _4_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(3, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(3)
@@ -914,8 +942,6 @@ class QControlComponent(BaseComponent):
                 pass
             elif self._control_layer_3:
                 self._play_slot(3, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(3)
             elif self._browser:
                 self.QBrowser.button_callback(3)
             elif self._shift_pressed or self._shift_fixed:
@@ -927,6 +953,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _5_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(4, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(4)
@@ -934,8 +965,6 @@ class QControlComponent(BaseComponent):
                 pass
             elif self._control_layer_3:
                 self._play_slot(4, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(4)
             elif self._browser:
                 self.QBrowser.button_callback(4)
             elif self._shift_pressed or self._shift_fixed:
@@ -946,6 +975,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _6_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(5, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(5)
@@ -953,8 +987,6 @@ class QControlComponent(BaseComponent):
                 self._change_or_off_quantization()
             elif self._control_layer_3:
                 self._play_slot(5, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(5)
             elif self._browser:
                 self.QBrowser.button_callback(5)
             elif self._shift_pressed or self._shift_fixed:
@@ -965,6 +997,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _7_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(6, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._mute_solo_track(6)
@@ -975,8 +1012,6 @@ class QControlComponent(BaseComponent):
                     self._change_ableton_view(next(self._detail_cycle))
             elif self._control_layer_3:
                 self._play_slot(6, 0)
-            elif self._sequencer:
-                self.QSequencer.button_callback(6)
             elif self._browser:
                 self.QBrowser.button_callback(6)
             elif self._shift_pressed or self._shift_fixed:
@@ -987,10 +1022,13 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _8_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(7, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
-            if self._sequencer:
-                self.QSequencer.button_callback(7)
-            elif self._browser:
+            if self._browser:
                 self.QBrowser.button_callback(7)
             elif self.__control_layer_permanent:
                 if self._shift_pressed:
@@ -1006,6 +1044,11 @@ class QControlComponent(BaseComponent):
     ###################################################
 
     def _9_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(8, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(0)
@@ -1013,8 +1056,6 @@ class QControlComponent(BaseComponent):
                 self._undo()
             elif self._control_layer_3:
                 self._play_slot(0, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(8)
             elif self._browser:
                 self.QBrowser.button_callback(8)
             elif self._shift_pressed or self._shift_fixed:
@@ -1025,6 +1066,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _10_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(9, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(1)
@@ -1032,8 +1078,6 @@ class QControlComponent(BaseComponent):
                 self._duplicate_or_delete_track()
             elif self._control_layer_3:
                 self._play_slot(1, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(9)
             elif self._browser:
                 self.QBrowser.button_callback(9)
             elif self._shift_pressed or self._shift_fixed:
@@ -1044,6 +1088,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _11_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(10, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(2)
@@ -1051,8 +1100,6 @@ class QControlComponent(BaseComponent):
                 self._duplicate_or_delete_scene()
             elif self._control_layer_3:
                 self._play_slot(2, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(10)
             elif self._browser:
                 self.QBrowser.button_callback(10)
             elif self._layer_onetrack:
@@ -1061,6 +1108,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _12_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(11, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(3)
@@ -1068,8 +1120,6 @@ class QControlComponent(BaseComponent):
                 self._tap_tempo()
             elif self._control_layer_3:
                 self._play_slot(3, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(11)
             elif self._browser:
                 self.QBrowser.button_callback(11)
             elif self._shift_pressed or self._shift_fixed:
@@ -1080,6 +1130,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _13_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(12, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(4)
@@ -1087,8 +1142,6 @@ class QControlComponent(BaseComponent):
                 self._toggle_metronome()
             elif self._control_layer_3:
                 self._play_slot(4, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(12)
             elif self._browser:
                 self.QBrowser.button_callback(12)
             elif self._shift_pressed or self._shift_fixed:
@@ -1099,6 +1152,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _14_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(13, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(5)
@@ -1106,8 +1164,6 @@ class QControlComponent(BaseComponent):
                 self._toggle_or_re_enable_automation()
             elif self._control_layer_3:
                 self._play_slot(5, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(13)
             elif self._browser:
                 self.QBrowser.button_callback(13)
             elif self._shift_pressed or self._shift_fixed:
@@ -1118,6 +1174,11 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _15_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(14, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
             if self._control_layer_1:
                 self._arm_or_fold_track(6)
@@ -1125,8 +1186,6 @@ class QControlComponent(BaseComponent):
                 self._change_pad_velocity_response()
             elif self._control_layer_3:
                 self._play_slot(6, 1)
-            elif self._sequencer:
-                self.QSequencer.button_callback(14)
             elif self._browser:
                 self.QBrowser.button_callback(14)
             elif self._shift_pressed or self._shift_fixed:
@@ -1137,10 +1196,13 @@ class QControlComponent(BaseComponent):
             self._update_lights()
 
     def _16_listener(self, value):
+        if self._sequencer:
+            self.QSequencer.button_callback(15, value=value)
+            self._update_lights()
+            return
+
         if value > 0:
-            if self._sequencer:
-                self.QSequencer.button_callback(15)
-            elif self._browser:
+            if self._browser:
                 self.QBrowser.button_callback(15)
             elif self.__control_layer_permanent:
                 if self._shift_pressed:
@@ -1231,16 +1293,20 @@ class QControlComponent(BaseComponent):
         # find the track-index  explicitly since the duplicate_track function
         # uses a different indexing than QControl!
         selected_track = song.view.selected_track
-        if selected_track != None:
-            selected_track_index = (list(song.tracks) + list(song.return_tracks)).index(
-                selected_track
-            )
-
-            if selected_track_index not in [song.master_track]:
+        if selected_track != None and selected_track not in [song.master_track]:
+            if selected_track.can_be_armed:
+                selected_track_index = list(song.tracks).index(selected_track)
                 try:
                     song.delete_track(selected_track_index)
-                except RuntimeError:
-                    self.show_notification("deletion of track failed")
+                except Exception:
+                    self._parent.show_message("deletion of track failed")
+            else:
+                selected_track_index = list(
+                    song.return_tracks).index(selected_track)
+                try:
+                    song.delete_return_track(selected_track_index)
+                except Exception:
+                    self._parent.show_message("deletion of track failed")
 
     def _duplicate_or_delete_scene(self):
         if self.__control_layer_permanent and self._shift_pressed:
@@ -1336,14 +1402,15 @@ class QControlComponent(BaseComponent):
             self._stop_clip()
 
     def _duplicate_clip(self):
-        all_scenes = self._parent.song().scenes
         # duplicate the clip slot
         if self.selected_track == None:
             return
+
         duplicated_id = self.selected_track.duplicate_clip_slot(
             self.selected_scene_index
         )
-        duplicated_slot = all_scenes[duplicated_id]
+
+        duplicated_slot = self._parent.song().scenes[duplicated_id]
 
         if self._parent.song().view.highlighted_clip_slot.is_playing:
             # move to the duplicated clip_slot
@@ -1450,6 +1517,11 @@ class QControlComponent(BaseComponent):
     def _redo(self):
         self._parent.song().redo()
 
+    def _hide_ableton_view(self, view):
+        assert view in VIEWS
+        app_view = self._parent.application().view
+        app_view.hide_view(view)
+
     def _change_ableton_view(self, view):
         assert view in VIEWS
         app_view = self._parent.application().view
@@ -1483,7 +1555,8 @@ class QControlComponent(BaseComponent):
             # find currently active quantization index
             qid = self.quants.index(curr_q)
 
-            song.clip_trigger_quantization = self.quants[(qid + 1) % len(self.quants)]
+            song.clip_trigger_quantization = self.quants[(
+                qid + 1) % len(self.quants)]
         else:
             # start with 1 bar if quantization was turned off
             song.clip_trigger_quantization = Live.Song.Quantization.q_bar
@@ -1898,9 +1971,11 @@ class QControlComponent(BaseComponent):
         if self.__transpose_cnt == 0:
 
             if value > 65:
-                app.view.scroll_view(NavDirection.left, "Detail/DeviceChain", False)
+                app.view.scroll_view(
+                    NavDirection.left, "Detail/DeviceChain", False)
             else:
-                app.view.scroll_view(NavDirection.right, "Detail/DeviceChain", False)
+                app.view.scroll_view(NavDirection.right,
+                                     "Detail/DeviceChain", False)
 
     def _scroll_drum_pad_row(self, value):
         # reduce sensitivity to make it easier to select items
@@ -1979,9 +2054,11 @@ class QControlComponent(BaseComponent):
             scrollpos = usedevice.view.drum_pads_scroll_position
             newscrollpos = int(newpadid / 4)
             if newscrollpos < scrollpos:
-                usedevice.view.drum_pads_scroll_position = newscrollpos % (nrows)
+                usedevice.view.drum_pads_scroll_position = newscrollpos % (
+                    nrows)
             elif newscrollpos > scrollpos + 3:
-                usedevice.view.drum_pads_scroll_position = (newscrollpos - 3) % (nrows)
+                usedevice.view.drum_pads_scroll_position = (
+                    newscrollpos - 3) % (nrows)
 
     # ------------------------------------------------------------------------
 
@@ -2050,29 +2127,16 @@ class QControlComponent(BaseComponent):
             # on release
             if abs(time.time() - self.__shift_clicked) <= self._double_tap_time * 0.5:
                 # if double-tapped
-                # activate the sequencer only if Ableton 11 or later is running
-                version = self._parent.application().get_major_version()
-                if version >= 11:
-                    if not self.selected_track.has_audio_input:
-                        if self._sequencer:
-                            self.QSequencer.init_sequence()
-                        else:
-                            self._activate_control_layer("_sequencer", True)
-                            self._change_ableton_view("Detail/Clip")
-                            self.QSequencer.show_sequence_info()
-                    else:
-                        self._activate_control_layer("_sequencer", True)
-                        self._parent.show_message(
-                            "A MIDI Sequence can only be created on a MIDI track!"
-                        )
-                else:
-                    self._parent.show_message(
-                        "The MIDI SEQUENCER EDITOR works only with Ableton 11 or later!"
-                    )
+                # self._activate_control_layer("_control_layer_1", True)
 
-                    # self._activate_control_layer("_shift_fixed", True)
+                self._activate_control_layer("_shift_fixed", True)
             else:
-                self._unpress_shift()
+                if self._shift_fixed:
+                    self._shift_fixed = False
+                    self.__control_layer_permanent = False
+
+                if not self.__control_layer_permanent:
+                    self._unpress_shift()
 
             self.__shift_clicked = time.time()
 
@@ -2103,23 +2167,80 @@ class QControlComponent(BaseComponent):
     def _chan_listener(self, value):
         if value == 0:
             if self._shift_pressed:
-                self._activate_control_layer("_control_layer_1", False)
-            else:
                 self._activate_control_layer("_control_layer_1", True)
+                self._hide_ableton_view("Detail")
+
+            else:
+                if self._control_layer_1:
+                    self._control_layer_1 = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
+                    self._update_lights()
+                    return
+                elif self._sequencer and self.selected_clip_slot.has_clip:
+                    self._sequencer = False
+                    self.__control_layer_permanent = False
+                    self._unpress_shift()
+                    self._update_lights()
+                    return
+
+                # self._activate_control_layer("_control_layer_1", True)
+
+                # activate the sequencer only if Ableton 11 or later is running
+                version = self._parent.application().get_major_version()
+                if version >= 11:
+                    if self.selected_clip_slot.has_clip and self._sequencer:
+                        self._sequencer = False
+                        self.__control_layer_permanent = False
+                        self._unpress_shift()
+                    else:
+                        if not self.selected_track.has_audio_input:
+                            if self._sequencer:
+                                self.QSequencer.init_sequence()
+                            else:
+                                self._activate_control_layer(
+                                    "_sequencer", True)
+                                self._change_ableton_view("Detail/Clip")
+                                self.QSequencer.show_sequence_info()
+                        else:
+                            self._activate_control_layer("_sequencer", True)
+                            self._parent.show_message(
+                                symb_stop
+                                + "A MIDI Sequence can only be created on a MIDI track!"
+                                + symb_stop
+                            )
+                else:
+                    self._parent.show_message(
+                        symb_stop
+                        + " The MIDI SEQUENCER EDITOR works only with Ableton 11 or later! "
+                        + symb_stop
+                    )
+            self._update_lights()
 
     def _recall_listener(self, value):
+        app = self._parent.application()
+
         if value == 0:
             if self._shift_pressed:
                 self._activate_control_layer("_browser", True)
+
+                app.view.show_view("Detail/DeviceChain")
+                app.view.focus_view("Detail/DeviceChain")
                 self.QBrowser._hide_browser()
+
                 self.QBrowser._print_info()
+
             else:
                 self._activate_control_layer("_control_layer_2", True)
+
+                app.view.show_view("Detail/DeviceChain")
+                app.view.focus_view("Detail/DeviceChain")
 
     def _store_listener(self, value):
         if value == 0:
             if self._shift_pressed:
                 self._activate_control_layer("_layer_onetrack", True)
+                self._change_ableton_view("Detail/DeviceChain")
             else:
                 if self._layer_onetrack:
                     self._layer_onetrack = False
@@ -2127,6 +2248,8 @@ class QControlComponent(BaseComponent):
                     self._unpress_shift()
                 else:
                     self._activate_control_layer("_control_layer_3", True)
+                    self._change_ableton_view("Detail/DeviceChain")
+
         self._update_lights()
 
     def _change_pad_velocity_response(self):
@@ -2138,7 +2261,8 @@ class QControlComponent(BaseComponent):
         }
         self._pad_velocity = (self._pad_velocity + 1) % 4
 
-        self._parent._send_midi(self._parent.QS.set_B_velocity(self._pad_velocity))
+        self._parent._send_midi(
+            self._parent.QS.set_B_velocity(self._pad_velocity))
 
         self._parent.show_message(
             'Pad-velocity set to:  "' + msg[self._pad_velocity] + '"'

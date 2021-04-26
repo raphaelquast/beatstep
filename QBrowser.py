@@ -6,6 +6,7 @@ FilterType = Live.Browser.FilterType
 DeviceType = Live.Device.DeviceType
 Relation = Live.Browser.Relation
 
+# fmt: off
 
 symb_folder = u"\U0001f4c1"
 symb_folder_open = u"\U0001f4c2"
@@ -19,12 +20,12 @@ symb_blue_diamond_small = u"\U0001f539"
 symb_fire = u"\U0001f525"
 symb_black_circle = u"\u25cf"
 symb_stop = u"\U0001f6ab"
+symb_exclamation = u"\u2757"
 
 symb_left_arraow = u"\u25c4"
 symb_right_arrow = u"\u25ba"
 
 
-# fmt: off
 def makebold(text, surround="select", translate=False):
 
     if surround == "select":
@@ -631,8 +632,8 @@ class QBrowser(object):
     def get_button_colors(self):
         self.button_colors = dict(
             shift="red",
-            chan="red",
-            store="red",
+            chan="black",
+            store="black",
             recall="red",
         )
         for i in range(16):
@@ -816,7 +817,7 @@ class QBrowser(object):
 
     def _load_on_new_track(self):
         ID = self.identify_item()
-        if ID == "audio_effects" or "midi_effects":
+        if ID == "audio_effects" or ID == "midi_effects":
             self.song.create_return_track()
             self._load_item()
         elif ID == "instruments":
