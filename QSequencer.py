@@ -52,8 +52,10 @@ class QSequencer(object):
     def __init__(self, parent):
         self._parent = parent
 
-        self._encoder_up_counter = {**{i: 0 for i in range(16)}, "transpose": 0}
-        self._encoder_down_counter = {**{i: 0 for i in range(16)}, "transpose": 0}
+        self._encoder_up_counter = {
+            **{i: 0 for i in range(16)}, "transpose": 0}
+        self._encoder_down_counter = {
+            **{i: 0 for i in range(16)}, "transpose": 0}
         self.QS = QSetup()
 
         self.up_down = True
@@ -126,7 +128,8 @@ class QSequencer(object):
 
     def dotheblink(self):
         if self.clip is not None and self._parent._sequencer:
-            i = 1 + (int(self.clip.playing_position * 16 / self.sequence_length) % 16)
+            i = 1 + (int(self.clip.playing_position *
+                     16 / self.sequence_length) % 16)
             if self._activeslot == i:
                 return
             else:
@@ -404,7 +407,7 @@ class QSequencer(object):
                     self.clip.select_all_notes()
                     self.modify_note(
                         assigned_notes={i},
-                        mute=not self.get_note_specs(i, "mute"),
+                        mute=not self.get_note_specs(i=i, name="mute"),
                     )
                     self._singlebutton = True
                     self._assigned_notes.clear()
@@ -452,7 +455,8 @@ class QSequencer(object):
             )
 
             # keep message alive until all buttons are released
-            self._parent._parent.schedule_message(16, self._multitouch_info_msg)
+            self._parent._parent.schedule_message(
+                16, self._multitouch_info_msg)
         else:
             self._parent._parent._task_group.clear()
             self._parent._parent.show_message(" ")
@@ -644,13 +648,14 @@ class QSequencer(object):
 
     def modify_note(self, assigned_notes, up_down=True, **note_kwargs):
         notevector, notes = self.get_notes()
+        curr_vals = self.get_note_specs(name=self.change_property)
 
         if self.clip is not None and notevector is not None:
             for i in assigned_notes:
                 if len(note_kwargs) == 0:
                     kwargs = {}
-                    curr_val = self.get_note_specs(i, self.change_property)
 
+                    curr_val = curr_vals[i]
                     if curr_val is not None:
                         if up_down:
                             kwargs[self.change_property] = min(
@@ -672,14 +677,28 @@ class QSequencer(object):
 
             self.clip.apply_note_modifications(notevector)
 
-    def get_note_specs(self, i, name):
-
+    def get_note_specs(self, name, i=None):
+        """[summary]
+        returns a list of the first 16 available note-specs if i is not provided
+        (the list is filled with "None" if less than 16 notes are available)
+        """
         notevector, notes = self.get_notes()
 
-        if notevector is not None and len(notes) > i:
-            return getattr(notes[i], name)
+        if i is None:
+            if notevector is not None:
+                specs = []
+                for i, note in enumerate(notes):
+                    specs.append(getattr(note, name))
+                    if i > 16:
+                        break
+                return specs + [None]*(16 - len(specs))
+            else:
+                return None
         else:
-            return None
+            if notevector is not None and len(notes) > i:
+                return getattr(notes[i], name)
+            else:
+                return None
 
     def get_all_note_specs(self, note):
         return dict(
@@ -807,7 +826,8 @@ class QSequencer(object):
             for i in range(16):
                 self.add_note(
                     pitch=sequence[i],
-                    start_time=self.sequence_length / 16 * (i + self.note_offset),
+                    start_time=self.sequence_length /
+                    16 * (i + self.note_offset),
                     duration=self.sequence_length / 16 * self.note_duration,
                     velocity=int(127 * self.note_velocity),
                     velocity_deviation=0,
@@ -826,7 +846,8 @@ class QSequencer(object):
                 for j in range(self.sequence_n):
                     if i + j < len(notes):
                         notes[i + j] = (
-                            notes[i + j] + i // self.sequence_n * self.sequence_up
+                            notes[i + j] + i // self.sequence_n *
+                            self.sequence_up
                         )
         return notes
 
