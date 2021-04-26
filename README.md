@@ -27,8 +27,9 @@ developing and maintaining all of this is quite some work, so if you like what I
 
 No real installation required... just copy the files, and you are ready to go!
 
-1) copy all files of the latest [release](https://github.com/raphaelquast/beatstep/releases) into a folder named **"Beatstep_Q"** within the MIDI Remote scripts folder of Ableton Live  
-  (located at `..install-dir..\Resources\MIDI Remote Scripts`) 
+1) copy all files of the latest [release](https://github.com/raphaelquast/beatstep/releases) into a folder named **"Beatstep_Q"**   
+   inside the MIDI Remote scripts folder of Ableton Live   
+   (located at `..install-dir..\Resources\MIDI Remote Scripts`) 
 2) start Ableton and select **Beatstep_Q** as control-surface in the MIDI-tab of the preferences.  
    (make sure to activate both `track` and `remote` for this device!)
 
