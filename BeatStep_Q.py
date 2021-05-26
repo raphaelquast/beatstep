@@ -15,6 +15,8 @@ from _Framework.DeviceComponent import DeviceComponent
 from .QControlComponent import QControlComponent
 from .QSetup import QSetup
 
+from functools import partial
+
 ENCODER_MSG_IDS = (10, 74, 71, 76, 77, 93, 73, 75, 114, 18, 19, 16, 17, 91, 79, 72)
 PAD_MSG_IDS = list(range(44, 52)) + list(range(36, 44))
 
@@ -24,28 +26,44 @@ CHANNEL = 9
 MEMORY_SLOT = 8
 
 SETUP_HARDWARE_DELAY = 2.1
+INDIVIDUAL_MESSAGE_DELAY = 0.001
+
+def split_list(l, size):
+    for i in range(0, len(l), size):
+        yield l[i:i + size]
+
 
 
 class BeatStep_Q(ControlSurface):
     def __init__(self, *a, **k):
         super(BeatStep_Q, self).__init__(*a, **k)
+        self._messages_to_send = []
 
         self.QS = QSetup()
         self.control_layer_active = False
 
         with self.component_guard():
             self._setup_hardware_task = self._tasks.add(
-                Task.sequence(
-                    Task.wait(SETUP_HARDWARE_DELAY), Task.run(self._setup_hardware)
-                )
-            )
+                Task.run(self._init_color_sequence))
             self._setup_hardware_task.kill()
-            self._start_hardware_setup()
+            self._setup_hardware_task.restart()
 
-            self._create_controls()
-            self._create_Q_control()
 
-            self._create_device()
+
+            # self._setup_hardware_task = self._tasks.add(
+            #     Task.sequence(
+            #         Task.run(self._init_color_sequence),
+            #         Task.wait(SETUP_HARDWARE_DELAY),
+            #         Task.run(partial(self._setup_hardware, 0.1)),
+            #     )
+            # )
+            # self._setup_hardware_task.kill()
+            # self._start_hardware_setup()
+
+            # self._create_controls()
+            # self._create_Q_control()
+
+            # self._create_device()
 
     def receive_midi(self, midi_bytes):
         # self.show_message(str(midi_bytes))
@@ -73,21 +91,56 @@ class BeatStep_Q(ControlSurface):
         return f
 
     def _init_color_sequence(self):
-        for i in range(1, 9):
-            self.schedule_message(i, self._B_color_callback(i, 1))
-            self.schedule_message(17 - i, self._B_color_callback(i, 16))
+        delay = 0.1
+
+        sequence = []
         for i in range(1, 17):
-            self.schedule_message(20, self._B_color_callback(i, 0))
+            sequence.append(
+                Task.run(partial(self._send_midi,self.QS.set_B_color(i, 1))))
+            sequence.append(Task.wait(delay))
 
-    def _setup_hardware(self):
-        self._init_color_sequence()
-        self._setup_control_buttons_and_encoders()
-        self._setup_buttons_and_encoders()
+        for i in range(1, 17):
+            sequence.append(
+                Task.run(partial(self._send_midi,self.QS.set_B_color(i, 16))))
+            sequence.append(Task.wait(delay))
 
-        # set pad velocity to 0 (e.g. linear) on startup
-        self._send_midi(self.QS.set_B_velocity(0))
-        # set encoder acceleration to "slow" on startup
-        self._send_midi(self.QS.set_E_acceleration(0))
+        for i in range(1, 17):
+            sequence.append(
+                Task.run(partial(self._send_midi,self.QS.set_B_color(i, 0))))
+            sequence.append(Task.wait(delay))
+
+
+        self._tasks.add(Task.sequence(*sequence))
+
+
+
+
+
+
+    def _setup_hardware(self, delay=None):
+        if delay is None:
+            delay = INDIVIDUAL_MESSAGE_DELAY
+
+        sequence_to_run = []
+        for msg in self._messages_to_send:
+            sequence_to_run.append(Task.run(partial(self._send_midi, msg)))
+            sequence_to_run.append(Task.wait(delay))
+
+        for subsequence in split_list(sequence_to_run, 40):
+            self._tasks.add(Task.sequence(*subsequence))
+
+        self._messages_to_send = []
+
+
+    # def _setup_hardware(self):
+    #     self._init_color_sequence()
+    #     self._setup_control_buttons_and_encoders()
+    #     self._setup_buttons_and_encoders()
+
+    #     # set pad velocity to 0 (e.g. linear) on startup
+    #     self._send_midi(self.QS.set_B_velocity(0))
+    #     # set encoder acceleration to "slow" on startup
+    #     self._send_midi(self.QS.set_E_acceleration(0))
 
     def _setup_control_buttons_and_encoders(self):
         """
