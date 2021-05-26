@@ -94,17 +94,17 @@ class BeatStep_Q(ControlSurface):
         delay = 0.1
 
         sequence = []
-        for i in range(1, 17):
+        for i in range(1, 5):
             sequence.append(
                 Task.run(partial(self._send_midi,self.QS.set_B_color(i, 1))))
             sequence.append(Task.wait(delay))
 
-        for i in range(1, 17):
+        for i in range(5, 9):
             sequence.append(
                 Task.run(partial(self._send_midi,self.QS.set_B_color(i, 16))))
             sequence.append(Task.wait(delay))
 
-        for i in range(1, 17):
+        for i in range(1, 9):
             sequence.append(
                 Task.run(partial(self._send_midi,self.QS.set_B_color(i, 0))))
             sequence.append(Task.wait(delay))
