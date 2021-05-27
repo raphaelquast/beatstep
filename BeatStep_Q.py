@@ -25,8 +25,8 @@ CHANNEL = 9
 # the used memory-slot to store the configurations
 MEMORY_SLOT = 8
 
-SETUP_HARDWARE_DELAY = 2.1
-INDIVIDUAL_MESSAGE_DELAY = 0.001
+SETUP_HARDWARE_DELAY = 2.2
+INDIVIDUAL_MESSAGE_DELAY = 0#0.001
 
 def split_list(l, size):
     for i in range(0, len(l), size):
@@ -43,11 +43,16 @@ class BeatStep_Q(ControlSurface):
         self.control_layer_active = False
 
         with self.component_guard():
-            self._setup_hardware_task = self._tasks.add(
-                Task.run(self._init_color_sequence))
-            self._setup_hardware_task.kill()
-            self._setup_hardware_task.restart()
+            self._init_color_sequence()
 
+            # self._setup_hardware_task = self._tasks.add(
+            #     Task.sequence(
+            #         Task.wait(SETUP_HARDWARE_DELAY),
+            #         Task.run(self._init_color_sequence),
+            #         Task.run(partial(self._get_task_sequence, delay=0, maintain_order=True))
+            #         )
+            #     )
+            # self._start_hardware_setup()
 
 
             # self._setup_hardware_task = self._tasks.add(
@@ -75,12 +80,14 @@ class BeatStep_Q(ControlSurface):
 
     def port_settings_changed(self):
         super(BeatStep_Q, self).port_settings_changed()
-        self._start_hardware_setup()
+
+        self._init_color_sequence()
 
     def _start_hardware_setup(self):
-        # kill already running setup tasks:
-        self._setup_hardware_task.kill()
-        self._messages_to_send = []
+        if self._setup_hardware_task.is_running:
+            # kill already running setup tasks
+            self._setup_hardware_task.kill()
+
         self._setup_hardware_task.restart()
 
     def _B_color_callback(self, b, c):
@@ -90,46 +97,73 @@ class BeatStep_Q(ControlSurface):
 
         return f
 
+
     def _init_color_sequence(self):
-        delay = 0.1
+        msg_delay = 0.05
 
-        sequence = []
-        for i in range(1, 5):
-            sequence.append(
-                Task.run(partial(self._send_midi,self.QS.set_B_color(i, 1))))
-            sequence.append(Task.wait(delay))
+        init_task = self._tasks
 
-        for i in range(5, 9):
-            sequence.append(
-                Task.run(partial(self._send_midi,self.QS.set_B_color(i, 16))))
-            sequence.append(Task.wait(delay))
+        offmsgs = [self.QS.set_B_color(i, 0) for i in range(1, 17)]
+        rmsgs = [self.QS.set_B_color(i, 1) for i in range(1, 17)]
+        bmsgs = [self.QS.set_B_color(i, 16) for i in range(1, 17)]
+        mmsgs = [self.QS.set_B_color(i, 17) for i in range(1, 17)]
 
-        for i in range(1, 9):
-            sequence.append(
-                Task.run(partial(self._send_midi,self.QS.set_B_color(i, 0))))
-            sequence.append(Task.wait(delay))
+        msgs = []
+
+        for i, [o, r, b, m, rr, br, mr] in enumerate(zip(offmsgs, rmsgs, bmsgs, mmsgs,
+                                                         rmsgs[::-1], bmsgs[::-1], mmsgs[::-1])):
+            msgs.append([
+                 Task.wait(SETUP_HARDWARE_DELAY),
+                 Task.run(partial(self._send_midi, o)),
+                 Task.wait(msg_delay * (i + 1)),
+                 Task.run(partial(self._send_midi, r)),
+                 Task.wait(msg_delay * (16)),
+                 Task.run(partial(self._send_midi, b)),
+                 Task.wait(msg_delay * (16)),
+                 Task.run(partial(self._send_midi, m)),
+                 Task.wait(msg_delay * (16)),
+                 Task.run(partial(self._send_midi, rr)),
+                 Task.wait(msg_delay * (16)),
+                 Task.run(partial(self._send_midi, br)),
+                 Task.wait(msg_delay * (16)),
+                 Task.run(partial(self._send_midi, mr)),
+                 Task.wait(msg_delay * (16)),
+                 Task.run(partial(self._send_midi, o)),
+                 ])
+
+        for i in msgs:
+            init_task.add(Task.sequence(*i))
 
 
-        self._tasks.add(Task.sequence(*sequence))
 
-
-
-
-
-
-    def _setup_hardware(self, delay=None):
-        if delay is None:
-            delay = INDIVIDUAL_MESSAGE_DELAY
+    def _get_task_sequence(self, delay=0, maintain_order=False):
 
         sequence_to_run = []
         for msg in self._messages_to_send:
             sequence_to_run.append(Task.run(partial(self._send_midi, msg)))
-            sequence_to_run.append(Task.wait(delay))
+            sequence_to_run.append(Task.wait(INDIVIDUAL_MESSAGE_DELAY))
 
+        # bin the tasks into groups of 40 messages
         for subsequence in split_list(sequence_to_run, 40):
             self._tasks.add(Task.sequence(*subsequence))
 
         self._messages_to_send = []
+
+
+
+    # def _setup_hardware(self, delay=None):
+    #     if delay is None:
+    #         delay = INDIVIDUAL_MESSAGE_DELAY
+
+    #     sequence_to_run = []
+    #     for msg in self._messages_to_send:
+    #         sequence_to_run.append(Task.run(partial(self._send_midi, msg)))
+    #         sequence_to_run.append(Task.wait(delay))
+
+    #     for subsequence in split_list(sequence_to_run, 40):
+    #         self._tasks.add(Task.sequence(*subsequence))
+
+    #     self._messages_to_send = []
 
 
     # def _setup_hardware(self):
