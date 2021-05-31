@@ -134,13 +134,15 @@ class BeatStep_Q(ControlSurface):
             self._send_midi(msg)
 
 
-    def send_hardware_change(self, messages, delay=None):
+    def send_hardware_change(self, messages, delay=None, msg_delay=None):
         #if delay is None:
         #    delay = INDIVIDUAL_MESSAGE_DELAY
+        if msg_delay is not None:
+            sleep(delay)
 
         while len(messages) > 0:
-            if delay is not None:
-                sleep(delay)
+            if msg_delay is not None:
+                sleep(msg_delay)
             msg = messages.pop(0)
 
             #self.log_message('sending...' + str(list(msg)))
@@ -153,19 +155,19 @@ class BeatStep_Q(ControlSurface):
 
 
 
-    def _setup_hardware(self, delay=None, msg_delay=None, maintain_order=False):
+    def _setup_hardware(self, delay=None, msg_delay=None, maintain_order=True):
         if delay is None:
             delay = INDIVIDUAL_MESSAGE_DELAY
 
-        for sublist in split_list(self._messages_to_send, 20):
-            sleep(delay)
+        for i, sublist in enumerate(split_list(self._messages_to_send, 20)):
 
             # send sysex-messages with a delay
-            myThread = Thread(target=partial(self.send_hardware_change, messages=sublist, delay=msg_delay))
+            myThread = Thread(target=partial(self.send_hardware_change,
+                                             messages=sublist,
+                                             delay=delay + 20*i*msg_delay,
+                                             msg_delay=msg_delay))
             myThread.start()
 
-            if maintain_order:
-                sleep()
 
         self._messages_to_send = []
 
