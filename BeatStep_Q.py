@@ -158,13 +158,14 @@ class BeatStep_Q(ControlSurface):
     def _setup_hardware(self, delay=None, msg_delay=None, maintain_order=True):
         if delay is None:
             delay = INDIVIDUAL_MESSAGE_DELAY
-
         for i, sublist in enumerate(split_list(self._messages_to_send, 20)):
+            if msg_delay is not None:
+                 delay += 20*i*msg_delay
 
             # send sysex-messages with a delay
             myThread = Thread(target=partial(self.send_hardware_change,
                                              messages=sublist,
-                                             delay=delay + 20*i*msg_delay,
+                                             delay=delay,
                                              msg_delay=msg_delay))
             myThread.start()
 
