@@ -201,9 +201,6 @@ class BeatStep_Q(ControlSurface):
 
 
     def _deactivate_control_mode(self):
-        # make sure all scheduled messages have resolved
-        self._process_remaining_scheduled_messages()
-        self._messages_to_send = []
         # recall state before layer was activated
         self._send_midi(self.QS.recall_preset(MEMORY_SLOT))
 
