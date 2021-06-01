@@ -196,7 +196,6 @@ class BeatStep_Q(ControlSurface):
 
     def _do_activate_control_mode(self):
         self._set_control_mode_msgs()
-        self.log_message('activating ' + str(len(self._messages_to_send)))
         self._setup_hardware()
 
 
