@@ -30,7 +30,7 @@ CHANNEL = 9
 MEMORY_SLOT = 8
 
 SETUP_HARDWARE_DELAY = 2.2
-INDIVIDUAL_MESSAGE_DELAY = 0.001
+INDIVIDUAL_MESSAGE_DELAY = 0.01
 
 def split_list(l, size):
     for i in range(0, len(l), size):
@@ -50,52 +50,8 @@ class BeatStep_Q(ControlSurface):
 
             self._create_controls()
             self._create_Q_control()
-
             self._create_device()
 
-
-        #     self._setup_hardware_task = self._tasks.add(
-        #     Task.sequence(
-        #         Task.run(self._collect_setup_messages),
-        #         Task.wait(SETUP_HARDWARE_DELAY),
-        #         Task.run(partial(self._setup_hardware, delay=.1))
-        #     ))
-
-        # self._setup_hardware_task.kill()
-        # self._start_hardware_setup()
-
-        self._set_init_color_sequence()
-        self._setup_hardware(msg_delay=0.1)
-
-        self._collect_setup_messages()
-        self._setup_hardware()
-
-            # self._init_color_sequence()
-
-            # self._setup_hardware_task = self._tasks.add(
-            #     Task.sequence(
-            #         Task.wait(SETUP_HARDWARE_DELAY),
-            #         Task.run(self._init_color_sequence),
-            #         Task.run(partial(self._get_task_sequence, delay=0, maintain_order=True))
-            #         )
-            #     )
-            # self._start_hardware_setup()
-
-
-            # self._setup_hardware_task = self._tasks.add(
-            #     Task.sequence(
-            #         Task.run(self._init_color_sequence),
-            #         Task.wait(SETUP_HARDWARE_DELAY),
-            #         Task.run(partial(self._setup_hardware, 0.1)),
-            #     )
-            # )
-            # self._setup_hardware_task.kill()
-            # self._start_hardware_setup()
-
-            # self._create_controls()
-            # self._create_Q_control()
-
-            # self._create_device()
 
     def receive_midi(self, midi_bytes):
         # self.show_message(str(midi_bytes))
@@ -108,94 +64,27 @@ class BeatStep_Q(ControlSurface):
     def port_settings_changed(self):
         #super(BeatStep_Q, self).port_settings_changed()
         # self._start_hardware_setup()
+        self._set_init_color_sequence()
+        self._setup_hardware(delay=1, start_delay=SETUP_HARDWARE_DELAY)
 
         self._collect_setup_messages()
-        self._setup_hardware()
+        self._setup_hardware(start_delay=SETUP_HARDWARE_DELAY)
 
-    # def _start_hardware_setup(self):
-    #     with self.component_guard():
-
-    #         if self._setup_hardware_task.is_running:
-    #             # kill already running setup tasks
-    #             self._setup_hardware_task.kill()
-
-    #         self._setup_hardware_task.restart()
-
-
-    # Function with the timer
-    def send_hardware_change(self, delay=None):
+    def _setup_hardware(self, delay=None, start_delay=0.):
         if delay is None:
             delay = INDIVIDUAL_MESSAGE_DELAY
 
-        while len(self._messages_to_send) > 0:
-            sleep(delay)
-            msg = self._messages_to_send.pop(0)
-            self.log_message(str(msg))
-            self._send_midi(msg)
-
-
-    def send_hardware_change(self, messages, delay=None, msg_delay=None):
-        #if delay is None:
-        #    delay = INDIVIDUAL_MESSAGE_DELAY
-        if msg_delay is not None:
-            sleep(delay)
-
-        while len(messages) > 0:
-            if msg_delay is not None:
-                sleep(msg_delay)
-            msg = messages.pop(0)
-
-            #self.log_message('sending...' + str(list(msg)))
-
-            #self.log_message(str(msg))
-            self._send_midi(tuple(msg))
-
-
-
-
-
-
-    def _setup_hardware(self, delay=None, msg_delay=None, maintain_order=True):
-        if delay is None:
-            delay = INDIVIDUAL_MESSAGE_DELAY
-        for i, sublist in enumerate(split_list(self._messages_to_send, 20)):
-            if msg_delay is not None:
-                 delay += 20*i*msg_delay
-
-            # send sysex-messages with a delay
-            myThread = Thread(target=partial(self.send_hardware_change,
-                                             messages=sublist,
-                                             delay=delay,
-                                             msg_delay=msg_delay))
-            myThread.start()
-
-
-        self._messages_to_send = []
-
-        # with self.component_guard():
-        #     self.log_message("sending " + str(len(self._messages_to_send)) + " messages")
-        #     if delay is None:
-        #         delay = INDIVIDUAL_MESSAGE_DELAY
-
-        #     sequence_to_run = [None] * (len(self._messages_to_send) * 2)
-        #     sequence_to_run[::2] = [ Task.run(partial(self._send_midi, msg)) for msg in self._messages_to_send ]
-        #     sequence_to_run[1::2] = [ Task.wait(delay) for _ in self._messages_to_send ]
-
-        #     self._tasks.add(Task.sequence(*sequence_to_run))
-
-
-        # seqs = []
-        # for subsequence in split_list(sequence_to_run, 40):
-
-        #     seqs.append(Task.sequence(*subsequence))
-
-        # self._tasks.add(Task.sequence(*seqs))
-
-
+        # add individual message delays
+        i = 1
+        with self.component_guard():
+            while len(self._messages_to_send) > 0:
+                msg = self._messages_to_send.pop(0)
+                self.schedule_message(i * delay + start_delay,
+                                      partial(self._send_midi, msg))
+                i += 1
 
     def _collect_setup_messages(self, layer="init"):
         if layer == "init":
-
             self._setup_buttons_and_encoders()
             self._setup_control_buttons_and_encoders()
 
@@ -229,31 +118,6 @@ class BeatStep_Q(ControlSurface):
         return f
 
 
-
-    # def _setup_hardware(self, delay=None):
-    #     if delay is None:
-    #         delay = INDIVIDUAL_MESSAGE_DELAY
-
-    #     sequence_to_run = []
-    #     for msg in self._messages_to_send:
-    #         sequence_to_run.append(Task.run(partial(self._send_midi, msg)))
-    #         sequence_to_run.append(Task.wait(delay))
-
-    #     for subsequence in split_list(sequence_to_run, 40):
-    #         self._tasks.add(Task.sequence(*subsequence))
-
-    #     self._messages_to_send = []
-
-
-    # def _setup_hardware(self):
-    #     self._init_color_sequence()
-    #     self._setup_control_buttons_and_encoders()
-    #     self._setup_buttons_and_encoders()
-
-    #     # set pad velocity to 0 (e.g. linear) on startup
-    #     self._send_midi(self.QS.set_B_velocity(0))
-    #     # set encoder acceleration to "slow" on startup
-    #     self._send_midi(self.QS.set_E_acceleration(0))
 
     def _setup_control_buttons_and_encoders(self):
         """
@@ -349,8 +213,11 @@ class BeatStep_Q(ControlSurface):
 
 
     def _do_activate_control_mode(self):
-        self.log_message('activating')
+
+
+
         self._set_control_mode_msgs()
+        self.log_message('activating ' + str(len(self._messages_to_send)))
         self._setup_hardware()
 
         # with self.component_guard():
