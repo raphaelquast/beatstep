@@ -1756,7 +1756,11 @@ class QControlComponent(BaseComponent):
                     )
             if set_values:
                 self._set_notes(self._transpose_val)
-            self._parent.show_message(get_midi_note_name(self._transpose_val))
+
+            if not self._sequencer:
+                self._parent.show_message(get_midi_note_name(self._transpose_val))
+            else:
+                self.QSequencer.show_sequence_info(keepalive=False)
 
             # ---------------
             # indicate the transposed note via button lights

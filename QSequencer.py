@@ -1,6 +1,7 @@
 import Live
 from .QSetup import QSetup
 import time
+from itertools import groupby
 
 # fmt: off
 symb_voltage = u"\u26A1"
@@ -46,6 +47,13 @@ def simplify_fraction(numer, denom):
     else:
         return f"{reduced_num:.0f}/{reduced_den:.0f}"
 
+
+def get_midi_note_name(value):
+    octave = int(value / 12) - 2
+    note = "C C#D D#E F F#G G#A A#B "[(value % 12) * 2: (value % 12) * 2 + 2]
+    return (note.strip() + str(octave)).ljust(3)
+
+fullnotes = [i for i in range(128) if "#" not in get_midi_note_name(i)]
 
 # class QSequencer(ControlSurface):
 class QSequencer(object):
@@ -712,12 +720,13 @@ class QSequencer(object):
 
     # -------------------------------------------
 
-    def show_sequence_info(self):
+    def show_sequence_info(self, keepalive=True):
         # keep message alive until a clip is created
-        if self.clip is None:
-            self._parent._parent.schedule_message(16, self.show_sequence_info)
-        else:
-            self._parent._parent._task_group.clear()
+        if keepalive:
+            if self.clip is None:
+                self._parent._parent.schedule_message(16, self.show_sequence_info)
+            else:
+                self._parent._parent._task_group.clear()
 
         n_velocity = self.note_velocities.index(self.note_velocity)
         v_symb = v_bars[n_velocity]
@@ -731,6 +740,14 @@ class QSequencer(object):
 
         pitchmsg = f"(pitch {self.sequence_up} every {self.sequence_n} notes)"
 
+
+
+        sequence = self.set_sequence()
+
+        seqmsg = f"  {symb_blue_diamond_small}  ".join([" ".join(i[1]) for i in groupby(map(get_midi_note_name, sequence))])
+        seqmsg = f"{symb_blue_diamond_small} {seqmsg} {symb_blue_diamond_small}"
+
+
         self._parent._parent.show_message(
             " " * 15
             + msg
@@ -738,6 +755,8 @@ class QSequencer(object):
             + f"{simplify_fraction(self.sequence_length, self.n_notes * 4)} BARS "
             + " " * 15
             + pitchmsg
+            + " " * 15
+            + seqmsg
         )
 
     def set_sequence_length_button(self, i):
@@ -839,16 +858,20 @@ class QSequencer(object):
         self.add_handler()
 
     def set_sequence(self):
-        notes = [self._parent._transpose_val for i in range(16)]
+        basenote = self._parent._transpose_val
+        if "#" in get_midi_note_name(basenote):
+            basenote += 1
 
+        pos = fullnotes.index(basenote)
+
+        notes = [basenote for i in range(16)]
         if self.sequence_n > 0:
-            for i in range(0, 16, self.sequence_n):
-                for j in range(self.sequence_n):
-                    if i + j < len(notes):
-                        notes[i + j] = (
-                            notes[i + j] + i // self.sequence_n *
-                            self.sequence_up
-                        )
+            for n, i in enumerate(range(0, 16, self.sequence_n)):
+                for j in range(i, i + self.sequence_n):
+                    if j == 16: break
+                    note = fullnotes[pos + n * self.sequence_up]
+                    notes[j] = note
+
         return notes
 
     # get_notes_extended( (int)from_pitch, (int)pitch_span, (float)from_time, (float)time_span) ->
