@@ -29,8 +29,8 @@ CHANNEL = 9
 # the used memory-slot to store the configurations
 MEMORY_SLOT = 8
 
-SETUP_HARDWARE_DELAY = 2.2
-INDIVIDUAL_MESSAGE_DELAY = 0.01
+SETUP_HARDWARE_DELAY = 8
+INDIVIDUAL_MESSAGE_DELAY = 0.001
 
 def split_list(l, size):
     for i in range(0, len(l), size):
@@ -65,7 +65,7 @@ class BeatStep_Q(ControlSurface):
         #super(BeatStep_Q, self).port_settings_changed()
         # self._start_hardware_setup()
         self._set_init_color_sequence()
-        self._setup_hardware(delay=1, start_delay=SETUP_HARDWARE_DELAY)
+        self._setup_hardware(delay=.5, start_delay=SETUP_HARDWARE_DELAY)
 
         self._collect_setup_messages()
         self._setup_hardware(start_delay=SETUP_HARDWARE_DELAY)
@@ -101,23 +101,8 @@ class BeatStep_Q(ControlSurface):
         bmsgs = [self.QS.set_B_color(i, 16) for i in range(1, 17)]
         mmsgs = [self.QS.set_B_color(i, 17) for i in range(1, 17)]
 
-
-        for msg in offmsgs + rmsgs + bmsgs + rmsgs[::-1] + offmsgs:
+        for msg in offmsgs + rmsgs + bmsgs + mmsgs + offmsgs:
             self._messages_to_send.append(msg)
-
-
-
-
-
-
-    def _B_color_callback(self, b, c):
-        # do this to ensure callback-name closure
-        def f():
-            self._send_midi(self.QS.set_B_color(b, c))
-
-        return f
-
-
 
     def _setup_control_buttons_and_encoders(self):
         """
@@ -187,7 +172,6 @@ class BeatStep_Q(ControlSurface):
             self._messages_to_send.append(self.QS.set_E_cc(i, ENCODER_MSG_IDS[i - 1]))
 
 
-
     def _set_control_mode_msgs(self):
 
         # for all buttons
@@ -210,53 +194,18 @@ class BeatStep_Q(ControlSurface):
         self._messages_to_send.append(self.QS.set_E_behaviour("transpose", 2))
 
 
-
-
     def _do_activate_control_mode(self):
-
-
-
         self._set_control_mode_msgs()
         self.log_message('activating ' + str(len(self._messages_to_send)))
         self._setup_hardware()
 
-        # with self.component_guard():
-        #     self._setup_layer_task = self._tasks.add(
-        #     Task.sequence(
-        #         Task.run(self._set_control_mode_msgs),
-        #         Task.wait(INDIVIDUAL_MESSAGE_DELAY),
-        #         Task.run(partial(self._setup_hardware))
-        #     ))
-
-        # self._setup_layer_task.kill()
-        # self._setup_layer_task.restart()
-
-
-
-        # # for all buttons
-        # for i in range(1, 17):
-        #     # set pad to cc-mode
-        #     self._send_midi(self.QS.set_B_mode(i, 8))
-        #     # set pad channel
-        #     self._send_midi(self.QS.set_B_channel(i, CHANNEL))
-        #     # set pad behaviour to toggle
-        #     self._send_midi(self.QS.set_B_behaviour(i, 1))
-
-        #     # set encoder channel
-        #     self._send_midi(self.QS.set_E_channel(i, CHANNEL))
-        #     # set all encoders to relative-mode 2
-        #     self._send_midi(self.QS.set_E_behaviour(i, 2))
-
-        # # set transpose encoder channel to follow global channel
-        # self._send_midi(self.QS.set_E_channel("transpose", CHANNEL))
-        # # set transpose encoder to relative mode 2
-        # self._send_midi(self.QS.set_E_behaviour("transpose", 2))
 
     def _deactivate_control_mode(self):
+        # make sure all scheduled messages have resolved
+        self._process_remaining_scheduled_messages()
+        self._messages_to_send = []
+        # recall state before layer was activated
         self._send_midi(self.QS.recall_preset(MEMORY_SLOT))
-        # make sure that buttons relevant for control-features
-        # are correctly set
-        # self._setup_control_buttons_and_encoders()
 
         # set pad velocity
         self._send_midi(self.QS.set_B_velocity(self._control_component._pad_velocity))
