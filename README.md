@@ -41,11 +41,21 @@ The overlay-design provides indications for all assignments (including secondary
 (I got mine printed here: [Taktility](https://www.taktility.com/))
 </sup>
 
-![overlay-image](/BeatStep_Q_Overlay_with_image.png)
+<table><tr>
+<td align="center" width=54%>
+  <img src=/BeatStep_Q_Overlay.png/>
+</td>
+<td align="center" width=46%>
+  <img src=https://github.com/raphaelquast/beatstep/assets/22773387/829309ee-d57e-437b-81fe-b00c239b7fa0 />
+</td>
+</tr>
+</table>
+
 
 # Summary of Assignments
 
 ![assignments-image](/assignment_01.png)
+
 ---
 
 # More detailed explanations on the assignments:
