@@ -143,8 +143,9 @@ class QSetup(object):
             funcs = self._get_callbacks(c)
             setattr(self, "set_B_" + key, funcs[0])
             setattr(self, "get_B_" + key, funcs[1])
-            setattr(self, "set_E_" + key, funcs[2])
-            setattr(self, "get_E_" + key, funcs[3])
+            if key != "color":
+                setattr(self, "set_E_" + key, funcs[2])
+                setattr(self, "get_E_" + key, funcs[3])
 
         E_acc_set, E_acc_get = self._get_acceleration_callback()
         setattr(self, "set_E_acceleration", E_acc_set)

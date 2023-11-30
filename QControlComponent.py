@@ -192,7 +192,10 @@ class QControlComponent(BaseComponent):
         self._update_lights()
 
     def _set_color(self, buttonid, color):
+
+
         colordict = dict(black=0, red=1, blue=16, magenta=17)
+
         self._parent._send_midi(
             self._parent.QS.set_B_color(buttonid, colordict[color]))
 
@@ -1254,9 +1257,13 @@ class QControlComponent(BaseComponent):
     def _duplicate_loop(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
         if clip_slot == None:
+            self._parent.show_message(symb_stop + " no loop to duplicate")
             return
-        if clip_slot.has_clip:
-            clip_slot.clip.duplicate_loop()
+        if not clip_slot.has_clip:
+            self._parent.show_message(symb_stop + " no loop to duplicate")
+            return
+
+        clip_slot.clip.duplicate_loop()
 
     def _duplicate_or_delete_track(self):
         if self.__control_layer_permanent and self._shift_pressed:
@@ -1334,9 +1341,15 @@ class QControlComponent(BaseComponent):
 
     def _delete_clip(self):
         clip_slot = self._parent.song().view.highlighted_clip_slot
-        if clip_slot != None:
-            if clip_slot.has_clip:
-                clip_slot.delete_clip()
+        if clip_slot == None:
+            self._parent.show_message(symb_stop + " no clip to delete")
+            return
+        if not clip_slot.has_clip:
+            self._parent.show_message(symb_stop + " no clip to delete")
+            return
+
+        clip_slot.delete_clip()
+
 
     def _delete_device(self):
         track = self._parent.song().view.selected_track
@@ -1404,6 +1417,13 @@ class QControlComponent(BaseComponent):
     def _duplicate_clip(self):
         # duplicate the clip slot
         if self.selected_track == None:
+            self._parent.show_message(symb_stop + " no clip to duplicate")
+            return
+        if not self.selected_clip_slot.has_clip:
+            self._parent.show_message(symb_stop + " no clip to duplicate")
+            return
+        if self.selected_clip_slot.is_recording:
+            self._parent.show_message(symb_stop + " A clip cannot be copied while it is recording.")
             return
 
         duplicated_id = self.selected_track.duplicate_clip_slot(
@@ -1756,7 +1776,11 @@ class QControlComponent(BaseComponent):
                     )
             if set_values:
                 self._set_notes(self._transpose_val)
-            self._parent.show_message(get_midi_note_name(self._transpose_val))
+
+            if not self._sequencer:
+                self._parent.show_message(get_midi_note_name(self._transpose_val))
+            else:
+                self.QSequencer.show_sequence_info(keepalive=False)
 
             # ---------------
             # indicate the transposed note via button lights
